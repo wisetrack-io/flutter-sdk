@@ -1,0 +1,41 @@
+PODS:
+  - Flutter (1.0.0)
+  - integration_test (0.0.1):
+    - Flutter
+  - Sentry (8.49.2):
+    - Sentry/Core (= 8.49.2)
+  - Sentry/Core (8.49.2)
+  - wisetrack (0.0.1):
+    - Flutter
+    - WiseTrackLib
+  - WiseTrackLib (1.0.0):
+    - Sentry (~> 8.49.0)
+
+DEPENDENCIES:
+  - Flutter (from `Flutter`)
+  - integration_test (from `.symlinks/plugins/integration_test/ios`)
+  - wisetrack (from `.symlinks/plugins/wisetrack/ios`)
+
+SPEC REPOS:
+  https://github.com/CocoaPods/Specs.git:
+    - Sentry
+    - WiseTrackLib
+
+EXTERNAL SOURCES:
+  Flutter:
+    :path: Flutter
+  integration_test:
+    :path: ".symlinks/plugins/integration_test/ios"
+  wisetrack:
+    :path: ".symlinks/plugins/wisetrack/ios"
+
+SPEC CHECKSUMS:
+  Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
+  integration_test: 4a889634ef21a45d28d50d622cf412dc6d9f586e
+  Sentry: 47021097466aa130802420d485a34da445963d99
+  wisetrack: c50de3ba11e5e607106ba562dff55b4ff812ba98
+  WiseTrackLib: b814ecd97d32fb8e04e0a16c62b20e7564ce46f6
+
+PODFILE CHECKSUM: 20de96b163a552c6635be676b4a0bac4e6e89d95
+
+COCOAPODS: 1.16.2

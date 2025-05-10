@@ -1,0 +1,16 @@
+enum WisetrackMethodChannel: String {
+    case log                    = "wt.log"
+    case initSDK                = "wt.init"
+    case enableTestMode         = "wt.enable_test_mode"
+    case setLogLevel            = "wt.set_log_level"
+    case setEnabled             = "wt.set_enabled"
+    case iOSRequestForATT       = "wt.ios_request_att"
+    case startTracking          = "wt.start_tracking"
+    case stopTracking           = "wt.stop_tracking"
+    case setAPNSToken           = "wt.set_apns_token"
+    case setFCMToken            = "wt.set_fcm_token"
+    case logEvent               = "wt.log_event"
+    case isEnabled              = "wt.is_enabled"
+    case getADID                = "wt.get_adid"
+    case getIDFA                = "wt.get_idfa"
+}
