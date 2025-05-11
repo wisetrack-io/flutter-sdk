@@ -25,6 +25,7 @@ class MethodChannelWisetrack extends WisetrackPlatform {
     try {
       await _channel.invokeMethod(MethodChannelNames.methodInit, {
         'sdk_env': WTResources.defaultSdkEnvironment.name,
+        'sdk_version': WTResources.sdkVersion,
         ...initConfig.toMap(),
       });
     } on PlatformException catch (e) {

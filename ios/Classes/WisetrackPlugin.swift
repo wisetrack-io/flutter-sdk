@@ -102,9 +102,10 @@ public class WisetrackPlugin: NSObject, FlutterPlugin {
 extension WisetrackPlugin {
     
     private func initSDK(args: [String: Any]) {
-        ResourceWrapper.setSdkHash(hash: "0ccb949a814d5045d33322e81e176066141fa7d4735c03c7fc69fec1d56373ee")
+        // ResourceWrapper.setSdkHash(hash: "0ccb949a814d5045d33322e81e176066141fa7d4735c03c7fc69fec1d56373ee")
         ResourceWrapper.setSdkEnvironment(env: args["sdk_env"] as! String)
         ResourceWrapper.setSdkFramework(framework: "flutter")
+        ResourceWrapper.setSdkVersion(version: args["sdk_version"] as! String)
         
         WiseTrack.shared.initialize(with: WTInitialConfig(
             appToken: args["app_token"] as! String,

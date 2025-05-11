@@ -101,7 +101,6 @@ class WisetrackPlugin : FlutterPlugin, MethodCallHandler {
                 result.success(null)
             }
 
-
             MethodNames.SET_PACKAGES_INFO -> {
                 setPackagesInfo()
                 result.success(null)
@@ -132,8 +131,9 @@ class WisetrackPlugin : FlutterPlugin, MethodCallHandler {
     private fun initSDK(call: MethodCall) {
 
         ResourceWrapper.setFramework("flutter")
-        ResourceWrapper.setHash("0ccb949a814d5045d33322e81e176066141fa7d4735c03c7fc69fec1d56373ee")
+//        ResourceWrapper.setHash("0ccb949a814d5045d33322e81e176066141fa7d4735c03c7fc69fec1d56373ee")
         ResourceWrapper.setEnvironment(call.argument<String>("sdk_env")!!)
+        ResourceWrapper.setVersion(call.argument<String>("sdk_version")!!)
 
         val initialConfig = WTInitialConfig(
             appToken = call.argument<String>("app_token")!!,

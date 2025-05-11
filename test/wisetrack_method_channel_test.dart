@@ -60,6 +60,7 @@ void main() {
       verify(
         mockChannel.invokeMethod(MethodChannelNames.methodInit, {
           'sdk_env': WTResources.defaultSdkEnvironment.name,
+          'sdk_version': WTResources.sdkVersion,
           'app_token': initConfig.appToken,
           'user_environment': initConfig.userEnvironment.name,
           'android_store_name': initConfig.androidStore.name,
