@@ -1,3 +1,5 @@
+☀︎ Languages: English | [Persian (فارسی) 🇮🇷](https://github.com/wisetrack-io/flutter-sdk/blob/main/README.fa.md)
+
 # WiseTrack Flutter Plugin
 
 The WiseTrack Flutter Plugin provides a cross-platform solution for tracking user interactions, events, and push notifications in your Flutter applications. This README guide covers the installation, setup, and usage of the plugin for both iOS and Android platforms, including examples for common use cases.
@@ -43,7 +45,7 @@ To integrate the WiseTrack Flutter Plugin into your Flutter project, follow thes
    Add the `wisetrack` plugin to your `pubspec.yaml` file:
    ```yaml
    dependencies:
-     wisetrack: ^1.0.0 # Replace with the latest version
+     wisetrack: ^2.0.0 # Replace with the latest version
    ```
 
 2. **Install the package**:
@@ -162,28 +164,12 @@ void main() async {
     userEnvironment: WTUserEnvironment.production, // Use .sandbox for testing
     androidStore: WTAndroidStore.googlePlay,
     iOSStore: WTIOSStore.appStore,
-    trackingWattingTime: 5000, // 5 seconds
-    startTrackerAutomatically: true,
-    logLevel: WTLogLevel.debug,
-    oaidEnabled: false,
-    referrerEnabled: true,
+    logLevel: WTLogLevel.warning,
   );
 
   await WiseTrack.instance.init(config);
 
   runApp(MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(title: Text('WiseTrack Demo')),
-        body: Center(child: Text('Welcome to WiseTrack!')),
-      ),
-    );
-  }
 }
 ```
 
@@ -282,12 +268,12 @@ String? adId = await WiseTrack.instance.getAdId();
 print('Ad ID: ${adId ?? "Not available"}');
 ```
 
-## Advanced Usage
+## Advanced Usaged
 
 ### Customizing SDK Behavior
 You can customize the SDK behavior through the `WTInitialConfig` parameters:
 - `appToken`: Your unique app token (required).
-- `userEnvironment`: The environment (`.production`, `.sandbox`, `.stage`).
+- `userEnvironment`: The environment (`.production`, `.sandbox`).
 - `androidStore`: The Android app store (e.g., `.googleplay`, `.cafebazaar`, `.other`, ...).
 - `iOSStore`: The iOS app store (e.g., `.appstore`, `.sibche`, `.other`, ..).
 - `trackingWattingTime`: Delay before starting tracking (in milliseconds).
@@ -338,7 +324,7 @@ An example project demonstrating the WiseTrack Flutter Plugin integration is ava
 - **IDFA/Ad ID not available**: Ensure ATT permission is granted (iOS) or Google Play Services is included (Android).
 - **Push notifications not tracked**: Verify that valid APNs/FCM tokens are set.
 
-For further assistance, contact support at [support@wisetrack.com](mailto:support@wisetrack.com).
+For further assistance, contact support at [support@wisetrack.io](mailto:support@wisetrack.io).
 
 ## License
 The WiseTrack Flutter Plugin is licensed under the WiseTrack SDK License Agreement. See the [LICENSE](LICENSE) file for details.

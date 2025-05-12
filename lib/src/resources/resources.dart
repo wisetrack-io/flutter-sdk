@@ -3,6 +3,6 @@ import 'package:wisetrack/src/entity/sdk_environment.dart';
 
 class WTResources {
   static const defaultSdkEnvironment = WTSDKEnvironment.stage;
-  static const defaultLogLevel = WTLogLevel.debug;
-  static const sdkVersion = '1.0.1';
+  static const defaultLogLevel = WTLogLevel.warning;
+  static const sdkVersion = '2.0.2';
 }

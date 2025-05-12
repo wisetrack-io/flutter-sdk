@@ -29,14 +29,14 @@ class WTInitialConfig {
   /// - [androidStore] specifies the app store for Android (default: `other`).
   /// - [iOSStore] specifies the app store for iOS (default: `other`).
   /// - [trackingWattingTime] sets a delay before tracking starts (default: `0` milliseconds).
-  /// - [startTrackerAutomatically] determines if tracking starts automatically (default: `false`).
+  /// - [startTrackerAutomatically] determines if tracking starts automatically (default: `true`).
   WTInitialConfig({
     required this.appToken,
     this.userEnvironment = WTUserEnvironment.sandbox,
     this.androidStore = WTAndroidStore.other,
     this.iOSStore = WTIOSStore.other,
     this.trackingWattingTime = 0,
-    this.startTrackerAutomatically = false,
+    this.startTrackerAutomatically = true,
     this.customDeviceId,
     this.defaultTracker,
     this.appSecret,
