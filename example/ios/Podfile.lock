@@ -7,7 +7,7 @@ PODS:
   - Sentry/Core (8.49.2)
   - wisetrack (0.0.1):
     - Flutter
-    - WiseTrackLib (~> 1.0.0)
+    - WiseTrackLib (~> 1.0.1)
   - WiseTrackLib (1.0.1):
     - Sentry (~> 8.49.0)
 
@@ -33,7 +33,7 @@ SPEC CHECKSUMS:
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
   integration_test: 4a889634ef21a45d28d50d622cf412dc6d9f586e
   Sentry: 47021097466aa130802420d485a34da445963d99
-  wisetrack: 76cfc3f45b5f29aa93d0e1381387f7a3258762b7
+  wisetrack: e016210f49538acb209e3c27659e92161e3923b4
   WiseTrackLib: 8499118eed3c3cbf542d57795e5a5c8e2dc9d424
 
 PODFILE CHECKSUM: 2155b9e482eaefaeac58dd04b3f7f419812be7b4
