@@ -5,6 +5,7 @@ import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:wisetrack/src/config/channel_names.dart';
 import 'package:wisetrack/src/config/wisetrack_method_channel.dart';
+import 'package:wisetrack/src/entity/sdk_environment.dart';
 import 'package:wisetrack/src/resources/resources.dart';
 import 'package:wisetrack/wisetrack.dart';
 
@@ -25,8 +26,8 @@ void main() {
 
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(channel, (call) {
-          return mockChannel.invokeMethod(call.method, call.arguments);
-        });
+      return mockChannel.invokeMethod(call.method, call.arguments);
+    });
   });
 
   tearDown(() {
@@ -59,10 +60,10 @@ void main() {
 
       verify(
         mockChannel.invokeMethod(MethodChannelNames.methodInit, {
-          'sdk_env': WTResources.defaultSdkEnvironment.name,
+          'sdk_env': WTResources.defaultSdkEnvironment.label,
           'sdk_version': WTResources.sdkVersion,
           'app_token': initConfig.appToken,
-          'user_environment': initConfig.userEnvironment.name,
+          'user_environment': initConfig.userEnvironment.label,
           'android_store_name': initConfig.androidStore.name,
           'ios_store_name': initConfig.iOSStore.name,
           'tracking_waiting_time': initConfig.trackingWattingTime,
@@ -252,7 +253,7 @@ void main() {
       await wisetrack.logEvent(event);
       verify(
         mockChannel.invokeMethod(MethodChannelNames.methodLogEvent, {
-          "type": WTEventType.defaultEvent.name,
+          "type": WTEventType.defaultEvent.label,
           "name": event.name,
           "params": {'key-1': "val", 'key-2': 1.5, 'key-3': true},
           "revenue": null,
@@ -281,7 +282,7 @@ void main() {
       await wisetrack.logEvent(event);
       verify(
         mockChannel.invokeMethod(MethodChannelNames.methodLogEvent, {
-          "type": WTEventType.revenueEvent.name,
+          "type": WTEventType.revenueEvent.label,
           "name": event.name,
           "params": {'key-1': "val", 'key-2': 1.5, 'key-3': true},
           "revenue": 100.0,

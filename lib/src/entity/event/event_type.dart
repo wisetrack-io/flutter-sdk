@@ -6,10 +6,12 @@ enum WTEventType {
   defaultEvent,
 
   /// A revenue-related event that includes monetary value and currency.
-  revenueEvent;
+  revenueEvent
+}
 
-  String get name =>
-      {
+extension WTEventTypeLabel on WTEventType {
+  /// Returns the string representation of the event type.
+  String get label => {
         WTEventType.defaultEvent: 'default',
         WTEventType.revenueEvent: 'revenue',
       }[this]!;

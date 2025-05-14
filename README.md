@@ -33,8 +33,8 @@ The WiseTrack Flutter Plugin provides a cross-platform solution for tracking use
 - Advertising ID retrieval (IDFA for iOS, Ad ID for Android)
 
 ## Requirements
-- Flutter 3.0.0 or later
-- Dart 2.17.0 or later
+- Flutter 2.2.0 or later  
+- Dart 2.12.0 or later
 - iOS 11.0 or later
 - Android API 21 (Lollipop) or later
 

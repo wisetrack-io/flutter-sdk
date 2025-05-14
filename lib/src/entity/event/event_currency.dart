@@ -32,3 +32,37 @@ enum RevenueCurrency {
   EHT,
   LTC,
 }
+
+extension EventCurrencyLabel on RevenueCurrency {
+  /// Returns the string representation of the currency.
+  String get label => {
+        RevenueCurrency.USD: 'USD',
+        RevenueCurrency.EUR: 'EUR',
+        RevenueCurrency.JPY: 'JPY',
+        RevenueCurrency.GBP: 'GBP',
+        RevenueCurrency.AUD: 'AUD',
+        RevenueCurrency.CAD: 'CAD',
+        RevenueCurrency.CHF: 'CHF',
+        RevenueCurrency.CNY: 'CNY',
+        RevenueCurrency.SEK: 'SEK',
+        RevenueCurrency.NZD: 'NZD',
+        RevenueCurrency.MXN: 'MXN',
+        RevenueCurrency.SGD: 'SGD',
+        RevenueCurrency.HKD: 'HKD',
+        RevenueCurrency.NOK: 'NOK',
+        RevenueCurrency.KRW: 'KRW',
+        RevenueCurrency.TRY: 'TRY',
+        RevenueCurrency.RUB: 'RUB',
+        RevenueCurrency.INR: 'INR',
+        RevenueCurrency.BRL: 'BRL',
+        RevenueCurrency.ZAR: 'ZAR',
+        RevenueCurrency.IRR: 'IRR',
+        RevenueCurrency.AED: 'AED',
+        RevenueCurrency.IQD: 'IQD',
+        RevenueCurrency.SAR: 'SAR',
+        RevenueCurrency.OMR: 'OMR',
+        RevenueCurrency.BTC: 'BTC',
+        RevenueCurrency.EHT: 'EHT',
+        RevenueCurrency.LTC: 'LTC',
+      }[this]!;
+}

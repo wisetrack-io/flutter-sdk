@@ -3,6 +3,8 @@ import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:wisetrack/src/entity/sdk_environment.dart';
+import 'package:wisetrack/src/resources/resources.dart';
 import 'package:wisetrack/wisetrack.dart';
 import 'package:wisetrack_example/views/logs_view.dart';
 
@@ -13,7 +15,7 @@ import '../widgets/toggle_switch.dart';
 
 class HomeScreen extends StatefulWidget {
   final VoidCallback? onToggleTheme;
-  const HomeScreen({this.onToggleTheme, super.key});
+  const HomeScreen({this.onToggleTheme, Key? key}) : super(key: key);
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -21,7 +23,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final wisetrack = WiseTrack.instance;
-  WTLogLevel? logLevel = WTLogLevel.debug;
+  WTLogLevel logLevel = WTLogLevel.debug;
   // Color backgroundColor = const Color(0xfff0eff4);
   String appToken = 'rMN5ZCwpOzY7';
   final List<String> logs = [];
@@ -40,6 +42,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   void initState() {
+    WTResources.defaultSdkEnvironment = WTSDKEnvironment.stage;
+
     WiseTrack.instance.listenOnLogs((message) {
       logs.add(message);
       _logStreamController.add(List.from(logs));
@@ -93,7 +97,7 @@ class _HomeScreenState extends State<HomeScreen> {
               CustomDropdown<WTLogLevel>(
                 title: '🐞 Log Level',
                 items: WTLogLevel.values,
-                mapper: (level) => level.name.toUpperCase(),
+                mapper: (level) => level.label.toUpperCase(),
                 hint: 'Select Log Level',
                 initialItem: logLevel,
                 onChanged: (level) async {
@@ -115,33 +119,30 @@ class _HomeScreenState extends State<HomeScreen> {
                     Expanded(
                       child: CustomDropdown<WTAndroidStore>(
                         title: '📬 Android Store',
-                        items:
-                            WTAndroidStore.values
-                              ..add(WTAndroidStore.custom('custom')),
+                        items: WTAndroidStore.values
+                          ..add(WTAndroidStore.custom('custom')),
                         mapper: (level) => level.name.toUpperCase(),
                         hint: 'Select Android Store',
                         initialItem: androidStore,
-                        onChanged:
-                            (p0) => setState(() {
-                              androidCustomStore = null;
-                              androidStore = p0!;
-                            }),
+                        onChanged: (p0) => setState(() {
+                          androidCustomStore = null;
+                          androidStore = p0!;
+                        }),
                       ),
                     ),
                   if (Platform.isIOS)
                     Expanded(
                       child: CustomDropdown<WTIOSStore>(
                         title: '📬 iOS Store',
-                        items:
-                            WTIOSStore.values..add(WTIOSStore.custom('custom')),
+                        items: WTIOSStore.values
+                          ..add(WTIOSStore.custom('custom')),
                         mapper: (level) => level.name.toUpperCase(),
                         hint: 'Select iOS Store',
                         initialItem: iosStore,
-                        onChanged:
-                            (p0) => setState(() {
-                              iosCustomStore = null;
-                              iosStore = p0!;
-                            }),
+                        onChanged: (p0) => setState(() {
+                          iosCustomStore = null;
+                          iosStore = p0!;
+                        }),
                       ),
                     ),
                 ],
@@ -156,11 +157,10 @@ class _HomeScreenState extends State<HomeScreen> {
                           title: '📬 Android Custom Store',
                           hint: 'Select Android Store',
                           initialValue: androidCustomStore?.name,
-                          onChanged:
-                              (p0) =>
-                                  androidCustomStore = WTAndroidStore.custom(
-                                    p0,
-                                  ),
+                          onChanged: (p0) =>
+                              androidCustomStore = WTAndroidStore.custom(
+                            p0,
+                          ),
                         ),
                       ),
                     if (Platform.isIOS && iosStore.name == 'custom')
@@ -169,8 +169,8 @@ class _HomeScreenState extends State<HomeScreen> {
                           title: '📬 iOS Custom Store',
                           hint: 'Select iOS Store',
                           initialValue: iosCustomStore?.name,
-                          onChanged:
-                              (p0) => iosCustomStore = WTIOSStore.custom(p0),
+                          onChanged: (p0) =>
+                              iosCustomStore = WTIOSStore.custom(p0),
                         ),
                       ),
                   ],
@@ -178,38 +178,35 @@ class _HomeScreenState extends State<HomeScreen> {
               CustomToggleSwitch(
                 title: 'Start Tracker Automatically',
                 initialValue: autoStartTracker,
-                onChanged:
-                    (b) => setState(() {
-                      autoStartTracker = b;
-                    }),
+                onChanged: (b) => setState(() {
+                  autoStartTracker = b;
+                }),
               ),
               if (autoStartTracker && Platform.isIOS)
                 CustomInputField(
                   title: '⏳ Tracking Watting Time',
-                  onChanged:
-                      (str) => trackingWattingTime = int.tryParse(str) ?? 5,
+                  onChanged: (str) =>
+                      trackingWattingTime = int.tryParse(str) ?? 5,
                   initialValue: trackingWattingTime.toString(),
                   hint: 'Enter App token',
                   inputType: TextInputType.number,
                 ),
               OutlineButton(
-                title:
-                    attAuthorized
-                        ? 'ATT Authorized'
-                        : '🎯 Request for iOS IDFA (ATT)',
+                title: attAuthorized
+                    ? 'ATT Authorized'
+                    : '🎯 Request for iOS IDFA (ATT)',
                 isLoading: attRequestLoading,
-                onPressed:
-                    attAuthorized
-                        ? null
-                        : () async {
-                          setState(() => attRequestLoading = true);
-                          final isAuthorized =
-                              await WiseTrack.instance.iOSRequestForATT();
-                          setState(() {
-                            attRequestLoading = false;
-                            attAuthorized = isAuthorized;
-                          });
-                        },
+                onPressed: attAuthorized
+                    ? null
+                    : () async {
+                        setState(() => attRequestLoading = true);
+                        final isAuthorized =
+                            await WiseTrack.instance.iOSRequestForATT();
+                        setState(() {
+                          attRequestLoading = false;
+                          attAuthorized = isAuthorized;
+                        });
+                      },
               ),
               Row(
                 children: [
@@ -307,6 +304,7 @@ class _HomeScreenState extends State<HomeScreen> {
               androidStore: androidCustomStore ?? androidStore,
               startTrackerAutomatically: autoStartTracker,
               trackingWattingTime: trackingWattingTime,
+              logLevel: logLevel,
             ),
           );
           setState(() {
@@ -345,9 +343,8 @@ class _HomeScreenState extends State<HomeScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder:
-          (context) =>
-              LogsView(logs: logs, logStreamController: _logStreamController),
+      builder: (context) =>
+          LogsView(logs: logs, logStreamController: _logStreamController),
     );
   }
 }

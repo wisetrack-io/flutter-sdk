@@ -26,13 +26,13 @@ import 'package:mockito/src/dummies.dart' as _i5;
 
 class _FakeMethodCodec_0 extends _i1.SmartFake implements _i2.MethodCodec {
   _FakeMethodCodec_0(Object parent, Invocation parentInvocation)
-    : super(parent, parentInvocation);
+      : super(parent, parentInvocation);
 }
 
 class _FakeBinaryMessenger_1 extends _i1.SmartFake
     implements _i3.BinaryMessenger {
   _FakeBinaryMessenger_1(Object parent, Invocation parentInvocation)
-    : super(parent, parentInvocation);
+      : super(parent, parentInvocation);
 }
 
 /// A class which mocks [MethodChannel].
@@ -44,39 +44,32 @@ class MockMethodChannel extends _i1.Mock implements _i4.MethodChannel {
   }
 
   @override
-  String get name =>
-      (super.noSuchMethod(
-            Invocation.getter(#name),
-            returnValue: _i5.dummyValue<String>(this, Invocation.getter(#name)),
-          )
-          as String);
+  String get name => (super.noSuchMethod(
+        Invocation.getter(#name),
+        returnValue: _i5.dummyValue<String>(this, Invocation.getter(#name)),
+      ) as String);
 
   @override
-  _i2.MethodCodec get codec =>
-      (super.noSuchMethod(
-            Invocation.getter(#codec),
-            returnValue: _FakeMethodCodec_0(this, Invocation.getter(#codec)),
-          )
-          as _i2.MethodCodec);
+  _i2.MethodCodec get codec => (super.noSuchMethod(
+        Invocation.getter(#codec),
+        returnValue: _FakeMethodCodec_0(this, Invocation.getter(#codec)),
+      ) as _i2.MethodCodec);
 
   @override
-  _i3.BinaryMessenger get binaryMessenger =>
-      (super.noSuchMethod(
-            Invocation.getter(#binaryMessenger),
-            returnValue: _FakeBinaryMessenger_1(
-              this,
-              Invocation.getter(#binaryMessenger),
-            ),
-          )
-          as _i3.BinaryMessenger);
+  _i3.BinaryMessenger get binaryMessenger => (super.noSuchMethod(
+        Invocation.getter(#binaryMessenger),
+        returnValue: _FakeBinaryMessenger_1(
+          this,
+          Invocation.getter(#binaryMessenger),
+        ),
+      ) as _i3.BinaryMessenger);
 
   @override
   _i6.Future<T?> invokeMethod<T>(String? method, [dynamic arguments]) =>
       (super.noSuchMethod(
-            Invocation.method(#invokeMethod, [method, arguments]),
-            returnValue: _i6.Future<T?>.value(),
-          )
-          as _i6.Future<T?>);
+        Invocation.method(#invokeMethod, [method, arguments]),
+        returnValue: _i6.Future<T?>.value(),
+      ) as _i6.Future<T?>);
 
   @override
   _i6.Future<List<T>?> invokeListMethod<T>(
@@ -84,10 +77,9 @@ class MockMethodChannel extends _i1.Mock implements _i4.MethodChannel {
     dynamic arguments,
   ]) =>
       (super.noSuchMethod(
-            Invocation.method(#invokeListMethod, [method, arguments]),
-            returnValue: _i6.Future<List<T>?>.value(),
-          )
-          as _i6.Future<List<T>?>);
+        Invocation.method(#invokeListMethod, [method, arguments]),
+        returnValue: _i6.Future<List<T>?>.value(),
+      ) as _i6.Future<List<T>?>);
 
   @override
   _i6.Future<Map<K, V>?> invokeMapMethod<K, V>(
@@ -95,16 +87,16 @@ class MockMethodChannel extends _i1.Mock implements _i4.MethodChannel {
     dynamic arguments,
   ]) =>
       (super.noSuchMethod(
-            Invocation.method(#invokeMapMethod, [method, arguments]),
-            returnValue: _i6.Future<Map<K, V>?>.value(),
-          )
-          as _i6.Future<Map<K, V>?>);
+        Invocation.method(#invokeMapMethod, [method, arguments]),
+        returnValue: _i6.Future<Map<K, V>?>.value(),
+      ) as _i6.Future<Map<K, V>?>);
 
   @override
   void setMethodCallHandler(
     _i6.Future<dynamic> Function(_i2.MethodCall)? handler,
-  ) => super.noSuchMethod(
-    Invocation.method(#setMethodCallHandler, [handler]),
-    returnValueForMissingStub: null,
-  );
+  ) =>
+      super.noSuchMethod(
+        Invocation.method(#setMethodCallHandler, [handler]),
+        returnValueForMissingStub: null,
+      );
 }

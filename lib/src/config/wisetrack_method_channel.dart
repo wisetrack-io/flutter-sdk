@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:wisetrack/src/config/channel_names.dart';
 import 'package:wisetrack/src/entity/entity.dart';
+import 'package:wisetrack/src/entity/sdk_environment.dart';
 import 'package:wisetrack/src/resources/resources.dart';
 
 import 'wisetrack_platform_interface.dart';
@@ -24,7 +25,7 @@ class MethodChannelWisetrack extends WisetrackPlatform {
   Future<void> init(WTInitialConfig initConfig) async {
     try {
       await _channel.invokeMethod(MethodChannelNames.methodInit, {
-        'sdk_env': WTResources.defaultSdkEnvironment.name,
+        'sdk_env': WTResources.defaultSdkEnvironment.label,
         'sdk_version': WTResources.sdkVersion,
         ...initConfig.toMap(),
       });

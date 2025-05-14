@@ -9,20 +9,32 @@
 /// Each log level is associated with a specific integer value for easy comparison and filtering.
 enum WTLogLevel {
   /// Debug level log, used for detailed information during debugging.
-  debug(3),
+  debug,
 
   /// Info level log, used for general information.
-  info(4),
+  info,
 
   /// Warning level log, used for potential issues or minor errors.
-  warning(5),
+  warning,
 
   /// Error level log, used for critical errors or failures.
-  error(6);
+  error
+}
 
-  /// The integer value associated with the log level.
-  final int level;
+extension WTLogLevelPriority on WTLogLevel {
+  /// Returns the log level priority.
+  int get level => {
+        WTLogLevel.debug: 3,
+        WTLogLevel.info: 4,
+        WTLogLevel.warning: 5,
+        WTLogLevel.error: 6,
+      }[this]!;
 
-  /// Private constructor for initializing a log level with an integer value.
-  const WTLogLevel(this.level);
+  /// Returns the string representation of the log level.
+  String get label => {
+        WTLogLevel.debug: 'debug',
+        WTLogLevel.info: 'info',
+        WTLogLevel.warning: 'warning',
+        WTLogLevel.error: 'error',
+      }[this]!;
 }

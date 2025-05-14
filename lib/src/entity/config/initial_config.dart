@@ -126,7 +126,7 @@ class WTInitialConfig {
     return WTInitialConfig(
       appToken: map['app_token'],
       userEnvironment: WTUserEnvironment.values.firstWhere(
-        (e) => e.name == map['user_environment'],
+        (e) => e.label == map['user_environment'],
         orElse: () => WTUserEnvironment.production,
       ),
       androidStore: WTAndroidStore.fromString(map['android_store_name']),
@@ -155,7 +155,7 @@ class WTInitialConfig {
   Map<String, dynamic> toMap() {
     return {
       'app_token': appToken,
-      'user_environment': userEnvironment.name,
+      'user_environment': userEnvironment.label,
       'android_store_name': androidStore.name,
       'ios_store_name': iOSStore.name,
       'tracking_waiting_time': trackingWattingTime,

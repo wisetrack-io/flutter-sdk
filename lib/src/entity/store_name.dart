@@ -46,11 +46,11 @@ class WTAndroidStore {
   }
 
   static List<WTAndroidStore> get values => [
-    playstore,
-    cafebazaar,
-    myket,
-    other,
-  ];
+        playstore,
+        cafebazaar,
+        myket,
+        other,
+      ];
 
   @override
   bool operator ==(Object other) {
@@ -127,14 +127,14 @@ class WTIOSStore {
   }
 
   static List<WTIOSStore> get values => [
-    appstore,
-    sibapp,
-    sibche,
-    anardoni,
-    sibirani,
-    sibjo,
-    other,
-  ];
+        appstore,
+        sibapp,
+        sibche,
+        anardoni,
+        sibirani,
+        sibjo,
+        other,
+      ];
 
   @override
   bool operator ==(Object other) {

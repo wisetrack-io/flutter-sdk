@@ -8,8 +8,8 @@ class LogsView extends StatelessWidget {
   const LogsView({
     required this.logs,
     required this.logStreamController,
-    super.key,
-  });
+    Key? key,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -48,8 +48,8 @@ class LogsView extends StatelessWidget {
                           style: const TextStyle(fontSize: 14),
                         );
                       },
-                      separatorBuilder:
-                          (_, __) => Divider(color: Colors.grey.shade300),
+                      separatorBuilder: (_, __) =>
+                          Divider(color: Colors.grey.shade300),
                     );
                   },
                 ),

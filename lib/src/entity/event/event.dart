@@ -31,11 +31,11 @@ class WTEvent {
     this.revenueAmount,
     this.revenueCurrency,
   }) : assert(
-         type == WTEventType.revenueEvent
-             ? (revenueAmount != null && revenueCurrency != null)
-             : true,
-         'For revenue events, both revenueAmount and revenueCurrency must be provided.',
-       );
+          type == WTEventType.revenueEvent
+              ? (revenueAmount != null && revenueCurrency != null)
+              : true,
+          'For revenue events, both revenueAmount and revenueCurrency must be provided.',
+        );
 
   /// The type of the event, indicating whether it is a default or revenue event.
   final WTEventType type;
@@ -112,10 +112,10 @@ class WTEvent {
   }
 
   Map<String, dynamic> toMap() => {
-    'type': type.name,
-    'name': name,
-    'params': params?.map((key, value) => MapEntry(key, value.value)),
-    'revenue': revenueAmount,
-    'currency': revenueCurrency?.name,
-  };
+        'type': type.label,
+        'name': name,
+        'params': params?.map((key, value) => MapEntry(key, value.value)),
+        'revenue': revenueAmount,
+        'currency': revenueCurrency?.label,
+      };
 }

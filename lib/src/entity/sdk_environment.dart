@@ -6,3 +6,12 @@ enum WTSDKEnvironment {
   stage, // Staging environment (default)
   production, // Production environment
 }
+
+extension WTSDKEnvironmentLabel on WTSDKEnvironment {
+  /// Returns the string representation of the SDK environment.
+  String get label => {
+        WTSDKEnvironment.debug: 'debug',
+        WTSDKEnvironment.stage: 'stage',
+        WTSDKEnvironment.production: 'production',
+      }[this]!;
+}
