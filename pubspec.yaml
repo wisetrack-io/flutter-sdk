@@ -1,6 +1,6 @@
 name: wisetrack
 description: "WiseTrack provides advanced user tracking features for mobile apps."
-version: 2.0.4
+version: 2.0.5
 
 homepage: https://wisetrack.io
 repository: https://github.com/wisetrack-io/flutter-sdk/
@@ -8,7 +8,7 @@ issue_tracker: https://github.com/wisetrack-io/flutter-sdk/issues
 
 environment:
   sdk: ">=2.12.0 <4.0.0"
-  flutter: ">=2.2.0"
+  flutter: ">=2.0.0"
 
 dependencies:
   flutter:
@@ -16,7 +16,7 @@ dependencies:
   # flutter_web_plugins:
   #   sdk: flutter
   # web: ^1.1.1
-  plugin_platform_interface: ^2.1.8
+  plugin_platform_interface: ^2.1.3
 
 dev_dependencies:
   flutter_test:

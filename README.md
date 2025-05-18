@@ -2,7 +2,7 @@
 
 # WiseTrack Flutter Plugin
 
-The WiseTrack Flutter Plugin provides a cross-platform solution for tracking user interactions, events, and push notifications in your Flutter applications. This README guide covers the installation, setup, and usage of the plugin for both iOS and Android platforms, including examples for common use cases.
+The **WiseTrack** Flutter plugin offers a cross-platform solution to accelerate your app’s growth — helping you increase users, boost revenue, and reduce costs, all at once.
 
 ## Table of Contents
 - [Features](#features)
@@ -33,10 +33,12 @@ The WiseTrack Flutter Plugin provides a cross-platform solution for tracking use
 - Advertising ID retrieval (IDFA for iOS, Ad ID for Android)
 
 ## Requirements
-- Flutter 2.2.0 or later  
+- Flutter 2.0.0 or later  
 - Dart 2.12.0 or later
 - iOS 11.0 or later
+- Android embedding v2 enabled
 - Android API 21 (Lollipop) or later
+- Android Gradle Plugin >= 7.1.0 for full compatibility with Java 17.
 
 ## Installation
 To integrate the WiseTrack Flutter Plugin into your Flutter project, follow these steps:
