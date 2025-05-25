@@ -4,6 +4,18 @@
 ## 🎯 Version 2.x
 
 <details open>
+<summary><strong>2.0.6</strong> — <em>Maintenance & SDK Bumps</em></summary>
+
+- ‼️ **Breaking Changes**
+  - The field `trackingWattingTime` has been renamed to `trackingWaitingTime` to correct a typo.
+  - Important: Ensure that the value passed to `trackingWaitingTime` is in **seconds**. Using a different unit (e.g., milliseconds) may lead to unexpected results.
+
+- 📦 **Dependency Management**
+  - Bumped Android native sdk core to 2.0.10
+
+</details>
+
+<details>
 <summary><strong>2.0.5</strong> — <em>Maintenance & Compatibility</em></summary>
 
 - ✅ **Flutter/Dart SDK Updates**
@@ -11,7 +23,7 @@
   - Updated Dart SDK to support `2.12.0`.
 
 - 📦 **Dependency Management**
-  - Bumped related package dependencies for compatibility with null safety.
+  - Bumped related package dependencies for compatibility with Java 17.
 
 </details>
 
@@ -23,7 +35,7 @@
   - Updated Dart SDK constraint to `>=2.12.0 <4.0.0`.
 
 - 🚫 **Future-proofing**
-  - Ensured compatibility with null safety while preventing future breaking changes.
+  - Ensured compatibility with dart 2.12.0 and flutter 2 while preventing future breaking changes.
 
 </details>
 

@@ -269,14 +269,10 @@ print('Ad ID: ${adId ?? "در دسترس نیست"}');
 - `userEnvironment`: محیط (`.production`, `.sandbox`).
 - `androidStore`: فروشگاه برنامه اندروید (مانند `.googleplay`, `.cafebazaar`, `.myket`  `.other`).
 - `iOSStore`: فروشگاه برنامه iOS (مانند `.appstore`, `.sibche`, `.sibapp`, `.anardoni`, `.sibirani`, `.sibjo`, `.other`).
-- `trackingWattingTime`: تاخیر قبل از شروع ردیابی (به میلی‌ثانیه).
+- `trackingWaitingTime`: تاخیر قبل از شروع ردیابی (به ثانیه).
 - `startTrackerAutomatically`: آیا ردیابی به صورت خودکار شروع شود.
 - `customDeviceId`: یک شناسه دستگاه سفارشی.
 - `defaultTracker`: یک ردیاب پیش‌فرض برای تخصیص رویداد.
-- `appSecret`: یک کلید مخفی برای احراز هویت.
-- `secretId`: یک شناسه مخفی یکتا.
-- `attributionDeeplink`: فعال کردن تخصیص دیپ‌لینک.
-- `eventBuffering`: فعال کردن بافرینگ رویداد برای انتقال بهینه داده.
 - `logLevel`: تنظیم سطح لاگ اولیه.
 - `oaidEnabled`: نشان‌دهنده فعال بودن شناسه تبلیغاتی باز (OAID).
 - `referrerEnabled`: نشان‌دهنده فعال بودن شناسه ارجاع.
@@ -288,14 +284,10 @@ final config = WTInitialConfig(
   userEnvironment: WTUserEnvironment.sandbox,
   androidStore: WTAndroidStore.googlePlay,
   iOSStore: WTIOSStore.appStore,
-  trackingWattingTime: 5000,
+  trackingWaitingTime: 3,
   startTrackerAutomatically: true,
   customDeviceId: 'custom-device-123',
   defaultTracker: 'default-tracker',
-  appSecret: 'your-app-secret',
-  secretId: 'your-secret-id',
-  attributionDeeplink: true,
-  eventBuffering: true,
   logLevel: WTLogLevel.debug,
   oaidEnabled: false,
   referrerEnabled: true,

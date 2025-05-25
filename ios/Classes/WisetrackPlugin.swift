@@ -102,7 +102,7 @@ public class WisetrackPlugin: NSObject, FlutterPlugin {
 extension WisetrackPlugin {
     
     private func initSDK(args: [String: Any]) {
-        // ResourceWrapper.setSdkHash(hash: "0ccb949a814d5045d33322e81e176066141fa7d4735c03c7fc69fec1d56373ee")
+        ResourceWrapper.setSdkHash(hash: "22f7117372028b36e658c96515399afaa7107f76")
         ResourceWrapper.setSdkEnvironment(env: args["sdk_env"] as! String)
         ResourceWrapper.setSdkFramework(framework: "flutter")
         ResourceWrapper.setSdkVersion(version: args["sdk_version"] as! String)
@@ -112,7 +112,7 @@ extension WisetrackPlugin {
             storeName: WTStoreName(rawValue: args["ios_store_name"] as! String),
             environment: WTUserEnvironment(rawValue: args["user_environment"] as! String) ?? .production,
             logLevel: WTLogLevel(rawValue: args["log_level"] as! Int),
-            trackingWattingTime: args["tracking_waiting_time"] as! Int,
+            trackingWaitingTime: args["tracking_waiting_time"] as! Int,
             startTrackerAutomatically: args["start_tracker_automatically"] as! Bool,
             customDeviceId: args["custom_device_id"] as? String,
             defaultTracker: args["default_tracker"] as? String,

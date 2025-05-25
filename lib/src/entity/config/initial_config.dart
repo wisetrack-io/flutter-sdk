@@ -17,7 +17,7 @@ import '../store_name.dart';
 ///   userEnvironment: WTUserEnvironment.production,
 ///   androidStoreName: WTAndroidStoreName.googlePlay,
 ///   iOSStoreName: WTIOSStoreName.appStore,
-///   trackingWattingTime: 5000,
+///   trackingWaitingTime: 3,
 ///   startTrackerAutomatically: true,
 /// );
 /// ```
@@ -28,14 +28,19 @@ class WTInitialConfig {
   /// - [userEnvironment] defines the deployment environment (default: `production`).
   /// - [androidStore] specifies the app store for Android (default: `other`).
   /// - [iOSStore] specifies the app store for iOS (default: `other`).
-  /// - [trackingWattingTime] sets a delay before tracking starts (default: `0` milliseconds).
+  /// - [trackingWaitingTime] sets a delay before tracking starts (default: `0` seconds).
   /// - [startTrackerAutomatically] determines if tracking starts automatically (default: `true`).
+  /// - [customDeviceId] allows specifying a custom device identifier (optional).
+  /// - [defaultTracker] sets the default tracker identifier for event attribution (optional).
+  /// - [logLevel] sets the log level for SDK logging (default: `debug`).
+  /// - [oaidEnabled] enables or disables Open Advertising ID support (default: `false`).
+  /// - [referrerEnabled] enables or disables Referrer ID support (default: `true`).
   WTInitialConfig({
     required this.appToken,
     this.userEnvironment = WTUserEnvironment.sandbox,
     this.androidStore = WTAndroidStore.other,
     this.iOSStore = WTIOSStore.other,
-    this.trackingWattingTime = 0,
+    this.trackingWaitingTime = 0,
     this.startTrackerAutomatically = true,
     this.customDeviceId,
     this.defaultTracker,
@@ -74,7 +79,7 @@ class WTInitialConfig {
   /// The delay time (in seconds) before tracking starts.
   ///
   /// Defaults to `0`, meaning tracking starts immediately unless configured otherwise.
-  final int trackingWattingTime;
+  final int trackingWaitingTime;
 
   /// Determines whether tracking starts automatically upon initialization.
   ///
@@ -131,7 +136,7 @@ class WTInitialConfig {
       ),
       androidStore: WTAndroidStore.fromString(map['android_store_name']),
       iOSStore: WTIOSStore.fromString(map['ios_store_name']),
-      trackingWattingTime: map['tracking_waiting_time'] as int? ?? 0,
+      trackingWaitingTime: map['tracking_waiting_time'] as int? ?? 0,
       startTrackerAutomatically:
           map['start_tracker_automatically'] as bool? ?? false,
       customDeviceId: map['custom_device_id'],
@@ -158,7 +163,7 @@ class WTInitialConfig {
       'user_environment': userEnvironment.label,
       'android_store_name': androidStore.name,
       'ios_store_name': iOSStore.name,
-      'tracking_waiting_time': trackingWattingTime,
+      'tracking_waiting_time': trackingWaitingTime,
       'start_tracker_automatically': startTrackerAutomatically,
       'custom_device_id': customDeviceId,
       'default_tracker': defaultTracker,

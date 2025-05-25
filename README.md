@@ -278,14 +278,10 @@ You can customize the SDK behavior through the `WTInitialConfig` parameters:
 - `userEnvironment`: The environment (`.production`, `.sandbox`).
 - `androidStore`: The Android app store (e.g., `.googleplay`, `.cafebazaar`, `.other`, ...).
 - `iOSStore`: The iOS app store (e.g., `.appstore`, `.sibche`, `.other`, ..).
-- `trackingWattingTime`: Delay before starting tracking (in milliseconds).
+- `trackingWaitingTime`: Delay before starting tracking (in seconds).
 - `startTrackerAutomatically`: Whether to start tracking automatically.
 - `customDeviceId`: A custom device identifier.
 - `defaultTracker`: A default tracker for event attribution.
-- `appSecret`: A secret key for authentication.
-- `secretId`: A unique secret identifier.
-- `attributionDeeplink`: Enable deep link attribution.
-- `eventBuffering`: Enable event buffering for optimized data transmission.
 - `logLevel`: Set the initial log level.
 - `oaidEnabled`: Indicates whether the Open Advertising ID (OAID) is enabled.
 - `referrerEnabled`: Indicates whether the Referrer ID is enabled.
@@ -297,14 +293,10 @@ final config = WTInitialConfig(
   userEnvironment: WTUserEnvironment.sandbox,
   androidStore: WTAndroidStore.googlePlay,
   iOSStore: WTIOSStore.appStore,
-  trackingWattingTime: 5000,
+  trackingWaitingTime: 5,
   startTrackerAutomatically: true,
   customDeviceId: 'custom-device-123',
   defaultTracker: 'default-tracker',
-  appSecret: 'your-app-secret',
-  secretId: 'your-secret-id',
-  attributionDeeplink: true,
-  eventBuffering: true,
   logLevel: WTLogLevel.debug,
   oaidEnabled: false,
   referrerEnabled: true,

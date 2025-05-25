@@ -41,15 +41,11 @@ void main() {
         androidStore: WTAndroidStore.playstore,
         iOSStore: WTIOSStore.appstore,
         startTrackerAutomatically: true,
-        trackingWattingTime: 10,
+        trackingWaitingTime: 10,
         userEnvironment: WTUserEnvironment.sandbox,
-        appSecret: 'secret',
-        attributionDeeplink: true,
         customDeviceId: 'custom_id',
         defaultTracker: 'tracker-1',
-        eventBuffering: true,
         logLevel: WTLogLevel.info,
-        secretId: 'secret_id',
       );
 
       when(
@@ -66,7 +62,7 @@ void main() {
           'user_environment': initConfig.userEnvironment.label,
           'android_store_name': initConfig.androidStore.name,
           'ios_store_name': initConfig.iOSStore.name,
-          'tracking_waiting_time': initConfig.trackingWattingTime,
+          'tracking_waiting_time': initConfig.trackingWaitingTime,
           'start_tracker_automatically': initConfig.startTrackerAutomatically,
           'custom_device_id': initConfig.customDeviceId,
           'default_tracker': initConfig.defaultTracker,
@@ -87,7 +83,7 @@ void main() {
         androidStore: WTAndroidStore.playstore,
         iOSStore: WTIOSStore.appstore,
         startTrackerAutomatically: true,
-        trackingWattingTime: 10,
+        trackingWaitingTime: 10,
         userEnvironment: WTUserEnvironment.sandbox,
       );
       when(

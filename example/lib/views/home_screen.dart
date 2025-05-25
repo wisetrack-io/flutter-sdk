@@ -33,7 +33,7 @@ class _HomeScreenState extends State<HomeScreen> {
   WTIOSStore iosStore = WTIOSStore.appstore;
   WTIOSStore? iosCustomStore;
   bool autoStartTracker = true;
-  int trackingWattingTime = 0;
+  int trackingWaitingTime = 0;
   bool initialLoading = false;
   bool isInitialized = false;
   bool isStarted = false;
@@ -186,8 +186,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 CustomInputField(
                   title: '⏳ Tracking Watting Time',
                   onChanged: (str) =>
-                      trackingWattingTime = int.tryParse(str) ?? 5,
-                  initialValue: trackingWattingTime.toString(),
+                      trackingWaitingTime = int.tryParse(str) ?? 5,
+                  initialValue: trackingWaitingTime.toString(),
                   hint: 'Enter App token',
                   inputType: TextInputType.number,
                 ),
@@ -303,7 +303,7 @@ class _HomeScreenState extends State<HomeScreen> {
               iOSStore: iosCustomStore ?? iosStore,
               androidStore: androidCustomStore ?? androidStore,
               startTrackerAutomatically: autoStartTracker,
-              trackingWattingTime: trackingWattingTime,
+              trackingWaitingTime: trackingWaitingTime,
               logLevel: logLevel,
             ),
           );

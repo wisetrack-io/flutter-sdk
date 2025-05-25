@@ -1,6 +1,7 @@
 package io.wisetrack.wisetrack
 
 import android.content.Context
+import android.webkit.WebView
 import io.wisetrack.sdk.core.WiseTrack
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin
@@ -17,6 +18,7 @@ import io.wisetrack.sdk.core.core.WTUserEnvironment
 import io.wisetrack.sdk.core.models.WTInitialConfig
 import io.wisetrack.sdk.core.utils.wrapper.ResourceWrapper
 import io.wisetrack.sdk.core.models.WTLogLevel
+import io.wisetrack.sdk.webbridge.WiseTrackBridge
 
 
 /** WisetrackPlugin */
@@ -131,7 +133,7 @@ class WisetrackPlugin : FlutterPlugin, MethodCallHandler {
     private fun initSDK(call: MethodCall) {
 
         ResourceWrapper.setFramework("flutter")
-//        ResourceWrapper.setHash("0ccb949a814d5045d33322e81e176066141fa7d4735c03c7fc69fec1d56373ee")
+        ResourceWrapper.setSdkHash("a90fcb36e71cecea76becc20c625e06fc30dfa00")
         ResourceWrapper.setEnvironment(call.argument<String>("sdk_env")!!)
         ResourceWrapper.setVersion(call.argument<String>("sdk_version")!!)
 
@@ -155,6 +157,7 @@ class WisetrackPlugin : FlutterPlugin, MethodCallHandler {
         )
 
         wiseTrack.initialize(initialConfig)
+        WiseTrackBridge.getInstance(context, WebView())
     }
 
     private fun enableTestMode() {
