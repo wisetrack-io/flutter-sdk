@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8"/>
+        <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+        <title>WiseTrack JS SDK Tester</title>
+        <style>
+            body { font-family: sans-serif; padding: 20px; }
+            button { margin: 5px 0; padding: 8px 16px; }
+            pre { background: #f1f1f1; padding: 10px; border-radius: 6px; }
+        </style>
+        <script>
+            var WiseTrack = (function () {
+    const _bridgeName = "FlutterWiseTrackBridge";
+    const _callbacks = {};
+
+    function getCallbackId() {
+        return `cb_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+    }
+
+    function isAndroidBridgeAvailable() {
+        return typeof WiseTrackBridge !== "undefined" && WiseTrackBridge !== null;
+    }
+
+    function isIOSBridgeAvailable() {
+        return typeof window.webkit !== "undefined" &&
+            typeof window.webkit.messageHandlers !== "undefined";
+    }
+
+    function callBridge(method, args = {}) {
+        const message = { method, args };
+
+        if (isAndroidBridgeAvailable() && typeof WiseTrackBridge[method] === "function") {
+            if (args && Object.keys(args).length > 0) {
+                WiseTrackBridge[method](JSON.stringify(args));
+            } else {
+                WiseTrackBridge[method]();
+            }
+        }
+        else if (isIOSBridgeAvailable() && window.webkit.messageHandlers[method]) {
+            window.webkit.messageHandlers[method].postMessage(args);
+        }
+        else if (typeof window.flutter_inappwebview !== 'undefined') {
+            window.flutter_inappwebview.callHandler("FlutterWiseTrackBridge", JSON.stringify(message));
+        }
+        else if (typeof window.FlutterWiseTrackBridge !== 'undefined' &&
+                 typeof window.FlutterWiseTrackBridge.postMessage === 'function') {
+            window.FlutterWiseTrackBridge.postMessage(JSON.stringify(message));
+        }
+        else {
+            console.error("[WiseTrack]: No bridge available");
+        }
+    }
+
+    return {
+        initialize(config) {
+            if (!(config instanceof WTInitConfig)) {
+                console.error('[WiseTrack]: Config must be an instance of WTInitConfig');
+                return;
+            }
+            callBridge("initialize", config.toJSON());
+        },
+
+        clearDataAndStop() {
+            callBridge("clearDataAndStop");
+        },
+
+        setLogLevel(level) {
+            callBridge("setLogLevel", { level });
+        },
+
+        setEnabled(enabled) {
+            callBridge("setEnabled", { enabled });
+        },
+
+        startTracking() {
+            callBridge("startTracking");
+        },
+
+        stopTracking() {
+            callBridge("stopTracking");
+        },
+
+        destroy() {
+            callBridge("destroy");
+        },
+
+        setPackagesInfo() {
+            callBridge("setPackagesInfo");
+        },
+
+        setFCMToken(token) {
+            callBridge("setFCMToken", { token });
+        },
+
+        setAPNSToken(token) {
+            callBridge("setAPNSToken", { token });
+        },
+
+        logEvent(event) {
+            if (!(event instanceof WTEvent)) {
+                console.warn('[WiseTrack]: Event must be an instance of WTEvent');
+                return;
+            }
+            callBridge("logEvent", event.toJSON());
+        },
+
+        isEnabled() {
+            const callbackId = getCallbackId();
+            return new Promise((resolve) => {
+                _callbacks[callbackId] = resolve;
+                callBridge("isEnabled", { callbackId });
+            });
+        },
+
+        requestForATT() {
+            const callbackId = getCallbackId();
+            return new Promise((resolve) => {
+                _callbacks[callbackId] = resolve;
+                callBridge("requestForATT", { callbackId });
+            });
+        },
+
+        getIDFA() {
+            const callbackId = getCallbackId();
+            return new Promise((resolve) => {
+                _callbacks[callbackId] = resolve;
+                callBridge("getIDFA", { callbackId });
+            });
+        },
+
+        getADID() {
+            const callbackId = getCallbackId();
+            return new Promise((resolve) => {
+                _callbacks[callbackId] = resolve;
+                callBridge("getADID", { callbackId });
+            });
+        },
+
+        getReferrer() {
+            const callbackId = getCallbackId();
+            return new Promise((resolve) => {
+                _callbacks[callbackId] = resolve;
+                callBridge("getReferrer", { callbackId });
+            });
+        },
+
+        onNativeResponse(response) {
+            console.log("[WiseTrack] Native response:", response);
+            if (!response || !response.callbackId) return;
+            const cb = _callbacks[response.callbackId];
+            if (cb) {
+                cb(response.data);
+                delete _callbacks[response.callbackId];
+            }
+        }
+    };
+})();
+
+        </script>
+        <script>
+            
+// Enums
+const WTUserEnvironment = Object.freeze({
+  SANDBOX: 'SANDBOX',
+  PRODUCTION: 'PRODUCTION'
+});
+
+const WTLogLevel = Object.freeze({
+  DEBUG: 'DEBUG',
+  INFO: 'INFO',
+  WARNING: 'WARNING',
+  ERROR: 'ERROR'
+});
+
+// Android StoreName Enum
+const WTAndroidStoreName = {
+  PLAYSTORE: Object.freeze({ value: 'playstore' }),
+  CAFEBAZAAR: Object.freeze({ value: 'cafebazaar' }),
+  MYKET: Object.freeze({ value: 'myket' }),
+  OTHER: Object.freeze({ value: 'other' }),
+
+  Custom(name) {
+    if (typeof name !== 'string' || !name.trim()) {
+      throw new Error('[WiseTrack]: Custom store name must be a non-empty string');
+    }
+    return Object.freeze({ value: name.trim() });
+  },
+
+  fromString(value) {
+    if (typeof value !== 'string') value = String(value);
+
+    switch (value.toLowerCase()) {
+      case 'playstore': return this.PLAYSTORE;
+      case 'cafebazaar': return this.CAFEBAZAAR;
+      case 'myket': return this.MYKET;
+      case 'other': return this.OTHER;
+      default: return this.Custom(value);
+    }
+  }
+};
+
+// iOS StoreName Enum
+const WTIOSStoreName = {
+  APPSTORE: Object.freeze({ value: 'appstore' }),
+  SIBCHE: Object.freeze({ value: 'sibche' }),
+  SIBAPP: Object.freeze({ value: 'sibapp' }),
+  ANARDONI: Object.freeze({ value: 'anardoni' }),
+  SIBIRANI: Object.freeze({ value: 'sibirani' }),
+  SIBJO: Object.freeze({ value: 'sibjo' }),
+  OTHER: Object.freeze({ value: 'other' }),
+
+  Custom(name) {
+    if (typeof name !== 'string' || !name.trim()) {
+      throw new Error('[WiseTrack]: Custom store name must be a non-empty string');
+    }
+    return Object.freeze({ value: name.trim() });
+  },
+
+  fromString(value) {
+    if (typeof value !== 'string') value = String(value);
+
+    switch (value.toLowerCase()) {
+      case 'appstore': return this.APPSTORE;
+      case 'sibche': return this.SIBCHE;
+      case 'sibapp': return this.SIBAPP;
+      case 'anardoni': return this.ANARDONI;
+      case 'sibirani': return this.SIBIRANI;
+      case 'sibjo': return this.SIBJO;
+      case 'other': return this.OTHER;
+      default: return this.Custom(value);
+    }
+  }
+};
+
+// Config Class
+class WTInitConfig {
+  constructor(appToken) {
+    if (typeof appToken !== 'string' || !appToken.trim()) {
+      throw new Error('[WiseTrack]: appToken must be a non-empty string');
+    }
+
+    this.appToken = appToken;
+    this.androidStoreName = WTAndroidStoreName.OTHER;
+    this.iOSStoreName = WTIOSStoreName.OTHER;
+    this.userEnvironment = WTUserEnvironment.PRODUCTION;
+    this.trackingWaitingTime = 0;
+    this.startTrackerAutomatically = true;
+    this.customDeviceId = null;
+    this.defaultTracker = null;
+    this.appSecret = null;
+    this.secretId = null;
+    this.attributionDeeplink = null;
+    this.eventBuffering = null;
+    this.logLevel = WTLogLevel.WARNING;
+    this.oaidEnabled = false;
+    this.referrerEnabled = true;
+  }
+
+  setUserEnvironment(environment) {
+    if (Object.values(WTUserEnvironment).includes(environment)) {
+      this.userEnvironment = environment;
+    }
+    return this;
+  }
+
+  setAndroidStoreName(store) {
+    if (Object.values(WTAndroidStoreName).includes(storeName)) {
+      this.androidStoreName = store;
+    } else {
+      this.androidStoreName = WTAndroidStoreName.Custom(store)
+    }
+    return this;
+  }
+
+  setIOSStoreName(store) {
+    if (Object.values(WTIOSStoreName).includes(storeName)) {
+      this.iOSStoreName = store;
+    } else {
+      this.iOSStoreName = WTIOSStoreName.Custom(store)
+    }
+    return this;
+  }
+
+  setLogLevel(level) {
+    if (Object.values(WTLogLevel).includes(level)) {
+      this.logLevel = level;
+    }
+    return this;
+  }
+
+  setTrackingWaitingTime(time) {
+    if (typeof time === 'number' && time >= 0) {
+      this.trackingWaitingTime = time;
+    }
+    return this;
+  }
+
+  setStartTrackerAutomatically(flag) {
+    if (typeof flag === 'boolean') {
+      this.startTrackerAutomatically = flag;
+    }
+    return this;
+  }
+
+  setOaidEnabled(flag) {
+    if (typeof flag === 'boolean') {
+      this.oaidEnabled = flag;
+    }
+    return this;
+  }
+
+  setCustomDeviceId(deviceId) {
+    if (typeof deviceId === 'string' || deviceId === null) {
+      this.customDeviceId = deviceId;
+    }
+    return this;
+  }
+
+  setDefaultTracker(tracker) {
+    if (typeof tracker === 'string' || tracker === null) {
+      this.defaultTracker = tracker;
+    }
+    return this;
+  }
+
+  setAppSecret(secret) {
+    if (typeof secret === 'string' || secret === null) {
+      this.appSecret = secret;
+    }
+    return this;
+  }
+
+  setSecretId(secretId) {
+    if (typeof secretId === 'string' || secretId === null) {
+      this.secretId = secretId;
+    }
+    return this;
+  }
+
+  setAttributionDeeplink(enabled) {
+    if (typeof enabled === 'boolean' || enabled === null) {
+      this.attributionDeeplink = enabled;
+    }
+    return this;
+  }
+
+  setEventBuffering(enabled) {
+    if (typeof enabled === 'boolean' || enabled === null) {
+      this.eventBuffering = enabled;
+    }
+    return this;
+  }
+
+  setReferrerEnabled(enabled) {
+    if (typeof enabled === 'boolean') {
+      this.referrerEnabled = enabled;
+    }
+    return this;
+  }
+
+  toJSON() {
+    return {
+      app_token: this.appToken,
+      user_environment: this.userEnvironment,
+      android_store_name: this.androidStoreName.value,
+      ios_store_name: this.iOSStoreName.value,
+      tracking_waiting_time: this.trackingWaitingTime,
+      start_tracker_automatically: this.startTrackerAutomatically,
+      oaid_enabled: this.oaidEnabled,
+      custom_device_id: this.customDeviceId,
+      default_tracker: this.defaultTracker,
+      app_secret: this.appSecret,
+      secret_id: this.secretId,
+      attribution_deeplink: this.attributionDeeplink,
+      event_buffering_enabled: this.eventBuffering,
+      log_level: this.logLevel,
+      referrer_enabled: this.referrerEnabled
+    };
+  }
+}
+        </script>
+        <script>
+            const WTEventType = Object.freeze({
+    DEFAULT: 'DEFAULT',
+    REVENUE: 'REVENUE'
+});
+
+const RevenueCurrency = Object.freeze({
+    USD: 'USD',
+    EUR: 'EUR',
+    JPY: 'JPY',
+    GBP: 'GBP',
+    AUD: 'AUD',
+    CAD: 'CAD',
+    CHF: 'CHF',
+    CNY: 'CNY',
+    SEK: 'SEK',
+    NZD: 'NZD',
+    MXN: 'MXN',
+    SGD: 'SGD',
+    HKD: 'HKD',
+    NOK: 'NOK',
+    KRW: 'KRW',
+    TRY: 'TRY',
+    RUB: 'RUB',
+    INR: 'INR',
+    BRL: 'BRL',
+    ZAR: 'ZAR',
+    IRR: 'IRR',
+    AED: 'AED',
+    IQD: 'IQD',
+    SAR: 'SAR',
+    OMR: 'OMR',
+    BTC: 'BTC',
+    EHT: 'EHT',
+    LTC: 'LTC'
+});
+
+class WTEvent {
+    constructor(name, type) {
+        if (typeof name !== 'string' || name.trim() === '') {
+            throw new Error('[WiseTrack]: Event name must be a non-empty string');
+        }
+        if (!Object.values(WTEventType).includes(type)) {
+            throw new Error('[WiseTrack]: Invalid event type');
+        }
+
+        this.name = name;
+        this.type = type;
+        this.params = {};
+        this.revenue = null;
+        this.currency = null;
+    }
+
+    setRevenue(amount, currency) {
+        if (this.type !== WTEventType.REVENUE) {
+            throw new Error('[WiseTrack]: Revenue can only be set for REVENUE events');
+        }
+        if (typeof amount !== 'number' || amount < 0) {
+            throw new Error('[WiseTrack]: Revenue amount must be a non-negative number');
+        }
+        if (!Object.values(RevenueCurrency).includes(currency)) {
+            throw new Error('[WiseTrack]: Invalid currency');
+        }
+        this.revenue = amount;
+        this.currency = currency;
+        return this;
+    }
+
+    addParam(key, value) {
+        if (typeof key !== 'string' || key.trim() === '') {
+            throw new Error('[WiseTrack]: Parameter key must be a non-empty string');
+        }
+        if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+            this.params[key] = value;
+        } else {
+            throw new Error('[WiseTrack]: Parameter value must be a string, number, or boolean');
+        }
+        return this;
+    }
+
+    toJSON() {
+        return {
+            type: this.type,
+            name: this.name,
+            revenue: this.revenue,
+            currency: this.currency,
+            params: this.params
+        };
+    }
+
+    static defaultEvent(name) {
+        return new WTEvent(name, WTEventType.DEFAULT);
+    }
+
+    static revenueEvent(name, amount, currency) {
+        var event = new WTEvent(name, WTEventType.REVENUE);
+        event.setRevenue(amount, currency);
+        return event;
+    }
+}
+        </script>
+    </head>
+
+    <body>
+
+        <h1>WiseTrack JS SDK Test</h1>
+
+        <button onclick="init()">Initialize</button>
+        <br>
+        <button onclick="setLogLevel('DEBUG')">Set DEBUG LogLevel</button>
+        <br>
+        <button onclick="setLogLevel('WARNING')">Set WARNING LogLevel</button>
+        <br>
+        <button onclick="logDefaultEvent()">Log Default Event</button>
+        <br>
+        <button onclick="logRevenueEvent()">Log Revenue Event</button>
+        <br>
+        <button onclick="setEnabled(true)">Enable SDK</button>
+        <br>
+        <button onclick="setEnabled(false)">Disable SDK</button>
+        <br>
+        <button onclick="requestForATT()">Request For ATT</button>
+        <br>
+        <button onclick="getADID()">Get ADID</button>
+        <br>
+        <button onclick="getIDFA()">Get IDFA</button>
+        <br>
+        <button onclick="getReferrer()">Get Referrer</button>
+        <br>
+        <button onclick="startTracking()">Start Tracking</button>
+        <br>
+        <button onclick="stopTracking()">Stop Tracking</button>
+        <br>
+        <button onclick="clearDataAndStop()">Clear Data and Stop</button>
+        <br>
+        <button onclick="destroy()">Destroy</button>
+        <br>
+        <button onclick="setPackagesInfo()">Set Packages Info</button>
+        <br>
+        <button onclick="setFCMToken()">Set FCM Token</button>
+        <br>
+        <button onclick="setAPNSToken()">Set APNS Token</button>
+        <br>
+        <button onclick="isEnabled()">Is Enabled</button>
+        <br>
+
+        <h3>Logs</h3>
+        <pre id="logs"></pre>
+
+        <!-- Include your JS SDK -->
+        <script src="wisetrack.js"></script>
+        <script src="wt_config.js"></script>
+        <script src="wt_event.js"></script>
+
+        <script>
+            const logs = document.getElementById('logs');
+            function log(msg) {
+                console.log(msg);
+                logs.textContent += msg + '\n';
+            }
+
+            function init() {
+                try {
+                    const config = new WTInitConfig("rMN5ZCwpOzY7");
+                    config.setUserEnvironment("production");
+                    config.setLogLevel("DEBUG");
+                    WiseTrack.initialize(config);
+                    log('Initialized');
+                } catch (e) {
+                    console.log('[WiseTrack]: initialize failed:', e.message);
+                }
+            }
+
+            function setLogLevel(level){
+               try {
+                    WiseTrack.setLogLevel(level);
+                    log('Log level set to ${level}');
+                } catch (e) {
+                    console.log('[WiseTrack]: set log level failed:', e.message);
+                }
+            }
+
+            function logDefaultEvent() {
+                const event = WTEvent.defaultEvent("default_event");
+                event.addParam("param-1", "home");
+                event.addParam("param-2", 2.3);
+                event.addParam("param-3", true);
+                WiseTrack.logEvent(event);
+                log('Default event logged');
+            }
+
+            function logRevenueEvent() {
+                const event = WTEvent.revenueEvent("revenue_event", 12.5, RevenueCurrency.USD);
+                event.addParam("param-1", "home");
+                event.addParam("param-2", 1.3);
+                event.addParam("param-3", true);
+                WiseTrack.logEvent(event);
+                log('Revenue event logged');
+            }
+
+            function setEnabled(value) {
+                WiseTrack.setEnabled(value);
+                log('Set Enabled: ' + value);
+            }
+
+            function requestForATT() {
+                WiseTrack.requestForATT().then((isAuthorized) => {
+                    log('Is Authorized: ' + isAuthorized);
+                });
+            }
+
+            function getADID() {
+                WiseTrack.getADID().then((adid) => {
+                    log('ADID: ' + adid);
+                });
+            }
+
+            function getIDFA() {
+                WiseTrack.getIDFA().then((idfa) => {
+                    log('IDFA: ' + idfa);
+                });
+            }
+
+            function getReferrer() {
+                WiseTrack.getReferrer().then((referrer) => {
+                    log('Referrer: ' + referrer);
+                });
+            }
+
+            function startTracking() {
+                WiseTrack.startTracking();
+                log('Tracking started');
+            }
+
+            function stopTracking() {
+                WiseTrack.stopTracking();
+                log('Tracking stopped');
+            }
+
+            function clearDataAndStop() {
+                WiseTrack.clearDataAndStop();
+                log('Cleared data and stopped');
+            }
+
+            function destroy() {
+                WiseTrack.destroy();
+                log('Destroyed instance');
+            }
+
+            function setPackagesInfo() {
+                WiseTrack.setPackagesInfo();
+                log('Packages Info set')
+            }
+
+            function setFCMToken() {
+                WiseTrack.setFCMToken("SAMPLE_FCM_TOKEN_ABC123");
+                log('FCM token set');
+            }
+
+            function setAPNSToken() {
+                WiseTrack.setAPNSToken("SAMPLE_APNS_TOKEN_ABC123");
+                log('APNS token set');
+            }
+
+            function isEnabled() {
+                WiseTrack.isEnabled().then((enabled) => {
+                    log('Is Enabled: ' + enabled);
+                });
+            }
+        </script>
+
+    </body>
+
+</html>

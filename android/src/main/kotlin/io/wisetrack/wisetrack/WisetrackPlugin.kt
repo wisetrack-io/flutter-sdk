@@ -1,7 +1,6 @@
 package io.wisetrack.wisetrack
 
 import android.content.Context
-import android.webkit.WebView
 import io.wisetrack.sdk.core.WiseTrack
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin
@@ -18,7 +17,6 @@ import io.wisetrack.sdk.core.core.WTUserEnvironment
 import io.wisetrack.sdk.core.models.WTInitialConfig
 import io.wisetrack.sdk.core.utils.wrapper.ResourceWrapper
 import io.wisetrack.sdk.core.models.WTLogLevel
-import io.wisetrack.sdk.webbridge.WiseTrackBridge
 
 
 /** WisetrackPlugin */
@@ -124,6 +122,11 @@ class WisetrackPlugin : FlutterPlugin, MethodCallHandler {
                 result.success(null)
             }
 
+            MethodNames.GET_REFERRER -> {
+                val referrer = getReferrer()
+                result.success(referrer)
+            }
+
             else -> {
                 result.notImplemented()
             }
@@ -157,7 +160,6 @@ class WisetrackPlugin : FlutterPlugin, MethodCallHandler {
         )
 
         wiseTrack.initialize(initialConfig)
-        WiseTrackBridge.getInstance(context, WebView())
     }
 
     private fun enableTestMode() {
@@ -229,26 +231,11 @@ class WisetrackPlugin : FlutterPlugin, MethodCallHandler {
         return wiseTrack.getADID()
     }
 
-
-//    // ** Activity Lifecycle Methods **
-//    override fun onAttachedToActivity(binding: ActivityPluginBinding) {
-//        activity = binding.activity
-//    }
-//
-//    override fun onDetachedFromActivityForConfigChanges() {
-//        activity = null
-//    }
-//
-//    override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
-//        activity = binding.activity
-//    }
-//
-//    override fun onDetachedFromActivity() {
-//        activity = null
-//    }
+    private fun getReferrer(): String? {
+        return wiseTrack.getReferrer()
+    }
 
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
-//        application?.unregisterActivityLifecycleCallbacks(lifecycleHandler)
         channel.setMethodCallHandler(null)
     }
 }

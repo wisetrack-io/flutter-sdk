@@ -12,6 +12,8 @@ import '../widgets/button.dart';
 import '../widgets/dropdown.dart';
 import '../widgets/inputfield.dart';
 import '../widgets/toggle_switch.dart';
+import 'flutter_webview_screen.dart';
+import 'inapp_webview_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final VoidCallback? onToggleTheme;
@@ -28,9 +30,9 @@ class _HomeScreenState extends State<HomeScreen> {
   String appToken = 'rMN5ZCwpOzY7';
   final List<String> logs = [];
   final _logStreamController = StreamController<List<String>>.broadcast();
-  WTAndroidStore androidStore = WTAndroidStore.playstore;
+  WTAndroidStore androidStore = WTAndroidStore.other;
   WTAndroidStore? androidCustomStore;
-  WTIOSStore iosStore = WTIOSStore.appstore;
+  WTIOSStore iosStore = WTIOSStore.other;
   WTIOSStore? iosCustomStore;
   bool autoStartTracker = true;
   int trackingWaitingTime = 0;
@@ -191,23 +193,24 @@ class _HomeScreenState extends State<HomeScreen> {
                   hint: 'Enter App token',
                   inputType: TextInputType.number,
                 ),
-              OutlineButton(
-                title: attAuthorized
-                    ? 'ATT Authorized'
-                    : '🎯 Request for iOS IDFA (ATT)',
-                isLoading: attRequestLoading,
-                onPressed: attAuthorized
-                    ? null
-                    : () async {
-                        setState(() => attRequestLoading = true);
-                        final isAuthorized =
-                            await WiseTrack.instance.iOSRequestForATT();
-                        setState(() {
-                          attRequestLoading = false;
-                          attAuthorized = isAuthorized;
-                        });
-                      },
-              ),
+              if (Platform.isIOS)
+                OutlineButton(
+                  title: attAuthorized
+                      ? 'ATT Authorized'
+                      : '🎯 Request for iOS IDFA (ATT)',
+                  isLoading: attRequestLoading,
+                  onPressed: attAuthorized
+                      ? null
+                      : () async {
+                          setState(() => attRequestLoading = true);
+                          final isAuthorized =
+                              await WiseTrack.instance.iOSRequestForATT();
+                          setState(() {
+                            attRequestLoading = false;
+                            attAuthorized = isAuthorized;
+                          });
+                        },
+                ),
               Row(
                 children: [
                   Expanded(
@@ -245,6 +248,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
               Row(
+                spacing: 12,
                 children: [
                   Expanded(
                     child: OutlineButton(
@@ -254,17 +258,17 @@ class _HomeScreenState extends State<HomeScreen> {
                       },
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: OutlineButton(
-                      title: '🔈 Set APNS Token',
-                      onPressed: () {
-                        WiseTrack.instance.setAPNSToken(
-                          "my_flutter_apns_token",
-                        );
-                      },
+                  if (Platform.isIOS)
+                    Expanded(
+                      child: OutlineButton(
+                        title: '🔈 Set APNS Token',
+                        onPressed: () {
+                          WiseTrack.instance.setAPNSToken(
+                            "my_flutter_apns_token",
+                          );
+                        },
+                      ),
                     ),
-                  ),
                 ],
               ),
               if (Platform.isAndroid)
@@ -274,6 +278,31 @@ class _HomeScreenState extends State<HomeScreen> {
                     WiseTrack.instance.setPackgesInfo();
                   },
                 ),
+              Row(
+                spacing: 12,
+                children: [
+                  Expanded(
+                      child: OutlineButton(
+                          title: 'WebView Flutter',
+                          onPressed: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => WebViewFlutterScreen(),
+                              ),
+                            );
+                          })),
+                  Expanded(
+                      child: OutlineButton(
+                          title: 'InApp WebView',
+                          onPressed: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => InAppWebViewScreen(),
+                              ),
+                            );
+                          })),
+                ],
+              ),
             ],
           ),
         ),

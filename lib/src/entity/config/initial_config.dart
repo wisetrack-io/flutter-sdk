@@ -131,11 +131,12 @@ class WTInitialConfig {
     return WTInitialConfig(
       appToken: map['app_token'],
       userEnvironment: WTUserEnvironment.values.firstWhere(
-        (e) => e.label == map['user_environment'],
+        (e) => e.label == map['user_environment'].toString().toLowerCase(),
         orElse: () => WTUserEnvironment.production,
       ),
-      androidStore: WTAndroidStore.fromString(map['android_store_name']),
-      iOSStore: WTIOSStore.fromString(map['ios_store_name']),
+      androidStore:
+          WTAndroidStore.fromString(map['android_store_name'].toString()),
+      iOSStore: WTIOSStore.fromString(map['ios_store_name'].toString()),
       trackingWaitingTime: map['tracking_waiting_time'] as int? ?? 0,
       startTrackerAutomatically:
           map['start_tracker_automatically'] as bool? ?? false,
@@ -146,7 +147,9 @@ class WTInitialConfig {
       attributionDeeplink: map['attribution_deeplink'],
       eventBuffering: map['event_buffering_enabled'],
       logLevel: WTLogLevel.values.firstWhere(
-        (l) => l.level == map['log_level'],
+        (l) =>
+            l.level == map['log_level'] ||
+            l.label.toLowerCase() == map['log_level'].toString().toLowerCase(),
         orElse: () => WTResources.defaultLogLevel,
       ),
       oaidEnabled: map['oaid_enabled'] as bool? ?? false,

@@ -156,7 +156,7 @@ class MethodChannelWisetrack extends WisetrackPlatform {
 
       return _channel.invokeMethod(MethodChannelNames.methodGetAdId);
     } on PlatformException catch (e) {
-      debugPrint("Failed to log event: ${e.message}");
+      debugPrint("Failed to get adid: ${e.message}");
       return null;
     }
   }
@@ -168,7 +168,7 @@ class MethodChannelWisetrack extends WisetrackPlatform {
 
       return _channel.invokeMethod(MethodChannelNames.methodGetIdFA);
     } on PlatformException catch (e) {
-      debugPrint("Failed to log event: ${e.message}");
+      debugPrint("Failed to get idfa: ${e.message}");
       return null;
     }
   }
@@ -182,6 +182,19 @@ class MethodChannelWisetrack extends WisetrackPlatform {
     } on PlatformException catch (e) {
       debugPrint("Failed to set packages info: ${e.message}");
       return;
+    }
+  }
+
+  @override
+  Future<String?> getReferrer() async {
+    try {
+      if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) {
+        return null;
+      }
+      return _channel.invokeMethod(MethodChannelNames.methodGetReferrer);
+    } on PlatformException catch (e) {
+      debugPrint("Failed to get referrer: ${e.message}");
+      return null;
     }
   }
 }

@@ -14,6 +14,7 @@ class MethodChannelNames {
   static const String methodSetFCMToken = "wt.set_fcm_token";
   static const String methodLogEvent = "wt.log_event";
   static const String methodGetAdId = "wt.get_adid";
+  static const String methodGetReferrer = "wt.get_referrer";
   static const String methodGetIdFA = "wt.get_idfa";
   static const String methodSetPackagesInfo = "wt.set_packages_info";
 }

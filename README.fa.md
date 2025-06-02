@@ -5,25 +5,26 @@
 پلاگین افزونه فلاتر **WiseTrack** یک راهکار چندسکویی برای شتاب‌دهی به رشد اپلیکیشن شما ارائه می‌دهد — ابزاری که به شما کمک می‌کند همزمان تعداد کاربران را افزایش دهید، درآمد را بیشتر کنید و هزینه‌ها را کاهش دهید.
 
 ## فهرست مطالب
-- [ویژگی‌ها](#ویژگی‌ها)
-- [نیازمندی‌ها](#نیازمندی‌ها)
+- [ویژگی ها](#ویژگی-ها)
+- [نیازمندی ها](#نیازمندی-ها)
 - [نصب](#نصب)
-- [راه‌اندازی اولیه](#راه‌اندازی-اولیه)
+- [راه اندازی اولیه](#راه-اندازی-اولیه)
 - [استفاده پایه](#استفاده-پایه)
   - [فعال/غیرفعال کردن ردیابی](#فعالغیرفعال-کردن-ردیابی)
   - [درخواست مجوز شفافیت ردیابی برنامه (ATT) (iOS)](#درخواست-مجوز-شفافیت-ردیابی-برنامه-att-ios)
   - [شروع/توقف ردیابی](#شروعتوقف-ردیابی)
-  - [تنظیم توکن‌های اعلان پوش](#تنظیم-توکن‌های-اعلان-پوش)
+  - [تنظیم توکن‌ های اعلان پوش](#تنظیم-توکن-های-اعلان-پوش)
   - [ثبت رویدادهای سفارشی](#ثبت-رویدادهای-سفارشی)
   - [تنظیم سطوح لاگ](#تنظیم-سطوح-لاگ)
-  - [بازیابی شناسه‌های تبلیغاتی](#بازیابی-شناسه‌های-تبلیغاتی)
+  - [بازیابی شناسه های تبلیغاتی](#بازیابی-شناسه-های-تبلیغاتی)
 - [استفاده پیشرفته](#استفاده-پیشرفته)
-  - [سفارشی‌سازی رفتار SDK](#سفارشی‌سازی-رفتار-sdk)
+  - [سفارشی سازی رفتار SDK](#سفارشی-سازی-رفتار-sdk)
+  - [اتصال به WebView](#اتصال-به-webview)
 - [پروژه نمونه](#پروژه-نمونه)
-- [عیب‌یابی](#عیب‌یابی)
+- [عیب یابی](#عیب-یابی)
 - [مجوز](#مجوز)
 
-## ویژگی‌ها
+## ویژگی‌ ها
 - ردیابی چندپلتفرمی برای iOS و اندروید
 - پشتیبانی از ثبت رویدادهای سفارشی و درآمدی
 - مدیریت توکن اعلان پوش (APNS و FCM)
@@ -32,7 +33,7 @@
 - پشتیبانی از هیت‌مپ (فقط در iOS، از طریق ادغام بومی)
 - بازیابی شناسه تبلیغاتی (IDFA برای iOS، Ad ID برای اندروید)
 
-## نیازمندی‌ها
+## نیازمندی ها
 - فلاتر 2.0.0 یا بالاتر
 - دارت 2.12.0 یا بالاتر
 - iOS 11.0 یا بالاتر
@@ -150,7 +151,7 @@
    flutter run
    ```
 
-## راه‌اندازی اولیه
+## راه اندازی اولیه
 برای شروع استفاده از پلاگین فلاتر WiseTrack، آن را با یک شیء پیکربندی در نقطه ورودی برنامه خود (مانند `main.dart`) راه‌اندازی کنید.
 
 ### مثال
@@ -209,7 +210,7 @@ print('ردیابی مجاز است: $isAuthorized');
   await WiseTrack.instance.stopTracking(); // توقف ردیابی
 ```
 
-### تنظیم توکن‌های اعلان پوش
+### تنظیم توکن های اعلان پوش
 توکن‌های APNs یا FCM را برای اعلان‌های پوش تنظیم کنید:
 
 ```dart
@@ -250,7 +251,7 @@ await WiseTrack.instance.logEvent(WTEvent.revenue(
 await WiseTrack.instance.setLogLevel(WTLogLevel.warning); // گزینه‌ها: error، warning، info، debug
 ```
 
-### بازیابی شناسه‌های تبلیغاتی
+### بازیابی شناسه های تبلیغاتی
 شناسه تبلیغاتی (IDFA) در iOS یا شناسه تبلیغاتی (Ad ID) در اندروید را بازیابی کنید:
 
 ```dart
@@ -263,7 +264,7 @@ print('Ad ID: ${adId ?? "در دسترس نیست"}');
 
 ## استفاده پیشرفته
 
-### سفارشی‌سازی رفتار SDK
+### سفارشی سازی رفتار SDK
 شما می‌توانید رفتار SDK را از طریق پارامترهای `WTInitialConfig` سفارشی کنید:
 - `appToken`: توکن یکتای برنامه شما (الزامی).
 - `userEnvironment`: محیط (`.production`, `.sandbox`).
@@ -296,10 +297,119 @@ final config = WTInitialConfig(
 await WiseTrack.instance.init(config);
 ```
 
+### اتصال به WebView
+قابلیت **اتصال به WebView** این امکان را فراهم می‌کند تا بین JavaScript درون یک WebView و اپلیکیشن Flutter شما، ارتباط مستقیم برقرار شود. این ارتباط از طریق سیستم `WiseTrackWebBridge` انجام می‌شود.
+این ویژگی به‌خصوص زمانی کاربردی است که:
+- رابط کاربری تحت وب یا اپ هیبریدی را درون اپلیکیشن Flutter خود نمایش می‌دهید
+- نیاز دارید از داخل JavaScript به متدهای بومی (native) مثل `logEvent`، `initialize`، `getIDFA` و ... دسترسی داشته باشید
+- بخواهید پاسخ‌های ناهم‌زمان (asynchronous) را از Flutter/Dart به سمت JavaScript دریافت کنید
+
+پکیج WiseTrack از دو پکیج WebView محبوب Flutter پشتیبانی می‌کند:
+
+- [`webview_flutter`](https://pub.dev/packages/webview_flutter)
+- [`flutter_inappwebview`](https://pub.dev/packages/flutter_inappwebview)
+
+
+#### پیاده سازی با `webview_flutter`
+1. ایجاد JSEvaluator:
+```dart
+class FlutterWebViewJSEvaluator implements WiseTrackJsEvaluator {
+  final WebViewController controller;
+  FlutterWebViewJSEvaluator(this.controller);
+
+  @override
+  void addJSChannelHandler(String name, JSMessageCallback messageCallback) {
+    controller.addJavaScriptChannel(
+      name,
+      onMessageReceived: (message) => messageCallback(message.message),
+    );
+  }
+
+  @override
+  Future<void> evaluateJS(String script) {
+    return controller.runJavaScript(script);
+  }
+
+  @override
+  void removeJSChannelHandler(String name) {
+    controller.removeJavaScriptChannel(name);
+  }
+}
+```
+2. ساخت و ثبت `WiseTrackWebBridge`:
+```dart
+final _controller = WebViewController()
+  ..setJavaScriptMode(JavaScriptMode.unrestricted);
+
+// راه‌اندازی WebBridge با evaluator مخصوص webview_flutter
+final webBridge = WiseTrackWebBridge(
+  evaluator: FlutterWebViewJSEvaluator(_controller),
+);
+webBridge.register();
+
+_controller.loadRequest(...);
+```
+*نکته:*
+
+حتماً قبل از بارگذاری هر محتوایی در WebView، متد register() را برای `WiseTrackWebBridge` فراخوانی کنید.
+
+
+#### پیاده سازی با `flutter_inappwebview`
+1. ایجاد JSEvaluator:
+```dart
+class InAppWebViewJSEvaluator implements WiseTrackJsEvaluator {
+  final InAppWebViewController controller;
+  InAppWebViewJSEvaluator(this.controller);
+
+  @override
+  void addJSChannelHandler(String name, JSMessageCallback messageCallback) {
+    controller.addJavaScriptHandler(
+      handlerName: name,
+      callback: (messages) => messageCallback(messages.first),
+    );
+  }
+
+  @override
+  Future<void> evaluateJS(String script) {
+    return controller.evaluateJavascript(source: script);
+  }
+
+  @override
+  void removeJSChannelHandler(String name) {
+    controller.removeJavaScriptHandler(handlerName: name);
+  }
+}
+```
+
+2. ساخت و ثبت `WiseTrackWebBridge`:
+```dart
+InAppWebView(
+  ...
+  onWebViewCreated: (controller) {
+    // راه‌اندازی WebBridge با evaluator مخصوص inappwebview
+    webBridge = WiseTrackWebBridge(
+        evaluator: InAppWebViewJSEvaluator(controller));
+    webBridge.register();
+  },
+  ....
+)
+```
+
+#### فایل‌های کمکی (JavaScript)
+چند فایل JavaScript به‌صورت آماده در اختیار شما قرار گرفته‌اند تا بتوانید صفحات HTML مورد استفاده در WebView را راحت‌تر بسازید و تست کنید. این فایل‌ها می‌توانند به‌عنوان مرجع یا پایه‌ی پیاده‌سازی صفحات درون‌برنامه‌ای مورد استفاده قرار بگیرند.
+
+محل قرارگیری: [`assets`](./example/assets/html/)
+
+- `wisetrack.js`: رابط اصلی برای فراخوانی متدهای پل ارتباطی (Bridge)
+- `wt_config.js`: شامل ساختار `WTInitConfig` برای پیکربندی اولیه
+- `wt_event.js`: تعریف ساختار `WTEvent` برای ثبت رویدادها
+- `test.html`: صفحه‌ی آزمایشی برای تست دستی متدهای SDK (با رابط کاربری یا کنسول مرورگر)
+
+
 ## پروژه نمونه
 یک پروژه نمونه که ادغام پلاگین فلاتر WiseTrack را نشان می‌دهد، در [مخزن گیت‌هاب](https://github.com/wisetrack-io/flutter-sdk/tree/main/example) در دسترس است. مخزن را کلون کرده و دستورالعمل‌های راه‌اندازی را دنبال کنید تا پلاگین را در عمل ببینید.
 
-## عیب‌یابی
+## عیب یابی
 - **SDK راه‌اندازی نمی‌شود**: اطمینان حاصل کنید که `appToken` صحیح است و شبکه در دسترس است.
 - **ردیابی کار نمی‌کند**: بررسی کنید که `setEnabled(true)` فراخوانی شده و مجوز ATT اعطا شده است (iOS).
 - **لاگ‌ها نمایش داده نمی‌شوند**: سطح لاگ را به `WTLogLevel.debug` تنظیم کنید و مطمئن شوید که یک شنونده لاگ تنظیم شده است:

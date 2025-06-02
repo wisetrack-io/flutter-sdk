@@ -19,6 +19,7 @@ The **WiseTrack** Flutter plugin offers a cross-platform solution to accelerate 
   - [Retrieving Advertising IDs](#retrieving-advertising-ids)
 - [Advanced Usage](#advanced-usage)
   - [Customizing SDK Behavior](#customizing-sdk-behavior)
+  - [WebView Integration](#webview-integration)
 - [Example Project](#example-project)
 - [Troubleshooting](#troubleshooting)
 - [License](#license)
@@ -304,6 +305,114 @@ final config = WTInitialConfig(
 
 await WiseTrack.instance.init(config);
 ```
+
+### WebView Integration
+The **WebView Integration** feature allows you to bridge communication between JavaScript running inside a WebView and your Flutter application using the `WiseTrackWebBridge` system.
+
+This is especially useful when embedding a web-based user interface or a hybrid web app in your Flutter application and you need to:
+- Call native features from JavaScript (like `logEvent`, `initialize`, `getIDFA`, etc.)
+- Receive asynchronous responses back from Flutter/Dart to your JS code
+
+WiseTrack supports integration with the two most popular Flutter WebView packages:
+
+- [`webview_flutter`](https://pub.dev/packages/webview_flutter)
+- [`flutter_inappwebview`](https://pub.dev/packages/flutter_inappwebview)
+
+#### Integration with `webview_flutter`
+1. Create JSEvaluator:
+```dart
+class FlutterWebViewJSEvaluator implements WiseTrackJsEvaluator {
+  final WebViewController controller;
+  FlutterWebViewJSEvaluator(this.controller);
+
+  @override
+  void addJSChannelHandler(String name, JSMessageCallback messageCallback) {
+    controller.addJavaScriptChannel(
+      name,
+      onMessageReceived: (message) => messageCallback(message.message),
+    );
+  }
+
+  @override
+  Future<void> evaluateJS(String script) {
+    return controller.runJavaScript(script);
+  }
+
+  @override
+  void removeJSChannelHandler(String name) {
+    controller.removeJavaScriptChannel(name);
+  }
+}
+```
+2. Create and Register `WiseTrackWebBridge`:
+```dart
+final _controller = WebViewController()
+  ..setJavaScriptMode(JavaScriptMode.unrestricted);
+
+// Initialize WebBridge with flutter webview evaluator
+final webBridge = WiseTrackWebBridge(
+  evaluator: FlutterWebViewJSEvaluator(_controller),
+);
+webBridge.register();
+
+_controller.loadRequest(...);
+```
+*Note*: register `WiseTrackWebBridge` before load any content in webview controller!
+
+
+
+#### Integration with `flutter_inappwebview`
+1. Create JSEvaluator:
+```dart
+class InAppWebViewJSEvaluator implements WiseTrackJsEvaluator {
+  final InAppWebViewController controller;
+  InAppWebViewJSEvaluator(this.controller);
+
+  @override
+  void addJSChannelHandler(String name, JSMessageCallback messageCallback) {
+    controller.addJavaScriptHandler(
+      handlerName: name,
+      callback: (messages) => messageCallback(messages.first),
+    );
+  }
+
+  @override
+  Future<void> evaluateJS(String script) {
+    return controller.evaluateJavascript(source: script);
+  }
+
+  @override
+  void removeJSChannelHandler(String name) {
+    controller.removeJavaScriptHandler(handlerName: name);
+  }
+}
+```
+
+2. Create and Register `WiseTrackWebBridge`:
+```dart
+InAppWebView(
+  ...
+  onWebViewCreated: (controller) {
+    // Initialize WebBridge with inapp webview evaluator
+    webBridge = WiseTrackWebBridge(
+        evaluator: InAppWebViewJSEvaluator(controller));
+    webBridge.register();
+  },
+  ....
+)
+```
+
+#### Helper Files (.js files)
+These JavaScript files are provided to help you build and test web pages intended for display inside the WebView. You can use them as a reference or foundation when integrating WiseTrack functionality into your in-app HTML pages.
+Located in: [`assets`](./example/assets/html/)
+
+Files include:
+
+- `wisetrack.js`: Main interface for invoking bridge methods.
+- `wt_config.js`: Contains the `WTInitConfig` constructor and configuration schema.
+- `wt_event.js`: Defines the `WTEvent` structure for event logging.
+- `test.html`: A standalone page to manually trigger SDK methods via a UI or console.
+
 
 ## Example Project
 An example project demonstrating the WiseTrack Flutter Plugin integration is available at [GitHub Repository URL](https://github.com/wisetrack-io/flutter-sdk/tree/main/example). Clone the repository and follow the setup instructions to see the plugin in action.

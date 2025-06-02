@@ -56,7 +56,6 @@ android {
 
         // uncomment for add remotely
         implementation "io.wisetrack.sdk:core:2.0.10"
-        implementation "io.wisetrack.sdk:webbridge:2.0.0"
 
         // required dependency for wisetrack
         implementation 'androidx.lifecycle:lifecycle-process:2.6.1'

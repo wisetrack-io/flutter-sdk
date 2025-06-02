@@ -16,4 +16,5 @@ object MethodNames {
     const val GET_ADID = "wt.get_adid"
     const val GET_IDFA = "wt.get_idfa"
     const val SET_PACKAGES_INFO = "wt.set_packages_info"
+    const val GET_REFERRER = "wt.get_referrer"
 }

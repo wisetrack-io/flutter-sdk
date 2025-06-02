@@ -55,5 +55,7 @@ abstract class WisetrackPlatform extends PlatformInterface {
 
   Future<String?> getAdId();
 
+  Future<String?> getReferrer();
+
   Future<String?> getIdfa();
 }

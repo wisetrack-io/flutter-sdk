@@ -1,40 +1,61 @@
 PODS:
   - Flutter (1.0.0)
+  - flutter_inappwebview_ios (0.0.1):
+    - Flutter
+    - flutter_inappwebview_ios/Core (= 0.0.1)
+    - OrderedSet (~> 6.0.3)
+  - flutter_inappwebview_ios/Core (0.0.1):
+    - Flutter
+    - OrderedSet (~> 6.0.3)
   - integration_test (0.0.1):
     - Flutter
+  - OrderedSet (6.0.3)
   - Sentry (8.49.2):
     - Sentry/Core (= 8.49.2)
   - Sentry/Core (8.49.2)
+  - webview_flutter_wkwebview (0.0.1):
+    - Flutter
+    - FlutterMacOS
   - wisetrack (0.0.2):
     - Flutter
-    - WiseTrackLib (~> 1.0.3)
-  - WiseTrackLib (1.0.3):
+    - WiseTrackLib (~> 1.0.5)
+  - WiseTrackLib (1.0.5):
     - Sentry (~> 8.49.0)
 
 DEPENDENCIES:
   - Flutter (from `Flutter`)
+  - flutter_inappwebview_ios (from `.symlinks/plugins/flutter_inappwebview_ios/ios`)
   - integration_test (from `.symlinks/plugins/integration_test/ios`)
+  - webview_flutter_wkwebview (from `.symlinks/plugins/webview_flutter_wkwebview/darwin`)
   - wisetrack (from `.symlinks/plugins/wisetrack/ios`)
 
 SPEC REPOS:
   https://github.com/CocoaPods/Specs.git:
+    - OrderedSet
     - Sentry
     - WiseTrackLib
 
 EXTERNAL SOURCES:
   Flutter:
     :path: Flutter
+  flutter_inappwebview_ios:
+    :path: ".symlinks/plugins/flutter_inappwebview_ios/ios"
   integration_test:
     :path: ".symlinks/plugins/integration_test/ios"
+  webview_flutter_wkwebview:
+    :path: ".symlinks/plugins/webview_flutter_wkwebview/darwin"
   wisetrack:
     :path: ".symlinks/plugins/wisetrack/ios"
 
 SPEC CHECKSUMS:
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
+  flutter_inappwebview_ios: b89ba3482b96fb25e00c967aae065701b66e9b99
   integration_test: 4a889634ef21a45d28d50d622cf412dc6d9f586e
+  OrderedSet: e539b66b644ff081c73a262d24ad552a69be3a94
   Sentry: 47021097466aa130802420d485a34da445963d99
-  wisetrack: 37b90831611f5974b216e6a9b81282515b68cb6b
-  WiseTrackLib: 33ed61e9c07f4b7fbcb06d7f326eb0c54dc565da
+  webview_flutter_wkwebview: 1821ceac936eba6f7984d89a9f3bcb4dea99ebb2
+  wisetrack: 0d4e85300c04698228e70aa1fa897728ac05000e
+  WiseTrackLib: 292522867d12ed22dbf8642f96de3cdb67fa43f7
 
 PODFILE CHECKSUM: 2155b9e482eaefaeac58dd04b3f7f419812be7b4
 

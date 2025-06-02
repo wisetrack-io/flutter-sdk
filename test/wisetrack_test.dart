@@ -120,4 +120,9 @@ class MockWisetrackPlatform
   Future<void> setPackagesInfo() {
     return Future.delayed(const Duration(seconds: 1), () => null);
   }
+
+  @override
+  Future<String?> getReferrer() {
+    return Future.delayed(const Duration(seconds: 1), () => null);
+  }
 }

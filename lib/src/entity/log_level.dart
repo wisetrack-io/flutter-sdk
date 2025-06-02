@@ -1,3 +1,5 @@
+import 'package:wisetrack/src/resources/resources.dart';
+
 /// Represents the log levels used for logging events within the application.
 ///
 /// This enum defines different log levels for categorizing logs with varying severity:
@@ -37,4 +39,11 @@ extension WTLogLevelPriority on WTLogLevel {
         WTLogLevel.warning: 'warning',
         WTLogLevel.error: 'error',
       }[this]!;
+
+  static WTLogLevel fromString(String level) {
+    return WTLogLevel.values.firstWhere(
+      (v) => v.label.toLowerCase() == level.toLowerCase(),
+      orElse: () => WTResources.defaultLogLevel,
+    );
+  }
 }

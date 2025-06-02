@@ -120,6 +120,13 @@ class WiseTrack {
     return WisetrackPlatform.instance.getAdId();
   }
 
+  /// Retrieves the Install Referrer URL for the device.
+  /// This function is intended for Android platform only.
+  /// For other platforms, it returns null.
+  Future<String?> getReferrer() {
+    return WisetrackPlatform.instance.getReferrer();
+  }
+
   /// Sets the package information for the tracking system.
   Future<void> setPackgesInfo() {
     return WisetrackPlatform.instance.setPackagesInfo();

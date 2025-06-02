@@ -4,6 +4,26 @@
 ## 🎯 Version 2.x
 
 <details open>
+<summary><strong>2.1.0</strong> — <em>WebBridge Integration & Native SDK Updates</em></summary>
+
+- 🌐 **Major Feature: WebBridge Integration**
+  - Introduced a new **WebBridge** layer to enable JavaScript-to-native communication via WebView.
+  - This feature allows web pages opened inside your app (via WebView) to call native methods.
+  - ✅ Supported WebView packages:
+    - `webview_flutter`
+    - `flutter_inappwebview`
+
+- 🔄 **Other Enhancements**
+  - Added support for retrieving the **Install Referrer** on `Android` using `getReferrer()`.
+  - Improved internal method argument normalization across platforms for consistent native bridge handling.
+
+- 📦 **Native SDK Updates**
+  - Android SDK updated to `2.0.10`
+  - iOS SDK updated to `1.0.5`
+
+</details>
+
+<details>
 <summary><strong>2.0.6</strong> — <em>Maintenance & SDK Bumps</em></summary>
 
 - ‼️ **Breaking Changes**
