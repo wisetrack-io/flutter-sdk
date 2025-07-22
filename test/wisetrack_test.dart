@@ -10,40 +10,42 @@ void main() {
 
   final WisetrackPlatform initialPlatform = WisetrackPlatform.instance;
 
-  test('MethodChannelWisetrack is the default instance', () {
-    expect(initialPlatform, isInstanceOf<MethodChannelWisetrack>());
-  });
+  group('WisetrackTests', () {
+    test('MethodChannelWisetrack is the default instance', () {
+      expect(initialPlatform, isInstanceOf<MethodChannelWisetrack>());
+    });
 
-  test('check iOS Request for ATT', () async {
-    WiseTrack wisetrackPlugin = WiseTrack.instance;
-    MockWisetrackPlatform fakePlatform = MockWisetrackPlatform();
-    WisetrackPlatform.instance = fakePlatform;
+    test('check iOS Request for ATT', () async {
+      WiseTrack wisetrackPlugin = WiseTrack.instance;
+      MockWisetrackPlatform fakePlatform = MockWisetrackPlatform();
+      WisetrackPlatform.instance = fakePlatform;
 
-    expect(await wisetrackPlugin.iOSRequestForATT(), true);
-  });
+      expect(await wisetrackPlugin.iOSRequestForATT(), true);
+    });
 
-  test('check get ADID for android', () async {
-    WiseTrack wisetrackPlugin = WiseTrack.instance;
-    MockWisetrackPlatform fakePlatform = MockWisetrackPlatform();
-    WisetrackPlatform.instance = fakePlatform;
+    test('check get ADID for android', () async {
+      WiseTrack wisetrackPlugin = WiseTrack.instance;
+      MockWisetrackPlatform fakePlatform = MockWisetrackPlatform();
+      WisetrackPlatform.instance = fakePlatform;
 
-    expect(await wisetrackPlugin.getAdId(), "adid");
-  });
+      expect(await wisetrackPlugin.getAdId(), "adid");
+    });
 
-  test('check get IDFA for iOS', () async {
-    WiseTrack wisetrackPlugin = WiseTrack.instance;
-    MockWisetrackPlatform fakePlatform = MockWisetrackPlatform();
-    WisetrackPlatform.instance = fakePlatform;
+    test('check get IDFA for iOS', () async {
+      WiseTrack wisetrackPlugin = WiseTrack.instance;
+      MockWisetrackPlatform fakePlatform = MockWisetrackPlatform();
+      WisetrackPlatform.instance = fakePlatform;
 
-    expect(await wisetrackPlugin.getIdfa(), "idfa");
-  });
+      expect(await wisetrackPlugin.getIdfa(), "idfa");
+    });
 
-  test('check is tracking enabled', () async {
-    WiseTrack wisetrackPlugin = WiseTrack.instance;
-    MockWisetrackPlatform fakePlatform = MockWisetrackPlatform();
-    WisetrackPlatform.instance = fakePlatform;
+    test('check is tracking enabled', () async {
+      WiseTrack wisetrackPlugin = WiseTrack.instance;
+      MockWisetrackPlatform fakePlatform = MockWisetrackPlatform();
+      WisetrackPlatform.instance = fakePlatform;
 
-    expect(await wisetrackPlugin.isEnabled(), true);
+      expect(await wisetrackPlugin.isEnabled(), true);
+    });
   });
 }
 

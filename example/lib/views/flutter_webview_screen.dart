@@ -6,7 +6,7 @@ import 'package:wisetrack/wisetrack.dart';
 import 'webview_js_evaluators.dart';
 
 class WebViewFlutterScreen extends StatefulWidget {
-  const WebViewFlutterScreen({Key? key}) : super(key: key);
+  const WebViewFlutterScreen({super.key});
 
   @override
   State<WebViewFlutterScreen> createState() => _WebViewFlutterScreenState();
@@ -23,14 +23,16 @@ class _WebViewFlutterScreenState extends State<WebViewFlutterScreen> {
   }
 
   Future<void> _initWebViewController() async {
-    final String fileHtmlContents =
-        await rootBundle.loadString('assets/html/test.html');
+    final String fileHtmlContents = await rootBundle.loadString(
+      'assets/html/test.html',
+    );
 
-    _controller = WebViewController()
-      ..setJavaScriptMode(JavaScriptMode.unrestricted);
+    _controller =
+        WebViewController()..setJavaScriptMode(JavaScriptMode.unrestricted);
 
-    webBridge =
-        WiseTrackWebBridge(evaluator: FlutterWebViewJSEvaluator(_controller!));
+    webBridge = WiseTrackWebBridge(
+      evaluator: FlutterWebViewJSEvaluator(_controller!),
+    );
     webBridge.register();
 
     _controller!.loadHtmlString(fileHtmlContents, baseUrl: "https://localhost");
@@ -42,11 +44,10 @@ class _WebViewFlutterScreenState extends State<WebViewFlutterScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text('webview_flutter Example')),
-      body: _controller == null
-          ? Center(
-              child: CircularProgressIndicator(),
-            )
-          : WebViewWidget(controller: _controller!),
+      body:
+          _controller == null
+              ? Center(child: CircularProgressIndicator())
+              : WebViewWidget(controller: _controller!),
     );
   }
 

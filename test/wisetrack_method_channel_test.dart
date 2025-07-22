@@ -96,14 +96,14 @@ void main() {
       );
     });
 
-    test('enableTestMode succeeds', () async {
+    test('clearAndStop succeeds', () async {
       when(
-        mockChannel.invokeMethod(MethodChannelNames.methodEnableTestMode),
+        mockChannel.invokeMethod(MethodChannelNames.methodClearAndStop),
       ).thenAnswer((_) async => null);
 
       await wisetrack.enableTestMode();
       verify(
-        mockChannel.invokeMethod(MethodChannelNames.methodEnableTestMode),
+        mockChannel.invokeMethod(MethodChannelNames.methodClearAndStop),
       ).called(1);
     });
 

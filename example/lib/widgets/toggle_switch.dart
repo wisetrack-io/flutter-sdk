@@ -9,8 +9,8 @@ class CustomToggleSwitch extends StatelessWidget {
     required this.title,
     required this.onChanged,
     this.initialValue,
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {

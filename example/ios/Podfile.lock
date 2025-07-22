@@ -18,8 +18,8 @@ PODS:
     - FlutterMacOS
   - wisetrack (0.0.2):
     - Flutter
-    - WiseTrackLib (~> 1.0.5)
-  - WiseTrackLib (1.0.5):
+    - WiseTrackLib (~> 2.0.0)
+  - WiseTrackLib (2.0.0):
     - Sentry (~> 8.49.0)
 
 DEPENDENCIES:
@@ -54,8 +54,8 @@ SPEC CHECKSUMS:
   OrderedSet: e539b66b644ff081c73a262d24ad552a69be3a94
   Sentry: 47021097466aa130802420d485a34da445963d99
   webview_flutter_wkwebview: 1821ceac936eba6f7984d89a9f3bcb4dea99ebb2
-  wisetrack: 0d4e85300c04698228e70aa1fa897728ac05000e
-  WiseTrackLib: 292522867d12ed22dbf8642f96de3cdb67fa43f7
+  wisetrack: d9d51d520e004142b808718e9b558cdc5c2fb157
+  WiseTrackLib: 6a416dfd59f4a66d5207908acfdee61d4da47a62
 
 PODFILE CHECKSUM: 2155b9e482eaefaeac58dd04b3f7f419812be7b4
 

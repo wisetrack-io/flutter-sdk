@@ -5,7 +5,7 @@ import 'package:wisetrack/wisetrack.dart';
 import 'package:wisetrack_example/views/webview_js_evaluators.dart';
 
 class InAppWebViewScreen extends StatefulWidget {
-  const InAppWebViewScreen({Key? key}) : super(key: key);
+  const InAppWebViewScreen({super.key});
 
   @override
   State<InAppWebViewScreen> createState() => _InAppWebViewScreenState();
@@ -32,7 +32,8 @@ class _InAppWebViewScreenState extends State<InAppWebViewScreen> {
               webViewController = controller;
 
               webBridge = WiseTrackWebBridge(
-                  evaluator: InAppWebViewJSEvaluator(controller));
+                evaluator: InAppWebViewJSEvaluator(controller),
+              );
               webBridge.register();
             },
           );

@@ -16,8 +16,8 @@ class CustomDropdown<T> extends StatelessWidget {
     this.initialItem,
     this.hint,
     this.onChanged,
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -32,10 +32,10 @@ class CustomDropdown<T> extends StatelessWidget {
         c.CustomDropdown<T>(
           hintText: hint ?? 'Select item',
           items: items,
-          listItemBuilder: (context, item, isSelected, onItemSelect) =>
-              Text(mapper(item)),
-          headerBuilder: (context, selectedItem, enabled) =>
-              Text(mapper(selectedItem)),
+          listItemBuilder:
+              (context, item, isSelected, onItemSelect) => Text(mapper(item)),
+          headerBuilder:
+              (context, selectedItem, enabled) => Text(mapper(selectedItem)),
           initialItem: initialItem,
           onChanged: onChanged,
           decoration: c.CustomDropdownDecoration(

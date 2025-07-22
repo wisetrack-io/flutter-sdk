@@ -4,6 +4,15 @@
 ## 🎯 Version 2.x
 
 <details open>
+<summary><strong>2.1.2</strong> — <em>Native SDK Updates</em></summary>
+
+- 📦 **Native SDK Updates**
+  - Android SDK updated to `2.1.1`
+  - iOS SDK updated to `2.1.0`
+
+</details>
+
+<details>
 <summary><strong>2.1.0</strong> — <em>WebBridge Integration & Native SDK Updates</em></summary>
 
 - 🌐 **Major Feature: WebBridge Integration**

@@ -1,7 +1,7 @@
 enum WisetrackMethodChannel: String {
     case log                    = "wt.log"
     case initSDK                = "wt.init"
-    case enableTestMode         = "wt.enable_test_mode"
+    case clearAndStop           = "wt.clear_and_stop"
     case setLogLevel            = "wt.set_log_level"
     case setEnabled             = "wt.set_enabled"
     case iOSRequestForATT       = "wt.ios_request_att"

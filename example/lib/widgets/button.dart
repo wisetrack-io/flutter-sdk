@@ -10,8 +10,8 @@ class ContainedButton extends StatelessWidget {
     required this.onPressed,
     this.isLoading = false,
     this.backgroundColor,
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -32,16 +32,17 @@ class ContainedButton extends StatelessWidget {
         ),
       ),
       onPressed: isLoading ? null : onPressed,
-      child: isLoading
-          ? const SizedBox(
-              width: 24,
-              height: 24,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: Colors.white,
-              ),
-            )
-          : Text(title),
+      child:
+          isLoading
+              ? const SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Colors.white,
+                ),
+              )
+              : Text(title),
     );
   }
 }
@@ -54,8 +55,8 @@ class OutlineButton extends StatelessWidget {
     required this.title,
     required this.onPressed,
     this.isLoading = false,
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -73,20 +74,21 @@ class OutlineButton extends StatelessWidget {
         padding: const WidgetStatePropertyAll(EdgeInsets.all(14)),
       ),
       onPressed: isLoading ? null : onPressed,
-      child: isLoading
-          ? SizedBox(
-              width: 24,
-              height: 24,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: Theme.of(context)
-                    .textButtonTheme
-                    .style
-                    ?.foregroundColor
-                    ?.resolve({WidgetState.pressed}),
-              ),
-            )
-          : Text(title),
+      child:
+          isLoading
+              ? SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Theme.of(context)
+                      .textButtonTheme
+                      .style
+                      ?.foregroundColor
+                      ?.resolve({WidgetState.pressed}),
+                ),
+              )
+              : Text(title),
     );
   }
 }

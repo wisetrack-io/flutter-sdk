@@ -37,7 +37,7 @@ class MethodChannelWisetrack extends WisetrackPlatform {
   @override
   Future<void> enableTestMode() async {
     try {
-      await _channel.invokeMethod(MethodChannelNames.methodEnableTestMode);
+      await _channel.invokeMethod(MethodChannelNames.methodClearAndStop);
     } on PlatformException catch (e) {
       debugPrint("Failed to enable test mode: ${e.message}");
     }

@@ -30,7 +30,6 @@ The **WiseTrack** Flutter plugin offers a cross-platform solution to accelerate 
 - Push notification token management (APNs and FCM)
 - App Tracking Transparency (ATT) support for iOS
 - Configurable logging levels
-- Heatmap support (iOS only, via native integration)
 - Advertising ID retrieval (IDFA for iOS, Ad ID for Android)
 
 ## Requirements
@@ -419,13 +418,11 @@ An example project demonstrating the WiseTrack Flutter Plugin integration is ava
 
 ## Troubleshooting
 - **SDK not initializing**: Ensure the `appToken` is correct and the network is reachable.
-- **Tracking not working**: Verify that `setEnabled(true)` is called and ATT permission is granted (iOS).
 - **Logs not appearing**: Set the log level to `WTLogLevel.debug` and ensure a log listener is set up:
   ```dart
   WiseTrack.instance.listenOnLogs((message) => print('SDK Log: $message'));
   ```
 - **IDFA/Ad ID not available**: Ensure ATT permission is granted (iOS) or Google Play Services is included (Android).
-- **Push notifications not tracked**: Verify that valid APNs/FCM tokens are set.
 
 For further assistance, contact support at [support@wisetrack.io](mailto:support@wisetrack.io).
 

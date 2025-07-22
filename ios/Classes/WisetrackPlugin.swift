@@ -28,8 +28,8 @@ public class WisetrackPlugin: NSObject, FlutterPlugin {
             self.initSDK(args: args)
             result(nil)
             
-        case WisetrackMethodChannel.enableTestMode.rawValue:
-            self.enableTestMode()
+        case WisetrackMethodChannel.clearAndStop.rawValue:
+            self.clearAndStop()
             result(nil)
             
         case WisetrackMethodChannel.setLogLevel.rawValue:
@@ -102,7 +102,6 @@ public class WisetrackPlugin: NSObject, FlutterPlugin {
 extension WisetrackPlugin {
     
     private func initSDK(args: [String: Any]) {
-        ResourceWrapper.setSdkHash(hash: "22f7117372028b36e658c96515399afaa7107f76")
         ResourceWrapper.setSdkEnvironment(env: args["sdk_env"] as! String)
         ResourceWrapper.setSdkFramework(framework: "flutter")
         ResourceWrapper.setSdkVersion(version: args["sdk_version"] as! String)
@@ -123,8 +122,8 @@ extension WisetrackPlugin {
         ))
     }
     
-    private func enableTestMode() {
-        WiseTrack.shared.enableTestMode()
+    private func clearAndStop() {
+        WiseTrack.shared.clearDataAndStop()
     }
     
     private func setLogLevel(level: Int) {

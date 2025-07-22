@@ -53,8 +53,8 @@ class WisetrackPlugin : FlutterPlugin, MethodCallHandler {
                 result.success(null)
             }
 
-            MethodNames.ENABLE_TEST_MODE -> {
-                enableTestMode()
+            MethodNames.CLEAR_AND_STOP -> {
+                clearDataAndStop()
                 result.success(null)
             }
 
@@ -136,7 +136,6 @@ class WisetrackPlugin : FlutterPlugin, MethodCallHandler {
     private fun initSDK(call: MethodCall) {
 
         ResourceWrapper.setFramework("flutter")
-        ResourceWrapper.setSdkHash("a90fcb36e71cecea76becc20c625e06fc30dfa00")
         ResourceWrapper.setEnvironment(call.argument<String>("sdk_env")!!)
         ResourceWrapper.setVersion(call.argument<String>("sdk_version")!!)
 
@@ -162,7 +161,7 @@ class WisetrackPlugin : FlutterPlugin, MethodCallHandler {
         wiseTrack.initialize(initialConfig)
     }
 
-    private fun enableTestMode() {
+    private fun clearDataAndStop() {
         /// Clear all caches and data
         wiseTrack.clearDataAndStop()
     }

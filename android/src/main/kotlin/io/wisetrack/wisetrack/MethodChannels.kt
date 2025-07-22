@@ -3,7 +3,7 @@ package io.wisetrack.wisetrack
 object MethodNames {
     const val INIT = "wt.init"
     const val LOG = "wt.log"
-    const val ENABLE_TEST_MODE = "wt.enable_test_mode"
+    const val CLEAR_AND_STOP = "wt.clear_and_stop"
     const val SET_LOG_LEVEL = "wt.set_log_level"
     const val SET_ENABLED = "wt.set_enabled"
     const val IS_ENABLED = "wt.is_enabled"

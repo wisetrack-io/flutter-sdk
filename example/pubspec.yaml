@@ -1,18 +1,18 @@
 name: wisetrack_example
 description: "Demonstrates how to use the wisetrack plugin."
-publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+publish_to: "none" # Remove this line if you wish to publish to pub.dev
 version: 1.0.0+3
 
 environment:
-  # sdk: ^3.7.0
-  sdk: '>=2.12.0 <3.0.0'
+  sdk: ^3.7.0
+  # sdk: '>=2.12.0 <3.0.0'
 
 dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.8
   animated_custom_dropdown: ^3.1.1
-  
+
   wisetrack:
     path: ../
   flutter_inappwebview: ^6.1.5

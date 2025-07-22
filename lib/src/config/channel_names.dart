@@ -3,7 +3,7 @@ class MethodChannelNames {
   /// Method channel names
   static const String methodLog = "wt.log";
   static const String methodInit = "wt.init";
-  static const String methodEnableTestMode = "wt.enable_test_mode";
+  static const String methodClearAndStop = "wt.clear_and_stop";
   static const String methodSetLogLevel = "wt.set_log_level";
   static const String methodSetEnabled = "wt.set_enabled";
   static const String methodIsEnabled = "wt.is_enabled";

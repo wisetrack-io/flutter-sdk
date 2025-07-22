@@ -12,8 +12,8 @@ class CustomInputField extends StatelessWidget {
     this.initialValue,
     this.onChanged,
     this.inputType,
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
