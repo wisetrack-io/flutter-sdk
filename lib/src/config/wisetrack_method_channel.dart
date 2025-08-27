@@ -197,4 +197,18 @@ class MethodChannelWisetrack extends WisetrackPlatform {
       return null;
     }
   }
+
+  @override
+  Future<bool> isWiseTrackNotification(Map<String, dynamic> payload) async {
+    try {
+      final result = await _channel.invokeMethod(
+        MethodChannelNames.methodIsWiseTrackNotification,
+        payload,
+      );
+      return result ?? false;
+    } on PlatformException catch (e) {
+      debugPrint("Failed get isWiseTrackNotification: ${e.message}");
+      return false;
+    }
+  }
 }

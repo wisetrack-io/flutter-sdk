@@ -1,9 +1,16 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:wisetrack_example/firebase_messaging_handler.dart';
 import 'package:wisetrack_example/views/home_screen.dart';
 
+import 'firebase_options.dart';
 import 'themes.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
+  FirebaseMessagingHandler.init();
   runApp(const MyApp());
 }
 

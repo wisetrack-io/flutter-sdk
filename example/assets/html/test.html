@@ -556,7 +556,7 @@ class WTEvent {
             function setLogLevel(level){
                try {
                     WiseTrack.setLogLevel(level);
-                    log('Log level set to ${level}');
+                    log(`Log level set to ${level}`);
                 } catch (e) {
                     console.log('[WiseTrack]: set log level failed:', e.message);
                 }

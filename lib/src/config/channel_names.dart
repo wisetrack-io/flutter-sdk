@@ -17,4 +17,6 @@ class MethodChannelNames {
   static const String methodGetReferrer = "wt.get_referrer";
   static const String methodGetIdFA = "wt.get_idfa";
   static const String methodSetPackagesInfo = "wt.set_packages_info";
+  static const String methodIsWiseTrackNotification =
+      "wt.is_wisetrack_notification";
 }

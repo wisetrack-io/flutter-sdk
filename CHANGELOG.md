@@ -4,6 +4,18 @@
 ## 🎯 Version 2.x
 
 <details open>
+<summary><strong>2.1.3</strong> — <em>Uninstall Detection & Firebase Integration</em></summary>
+
+- 🚀 **New Feature: Uninstall Detection**
+  - Added support for uninstall detection using **Firebase Cloud Messaging (FCM)**.
+
+- 📦 **Native SDK Updates**
+  - Android SDK updated to `2.2.0`
+  - iOS SDK updated to `2.2.0`
+
+</details>
+
+<details>
 <summary><strong>2.1.2</strong> — <em>Native SDK Updates</em></summary>
 
 - 📦 **Native SDK Updates**

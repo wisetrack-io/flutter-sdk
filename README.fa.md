@@ -5,6 +5,7 @@
 پلاگین افزونه فلاتر **WiseTrack** یک راهکار چندسکویی برای شتاب‌دهی به رشد اپلیکیشن شما ارائه می‌دهد — ابزاری که به شما کمک می‌کند همزمان تعداد کاربران را افزایش دهید، درآمد را بیشتر کنید و هزینه‌ها را کاهش دهید.
 
 ## فهرست مطالب
+
 - [ویژگی ها](#ویژگی-ها)
 - [نیازمندی ها](#نیازمندی-ها)
 - [نصب](#نصب)
@@ -13,6 +14,7 @@
   - [فعال/غیرفعال کردن ردیابی](#فعالغیرفعال-کردن-ردیابی)
   - [درخواست مجوز شفافیت ردیابی برنامه (ATT) (iOS)](#درخواست-مجوز-شفافیت-ردیابی-برنامه-att-ios)
   - [شروع/توقف ردیابی](#شروعتوقف-ردیابی)
+  - [تشخیص حذف نصب و تنظیم توکن‌ های اعلان پوش](#تشخیص-حذف-نصب-و-تنظیم-توکن‌-های-اعلان-پوش)
   - [تنظیم توکن‌ های اعلان پوش](#تنظیم-توکن-های-اعلان-پوش)
   - [ثبت رویدادهای سفارشی](#ثبت-رویدادهای-سفارشی)
   - [تنظیم سطوح لاگ](#تنظیم-سطوح-لاگ)
@@ -25,6 +27,7 @@
 - [مجوز](#مجوز)
 
 ## ویژگی‌ ها
+
 - ردیابی چندپلتفرمی برای iOS و اندروید
 - پشتیبانی از ثبت رویدادهای سفارشی و درآمدی
 - مدیریت توکن اعلان پوش (APNS و FCM)
@@ -34,19 +37,22 @@
 - بازیابی شناسه تبلیغاتی (IDFA برای iOS، Ad ID برای اندروید)
 
 ## نیازمندی ها
+
 - فلاتر 2.0.0 یا بالاتر
 - دارت 2.12.0 یا بالاتر
 - iOS 11.0 یا بالاتر
-- پشتیبانی از Android embedding v2 
+- پشتیبانی از Android embedding v2
 - اندروید API 21 (لالی‌پاپ) یا بالاتر
 - Android Gradle Plugin >= 7.1.0 and Gradle 7.3 for full compatibility with Java 17.
 - پلاگین Gradle Plugin 7.1.0 و بالاتر به همراه پشتیبانی از جاوا 17
 
 ## نصب
+
 برای ادغام پلاگین فلاتر WiseTrack در پروژه فلاتر خود، مراحل زیر را دنبال کنید:
 
 1. **افزودن وابستگی**:
    پلاگین `wisetrack` را به فایل `pubspec.yaml` خود اضافه کنید:
+
    ```yaml
    dependencies:
      wisetrack: ^2.0.0 # با آخرین نسخه جایگزین کنید
@@ -54,12 +60,14 @@
 
 2. **نصب بسته**:
    دستور زیر را در دایرکتوری پروژه خود اجرا کنید:
+
    ```bash
    flutter pub get
    ```
 
 3. **پیکربندی iOS**:
    برای پشتیبانی از شفافیت ردیابی برنامه (ATT) در iOS، کلید زیر را به فایل `ios/Runner/Info.plist` اضافه کنید:
+
    ```xml
    <key>NSUserTrackingUsageDescription</key>
    <string>ما از این داده‌ها برای ارائه تجربه کاربری بهتر و تبلیغات شخصی‌سازی‌شده استفاده می‌کنیم.</string>
@@ -67,6 +75,7 @@
 
 4. **پیکربندی اندروید**:
    اطمینان حاصل کنید که فایل `android/app/build.gradle` شما تنظیمات زیر را دارد:
+
    ```gradle
    android {
        compileSdkVersion 33
@@ -79,12 +88,14 @@
 
    **مجوزهای اندروید**:
    برای فعال کردن SDK WiseTrack جهت دسترسی به اطلاعات دستگاه و ویژگی‌های شبکه در اندروید، مجوزهای زیر را به فایل `android/app/src/main/AndroidManifest.xml` اضافه کنید:
+
    ```xml
    <uses-permission android:name="android.permission.INTERNET" />
    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
    ```
 
    اگر برنامه شما فروشگاه Google Play را هدف قرار نمی‌دهد (مانند کافه‌بازار یا مایکت)، مجوزهای زیر را نیز اضافه کنید:
+
    ```xml
    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
@@ -94,44 +105,53 @@
    SDK WiseTrack از ویژگی‌های اضافی اندروید پشتیبانی می‌کند که نیازمند وابستگی‌های خاصی هستند. فقط وابستگی‌های مربوط به ویژگی‌هایی که نیاز دارید را در فایل `android/app/build.gradle` اضافه کنید:
 
    - **شناسه تبلیغاتی گوگل (Ad ID)**: امکان بازیابی شناسه تبلیغاتی گوگل را از طریق `getAdId()` فراهم می‌کند.
+
      ```gradle
      implementation 'com.google.android.gms:play-services-ads-identifier:18.2.0'
      ```
 
    - **شناسه تبلیغاتی باز (OAID)**: امکان استفاده از OAID به‌عنوان جایگزینی برای Ad ID در دستگاه‌های بدون Google Play Services (مانند دستگاه‌های چینی) از طریق `WTInitialConfig` با `oaidEnabled: true`.
+
      ```gradle
-     implementation 'io.wisetrack:sdk:oaid:2.0.0' # با آخرین نسخه جایگزین کنید
+     implementation 'io.wisetrack.sdk:oaid:2.0.0' // با آخرین نسخه جایگزین کنید
      ```
 
    - **شناسه تبلیغات هواوی**: امکان بازیابی Ad ID در دستگاه‌های هواوی را فراهم می‌کند.
      افزودن مخزن:
+
      ```gradle
      maven { url 'https://developer.huawei.com/repo/' }
      ```
+
      و این وابستگی:
+
      ```gradle
      implementation 'com.huawei.hms:ads-identifier:3.4.62.300'
      ```
 
    - **ردیابی ارجاع (Referrer Tracking)**: امکان ردیابی ارجاع برای Google Play و کافه‌بازار از طریق `WTInitialConfig` با `referrerEnabled: true`.
+
      ```gradle
-     implementation 'io.wisetrack:sdk:referrer:2.0.0' # با آخرین نسخه جایگزین کنید
-     implementation 'com.android.installreferrer:installreferrer:2.2' # ارجاع Google Play
-     implementation 'com.github.cafebazaar:referrersdk:1.0.2' # ارجاع کافه‌بازار
+     implementation 'io.wisetrack.sdk:referrer:2.0.0' // با آخرین نسخه جایگزین کنید
+     implementation 'com.android.installreferrer:installreferrer:2.2' // ارجاع Google Play
+     implementation 'com.github.cafebazaar:referrersdk:1.0.2' // ارجاع کافه‌بازار
      ```
 
    - **شناسه نصب فایربیس (FID)**: امکان بازیابی شناسه نصب فایربیس برای شناسایی دستگاه را فراهم می‌کند.
+
      ```gradle
      implementation 'com.google.firebase:firebase-installations:17.2.0'
      ```
+
      برای استفاده از سرویس‌های فایربیس، برنامه خود را در کنسول فایربیس ثبت کنید:
+
      - نام بسته خود را اضافه کنید (مانند `com.example.app`).
      - فایل `google-services.json` را دانلود کرده و در `android/app/` قرار دهید.
      - فایل `android/build.gradle` را به‌روزرسانی کنید:
        ```gradle
        buildscript {
            dependencies {
-               classpath 'com.google.gms:google-services:4.4.1' # یا آخرین نسخه
+               classpath 'com.google.gms:google-services:4.4.1' // یا آخرین نسخه
            }
        }
        ```
@@ -152,9 +172,11 @@
    ```
 
 ## راه اندازی اولیه
+
 برای شروع استفاده از پلاگین فلاتر WiseTrack، آن را با یک شیء پیکربندی در نقطه ورودی برنامه خود (مانند `main.dart`) راه‌اندازی کنید.
 
 ### مثال
+
 ```dart
 import 'package:flutter/material.dart';
 import 'package:wisetrack/wisetrack.dart';
@@ -166,8 +188,8 @@ void main() async {
   final config = WTInitialConfig(
     appToken: 'your-app-token',
     userEnvironment: WTUserEnvironment.production, // برای تست از .sandbox استفاده کنید
-    androidStore: WTAndroidStore.googlePlay,
-    iOSStore: WTIOSStore.appStore,
+    androidStore: WTAndroidStore.playstore,
+    iOSStore: WTIOSStore.appstore,
     logLevel: WTLogLevel.warning,
   );
 
@@ -180,9 +202,11 @@ void main() async {
 **توجه**: `'your-app-token'` را با توکن ارائه‌شده توسط داشبورد WiseTrack جایگزین کنید.
 
 ## استفاده پایه
+
 در ادامه، وظایف رایجی که می‌توانید با پلاگین فلاتر WiseTrack انجام دهید آورده شده است.
 
 ### فعال/غیرفعال کردن ردیابی
+
 ردیابی را در زمان اجرا فعال یا غیرفعال کنید:
 
 ```dart
@@ -195,6 +219,7 @@ print('sdk فعال است: $isTrackingEnabled');
 ```
 
 ### درخواست مجوز شفافیت ردیابی برنامه (ATT) (iOS)
+
 برای iOS 14+، از کاربر برای ردیابی مجوز بخواهید:
 
 ```dart
@@ -203,6 +228,7 @@ print('ردیابی مجاز است: $isAuthorized');
 ```
 
 ### شروع/توقف ردیابی
+
 ردیابی را به صورت دستی کنترل کنید:
 
 ```dart
@@ -210,16 +236,101 @@ print('ردیابی مجاز است: $isAuthorized');
   await WiseTrack.instance.stopTracking(); // توقف ردیابی
 ```
 
-### تنظیم توکن های اعلان پوش
-توکن‌های APNs یا FCM را برای اعلان‌های پوش تنظیم کنید:
+### تشخیص حذف نصب و تنظیم توکن‌ های اعلان پوش
+
+برای فعال‌سازی قابلیت تشخیص حذف اپلیکیشن (Uninstall Detection) در WiseTrack، باید پروژه‌ی خود را برای دریافت پوش نوتیفیکیشن‌ها با استفاده از **Firebase Cloud Messaging (FCM)** پیکربندی کنید.
+**نکته:** برای مشاهده‌ی یک پیاده‌سازی عملی، می‌توانید به [پروژه‌ی نمونه](https://github.com/wisetrack-io/flutter-sdk/tree/main/example/lib/firebase_messaging_handler.dart) مراجعه کنید.
+
+#### 1. پیکربندی Firebase Cloud Messaging (FCM)
+
+طبق مستندات رسمی FlutterFire، FCM را در پروژه‌ی خود راه‌اندازی کنید:
+👉 [راهنمای راه‌اندازی Firebase Cloud Messaging](https://firebase.flutter.dev/docs/messaging/overview)
+
+اطمینان حاصل کنید که:
+
+- اپلیکیشن شما در **Firebase Console** ثبت شده باشد.
+- فایل‌های `google-services.json` (برای Android) یا `GoogleService-Info.plist` (برای iOS) به درستی اضافه شده باشند.
+- وابستگی‌های لازم (`firebase_core` و `firebase_messaging`) به پروژه اضافه و مقداردهی اولیه شده باشند.
+
+#### 2. مدیریت توکن‌های نوتیفیکیشن
+
+بعد از پیکربندی FCM، باید توکن‌های **FCM** و **APNS** را دریافت کرده و به WiseTrack ارسال کنید:
 
 ```dart
-await WiseTrack.instance.setAPNSToken('your-apns-token'); // تنظیم توکن APNs (iOS)
+  static _getToken() async {
+    final token = await FirebaseMessaging.instance.getToken();
+    if (token != null) {
+      WiseTrack.instance.setFCMToken(token);
+    }
 
-await WiseTrack.instance.setFCMToken('your-fcm-token'); // تنظیم توکن FCM (اندروید)
+    final apnsToken = await FirebaseMessaging.instance.getAPNSToken();
+    if (apnsToken != null) WiseTrack.instance.setAPNSToken(apnsToken);
+
+    FirebaseMessaging.instance.onTokenRefresh.listen((token) {
+      WiseTrack.instance.setFCMToken(token);
+    });
+  }
 ```
 
+#### 3. مدیریت نوتیفیکیشن‌های دریافتی
+
+در نهایت، داخل متدهای `FirebaseMessaging.onMessage` یا `FirebaseMessaging.onBackgroundMessage` باید از متد کمکی زیر استفاده کنید تا بررسی شود پیام مربوط به WiseTrack است یا خیر:
+
+```dart
+  // برای مدیریت نوتیفیکیشن وقتی اپ در حالت foreground است:
+  FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
+    if (await WiseTrack.instance.isWiseTrackNotification(message.data)) {
+      // این نوتیفیکیشن به صورت داخلی توسط WiseTrack مدیریت می‌شود.
+      return;
+    }
+    // در غیر این صورت نوتیفیکیشن‌های اختصاصی اپلیکیشن خودتان را مدیریت کنید.
+  });
+
+  // برای مدیریت نوتیفیکیشن وقتی اپ در حالت background یا بسته (terminated) است:
+  @pragma('vm:entry-point')
+  Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+    if (await WiseTrack.instance.isWiseTrackNotification(message.data)) {
+      // این نوتیفیکیشن به صورت داخلی توسط WiseTrack مدیریت می‌شود.
+      return;
+    }
+    // در غیر این صورت نوتیفیکیشن‌های اختصاصی اپلیکیشن خودتان را مدیریت کنید.
+  }
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+```
+
+#### 4. فعال‌سازی Background Modes و Background Task Identifier برای اپ iOS
+
+برای افزایش دقت و قابلیت اطمینان در تشخیص uninstall، اپلیکیشن شما باید از **Background Fetch** و **Background Processing** پشتیبانی کند.
+می‌توانید این قابلیت‌ها را به دو روش فعال کنید:
+
+- **استفاده از تب Capabilities در Xcode**:
+  به **Target** پروژه خود (مثلاً Runner App) بروید → **Signing & Capabilities** → **Background Modes** و گزینه‌های زیر را فعال کنید:
+
+  - _Background fetch_
+  - _Background processing_
+
+- **به صورت دستی از طریق `Info.plist`:**:
+  کلیدهای زیر را به `Info.plist` اضافه کنید::
+
+  ```xml
+  <key>UIBackgroundModes</key>
+  <array>
+    <string>fetch</string>
+    <string>processing</string>
+  </array>
+  ```
+
+  همچنین شناسه تسک WiseTrack را به `ios/Runner/Info.plist` اضافه کنید:
+
+  ```xml
+  <key>BGTaskSchedulerPermittedIdentifiers</key>
+  <array>
+      <string>io.wisetrack.sdk.bgtask</string>
+  </array>
+  ```
+
 ### ثبت رویدادهای سفارشی
+
 رویدادهای سفارشی یا درآمدی را ثبت کنید:
 
 ```dart
@@ -245,6 +356,7 @@ await WiseTrack.instance.logEvent(WTEvent.revenue(
 ```
 
 ### تنظیم سطوح لاگ
+
 میزان جزئیات لاگ‌های SDK را کنترل کنید:
 
 ```dart
@@ -252,6 +364,7 @@ await WiseTrack.instance.setLogLevel(WTLogLevel.warning); // گزینه‌ها: 
 ```
 
 ### بازیابی شناسه های تبلیغاتی
+
 شناسه تبلیغاتی (IDFA) در iOS یا شناسه تبلیغاتی (Ad ID) در اندروید را بازیابی کنید:
 
 ```dart
@@ -265,10 +378,12 @@ print('Ad ID: ${adId ?? "در دسترس نیست"}');
 ## استفاده پیشرفته
 
 ### سفارشی سازی رفتار SDK
+
 شما می‌توانید رفتار SDK را از طریق پارامترهای `WTInitialConfig` سفارشی کنید:
+
 - `appToken`: توکن یکتای برنامه شما (الزامی).
 - `userEnvironment`: محیط (`.production`, `.sandbox`).
-- `androidStore`: فروشگاه برنامه اندروید (مانند `.googleplay`, `.cafebazaar`, `.myket`  `.other`).
+- `androidStore`: فروشگاه برنامه اندروید (مانند `.googleplay`, `.cafebazaar`, `.myket` `.other`).
 - `iOSStore`: فروشگاه برنامه iOS (مانند `.appstore`, `.sibche`, `.sibapp`, `.anardoni`, `.sibirani`, `.sibjo`, `.other`).
 - `trackingWaitingTime`: تاخیر قبل از شروع ردیابی (به ثانیه).
 - `startTrackerAutomatically`: آیا ردیابی به صورت خودکار شروع شود.
@@ -279,6 +394,7 @@ print('Ad ID: ${adId ?? "در دسترس نیست"}');
 - `referrerEnabled`: نشان‌دهنده فعال بودن شناسه ارجاع.
 
 مثال با پیکربندی پیشرفته:
+
 ```dart
 final config = WTInitialConfig(
   appToken: 'your-app-token',
@@ -298,8 +414,10 @@ await WiseTrack.instance.init(config);
 ```
 
 ### اتصال به WebView
+
 قابلیت **اتصال به WebView** این امکان را فراهم می‌کند تا بین JavaScript درون یک WebView و اپلیکیشن Flutter شما، ارتباط مستقیم برقرار شود. این ارتباط از طریق سیستم `WiseTrackWebBridge` انجام می‌شود.
 این ویژگی به‌خصوص زمانی کاربردی است که:
+
 - رابط کاربری تحت وب یا اپ هیبریدی را درون اپلیکیشن Flutter خود نمایش می‌دهید
 - نیاز دارید از داخل JavaScript به متدهای بومی (native) مثل `logEvent`، `initialize`، `getIDFA` و ... دسترسی داشته باشید
 - بخواهید پاسخ‌های ناهم‌زمان (asynchronous) را از Flutter/Dart به سمت JavaScript دریافت کنید
@@ -309,9 +427,10 @@ await WiseTrack.instance.init(config);
 - [`webview_flutter`](https://pub.dev/packages/webview_flutter)
 - [`flutter_inappwebview`](https://pub.dev/packages/flutter_inappwebview)
 
-
 #### پیاده سازی با `webview_flutter`
+
 1. ایجاد JSEvaluator:
+
 ```dart
 class FlutterWebViewJSEvaluator implements WiseTrackJsEvaluator {
   final WebViewController controller;
@@ -336,7 +455,9 @@ class FlutterWebViewJSEvaluator implements WiseTrackJsEvaluator {
   }
 }
 ```
+
 2. ساخت و ثبت `WiseTrackWebBridge`:
+
 ```dart
 final _controller = WebViewController()
   ..setJavaScriptMode(JavaScriptMode.unrestricted);
@@ -349,13 +470,15 @@ webBridge.register();
 
 _controller.loadRequest(...);
 ```
-*نکته:*
+
+_نکته:_
 
 حتماً قبل از بارگذاری هر محتوایی در WebView، متد register() را برای `WiseTrackWebBridge` فراخوانی کنید.
 
-
 #### پیاده سازی با `flutter_inappwebview`
+
 1. ایجاد JSEvaluator:
+
 ```dart
 class InAppWebViewJSEvaluator implements WiseTrackJsEvaluator {
   final InAppWebViewController controller;
@@ -382,6 +505,7 @@ class InAppWebViewJSEvaluator implements WiseTrackJsEvaluator {
 ```
 
 2. ساخت و ثبت `WiseTrackWebBridge`:
+
 ```dart
 InAppWebView(
   ...
@@ -396,6 +520,7 @@ InAppWebView(
 ```
 
 #### فایل‌های کمکی (JavaScript)
+
 چند فایل JavaScript به‌صورت آماده در اختیار شما قرار گرفته‌اند تا بتوانید صفحات HTML مورد استفاده در WebView را راحت‌تر بسازید و تست کنید. این فایل‌ها می‌توانند به‌عنوان مرجع یا پایه‌ی پیاده‌سازی صفحات درون‌برنامه‌ای مورد استفاده قرار بگیرند.
 
 محل قرارگیری: [`assets`](./example/assets/html/)
@@ -405,11 +530,12 @@ InAppWebView(
 - `wt_event.js`: تعریف ساختار `WTEvent` برای ثبت رویدادها
 - `test.html`: صفحه‌ی آزمایشی برای تست دستی متدهای SDK (با رابط کاربری یا کنسول مرورگر)
 
-
 ## پروژه نمونه
+
 یک پروژه نمونه که ادغام پلاگین فلاتر WiseTrack را نشان می‌دهد، در [مخزن گیت‌هاب](https://github.com/wisetrack-io/flutter-sdk/tree/main/example) در دسترس است. مخزن را کلون کرده و دستورالعمل‌های راه‌اندازی را دنبال کنید تا پلاگین را در عمل ببینید.
 
 ## عیب یابی
+
 - **SDK راه‌اندازی نمی‌شود**: اطمینان حاصل کنید که `appToken` صحیح است و شبکه در دسترس است.
 - **ردیابی کار نمی‌کند**: بررسی کنید که `setEnabled(true)` فراخوانی شده و مجوز ATT اعطا شده است (iOS).
 - **لاگ‌ها نمایش داده نمی‌شوند**: سطح لاگ را به `WTLogLevel.debug` تنظیم کنید و مطمئن شوید که یک شنونده لاگ تنظیم شده است:
@@ -422,4 +548,5 @@ InAppWebView(
 برای کمک بیشتر، با پشتیبانی در [support@wisetrack.io](mailto:support@wisetrack.io) تماس بگیرید.
 
 ## مجوز
+
 پلاگین فلاتر WiseTrack تحت توافق‌نامه مجوز SDK WiseTrack منتشر شده است. برای جزئیات، فایل [LICENSE](LICENSE) را ببینید.

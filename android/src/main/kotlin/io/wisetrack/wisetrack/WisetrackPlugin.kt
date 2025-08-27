@@ -1,52 +1,44 @@
 package io.wisetrack.wisetrack
 
 import android.content.Context
-import io.wisetrack.sdk.core.WiseTrack
-
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
+import io.wisetrack.sdk.core.WiseTrack
+import io.wisetrack.sdk.core.core.WTUserEnvironment
 import io.wisetrack.sdk.core.models.EventParam
 import io.wisetrack.sdk.core.models.RevenueCurrency
 import io.wisetrack.sdk.core.models.WTEvent
 import io.wisetrack.sdk.core.models.WTEventType
-import io.wisetrack.sdk.core.models.WTStoreName
-import io.wisetrack.sdk.core.core.WTUserEnvironment
 import io.wisetrack.sdk.core.models.WTInitialConfig
-import io.wisetrack.sdk.core.utils.wrapper.ResourceWrapper
 import io.wisetrack.sdk.core.models.WTLogLevel
+import io.wisetrack.sdk.core.models.WTStoreName
+import io.wisetrack.sdk.core.utils.wrapper.ResourceWrapper
 
 
-/** WisetrackPlugin */
-class WisetrackPlugin : FlutterPlugin, MethodCallHandler {
-    /// The MethodChannel that will the communication between Flutter and native Android
-    ///
-    /// This local reference serves to register the plugin with the Flutter Engine and unregister it
-    /// when the Flutter Engine is detached from the Activity
+/** WiseTrackPlugin */
+class WiseTrackPlugin : FlutterPlugin, MethodCallHandler {
     private lateinit var channel: MethodChannel
-
-    //    private var activity: Activity? = null
     private lateinit var context: Context
-
-    //    private var application: Application? = null
-//    private val lifecycleHandler = AppLifecycleHandler()
-    private lateinit var wiseTrack: WiseTrack
 
     override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         context = flutterPluginBinding.applicationContext
         channel = MethodChannel(flutterPluginBinding.binaryMessenger, "io.wisetrack.flutter")
         channel.setMethodCallHandler(this)
 
-        wiseTrack = WiseTrack.getInstance(context)
-        wiseTrack.addLoggerOutput(FlutterChannelOutputLogger(channel))
+        WiseTrack.ensureInitialized(context)
+        WiseTrack.setLogLevel(WTLogLevel.DEBUG)
+        WiseTrack.addLoggerOutput(FlutterChannelOutputLogger(channel))
 
 //        application = flutterPluginBinding.applicationContext as Application
 //        application?.registerActivityLifecycleCallbacks(lifecycleHandler)
     }
 
     override fun onMethodCall(call: MethodCall, result: Result) {
+        WiseTrack.ensureInitialized(context)
+
         when (call.method) {
             MethodNames.INIT -> {
                 initSDK(call)
@@ -127,6 +119,11 @@ class WisetrackPlugin : FlutterPlugin, MethodCallHandler {
                 result.success(referrer)
             }
 
+            MethodNames.IS_WISETRACK_NOTIFICATION -> {
+                val isWiseTrackNotification = isWiseTrackNotification(call)
+                result.success(isWiseTrackNotification)
+            }
+
             else -> {
                 result.notImplemented()
             }
@@ -135,9 +132,10 @@ class WisetrackPlugin : FlutterPlugin, MethodCallHandler {
 
     private fun initSDK(call: MethodCall) {
 
-        ResourceWrapper.setFramework("flutter")
-        ResourceWrapper.setEnvironment(call.argument<String>("sdk_env")!!)
-        ResourceWrapper.setVersion(call.argument<String>("sdk_version")!!)
+        val resourceWrapper = ResourceWrapper(context)
+        resourceWrapper.setFramework("flutter")
+        resourceWrapper.setEnvironment(call.argument<String>("sdk_env")!!)
+        resourceWrapper.setVersion(call.argument<String>("sdk_version")!!)
 
         val initialConfig = WTInitialConfig(
             appToken = call.argument<String>("app_token")!!,
@@ -158,41 +156,41 @@ class WisetrackPlugin : FlutterPlugin, MethodCallHandler {
             referrerEnabled = call.argument<Boolean>("referrer_enabled") ?: false,
         )
 
-        wiseTrack.initialize(initialConfig)
+        WiseTrack.initialize(context, initialConfig)
     }
 
     private fun clearDataAndStop() {
         /// Clear all caches and data
-        wiseTrack.clearDataAndStop()
+        WiseTrack.clearDataAndStop()
     }
 
     private fun setLogLevel(level: Int) {
-        wiseTrack.setLogLevel(WTLogLevel.fromPriority(level))
+        WiseTrack.setLogLevel(WTLogLevel.fromPriority(level))
     }
 
     private fun setEnabled(enabled: Boolean) {
-        wiseTrack.setEnabled(enabled)
+        WiseTrack.setEnabled(enabled)
     }
 
     private fun isEnabled(): Boolean {
-        return wiseTrack.isEnabled
+        return WiseTrack.isEnabled
     }
 
     private fun startTracking() {
-        wiseTrack.startTracking()
+        WiseTrack.startTracking()
     }
 
     private fun stopTracking() {
-        wiseTrack.stopTracking()
+        WiseTrack.stopTracking()
     }
 
     private fun setFCMToken(token: String?) {
         if (token != null)
-            wiseTrack.setFCMToken(token)
+            WiseTrack.setFCMToken(token)
     }
 
     private fun setPackagesInfo() {
-        wiseTrack.setPackagesInfo()
+        WiseTrack.setPackagesInfo()
     }
 
     private fun logEvent(call: MethodCall) {
@@ -223,15 +221,28 @@ class WisetrackPlugin : FlutterPlugin, MethodCallHandler {
                 )
             }
         }
-        wiseTrack.logEvent(event)
+        WiseTrack.logEvent(event)
     }
 
     private fun getAdId(): String? {
-        return wiseTrack.getADID()
+        return WiseTrack.getADID()
     }
 
     private fun getReferrer(): String? {
-        return wiseTrack.getReferrer()
+        return WiseTrack.getReferrer()
+    }
+
+    private fun isWiseTrackNotification(call: MethodCall): Boolean? {
+        try {
+            if (call.arguments !is Map<*, *>) return false
+            val payload = (call.arguments as Map<*, *>)
+                .mapKeys { (key, _) -> key.toString() }
+                .mapValues { (_, value) -> value.toString() }
+            return WiseTrack.isWiseTrackNotificationPayload(payload)
+
+        } catch (_: Exception) {
+        }
+        return false
     }
 
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {

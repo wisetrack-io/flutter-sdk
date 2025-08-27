@@ -127,4 +127,9 @@ class MockWisetrackPlatform
   Future<String?> getReferrer() {
     return Future.delayed(const Duration(seconds: 1), () => null);
   }
+
+  @override
+  Future<bool> isWiseTrackNotification(Map<String, dynamic> payload) {
+    return Future.delayed(const Duration(seconds: 1), () => false);
+  }
 }

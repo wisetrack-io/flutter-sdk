@@ -8,6 +8,7 @@ public class WisetrackPlugin: NSObject, FlutterPlugin {
         let instance = WisetrackPlugin()
         registrar.addMethodCallDelegate(instance, channel: channel)
         
+        WiseTrack.shared.prepareInitialization()
         WTLogger.shared.addOutput(output: FlutterChannelOutputLogger(channel: channel))
     }
     
@@ -93,6 +94,11 @@ public class WisetrackPlugin: NSObject, FlutterPlugin {
             self.logEvent(args: args)
             result(nil)
             
+            
+        case WisetrackMethodChannel.isWiseTrackNotification.rawValue:
+            guard let args = args(call, result: result) else { return }
+            result(self.isWiseTrackNotification(args: args))
+            
         default:
             result(FlutterMethodNotImplemented)
         }
@@ -120,6 +126,10 @@ extension WisetrackPlugin {
             attributionDeeplink: args["attribution_deeplink"] as? Bool,
             eventBuffering: args["event_buffering_enabled"] as? Bool
         ))
+    }
+    
+    private func isWiseTrackNotification(args: [String: Any]) -> Bool{
+        return WiseTrack.shared.isWiseTrackNotificationPayload(userInfo: args)
     }
     
     private func clearAndStop() {

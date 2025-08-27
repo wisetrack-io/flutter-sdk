@@ -58,4 +58,6 @@ abstract class WisetrackPlatform extends PlatformInterface {
   Future<String?> getReferrer();
 
   Future<String?> getIdfa();
+
+  Future<bool> isWiseTrackNotification(Map<String, dynamic> payload);
 }

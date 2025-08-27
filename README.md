@@ -5,6 +5,7 @@
 The **WiseTrack** Flutter plugin offers a cross-platform solution to accelerate your app’s growth — helping you increase users, boost revenue, and reduce costs, all at once.
 
 ## Table of Contents
+
 - [Features](#features)
 - [Requirements](#requirements)
 - [Installation](#installation)
@@ -13,7 +14,7 @@ The **WiseTrack** Flutter plugin offers a cross-platform solution to accelerate 
   - [Enabling/Disabling Tracking](#enablingdisabling-tracking)
   - [Requesting App Tracking Transparency (ATT) Permission (iOS)](#requesting-app-tracking-transparency-att-permission-ios)
   - [Starting/Stopping Tracking](#startingstopping-tracking)
-  - [Setting Push Notification Tokens](#setting-push-notification-tokens)
+  - [Uninstall Detection and Setting Push Notification Tokens](#uninstall-detection-and-setting-push-notification-tokens)
   - [Logging Custom Events](#logging-custom-events)
   - [Setting Log Levels](#setting-log-levels)
   - [Retrieving Advertising IDs](#retrieving-advertising-ids)
@@ -25,6 +26,7 @@ The **WiseTrack** Flutter plugin offers a cross-platform solution to accelerate 
 - [License](#license)
 
 ## Features
+
 - Cross-platform tracking for iOS and Android
 - Support for custom and revenue event logging
 - Push notification token management (APNs and FCM)
@@ -33,7 +35,8 @@ The **WiseTrack** Flutter plugin offers a cross-platform solution to accelerate 
 - Advertising ID retrieval (IDFA for iOS, Ad ID for Android)
 
 ## Requirements
-- Flutter 2.0.0 or later  
+
+- Flutter 2.0.0 or later
 - Dart 2.12.0 or later
 - iOS 11.0 or later
 - Android embedding v2 enabled
@@ -41,10 +44,12 @@ The **WiseTrack** Flutter plugin offers a cross-platform solution to accelerate 
 - Android Gradle Plugin >= 7.1.0 for full compatibility with Java 17.
 
 ## Installation
+
 To integrate the WiseTrack Flutter Plugin into your Flutter project, follow these steps:
 
 1. **Add the dependency**:
    Add the `wisetrack` plugin to your `pubspec.yaml` file:
+
    ```yaml
    dependencies:
      wisetrack: ^2.0.0 # Replace with the latest version
@@ -52,12 +57,14 @@ To integrate the WiseTrack Flutter Plugin into your Flutter project, follow thes
 
 2. **Install the package**:
    Run the following command in your project directory:
+
    ```bash
    flutter pub get
    ```
 
 3. **Configure iOS**:
    To support App Tracking Transparency (ATT) on iOS, add the following key to your `ios/Runner/Info.plist`:
+
    ```xml
    <key>NSUserTrackingUsageDescription</key>
    <string>We use this data to provide a better user experience and personalized ads.</string>
@@ -65,6 +72,7 @@ To integrate the WiseTrack Flutter Plugin into your Flutter project, follow thes
 
 4. **Configure Android**:
    Ensure your `android/app/build.gradle` has the following settings:
+
    ```gradle
    android {
        compileSdkVersion 33
@@ -77,12 +85,14 @@ To integrate the WiseTrack Flutter Plugin into your Flutter project, follow thes
 
    **Android Permissions**:
    To enable the WiseTrack SDK to access device information and network features on Android, add the following permissions to your `android/app/src/main/AndroidManifest.xml`:
+
    ```xml
    <uses-permission android:name="android.permission.INTERNET" />
    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
    ```
 
    If your app does not target the Google Play Store (e.g., CafeBazaar, Myket), add these additional permissions:
+
    ```xml
    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
@@ -92,44 +102,53 @@ To integrate the WiseTrack Flutter Plugin into your Flutter project, follow thes
    The WiseTrack SDK supports additional Android features that require specific dependencies. Add only the dependencies for the features you need in `android/app/build.gradle`:
 
    - **Google Advertising ID (Ad ID)**: Enables retrieval of the Google Advertising ID via `getAdId()`.
+
      ```gradle
      implementation 'com.google.android.gms:play-services-ads-identifier:18.2.0'
      ```
 
    - **Open Advertising ID (OAID)**: Enables OAID as an alternative to Ad ID for devices without Google Play Services (e.g., Chinese devices) via `WTInitialConfig` with `oaidEnabled: true`.
+
      ```gradle
-     implementation 'io.wisetrack:sdk:oaid:2.0.0' # Replace with the latest version
+     implementation 'io.wisetrack.sdk:oaid:2.0.0' // Replace with the latest version
      ```
 
    - **Huawei Ads Identifier**: Enables Ad ID retrieval on Huawei devices.
-    add repository:
-    ```gradle
-    maven { url 'https://developer.huawei.com/repo/' }
-    ```
-    and this dependency:
-    ```gradle
-    implementation 'com.huawei.hms:ads-identifier:3.4.62.300'
-    ```
+     add repository:
+
+   ```gradle
+   maven { url 'https://developer.huawei.com/repo/' }
+   ```
+
+   and this dependency:
+
+   ```gradle
+   implementation 'com.huawei.hms:ads-identifier:3.4.62.300'
+   ```
 
    - **Referrer Tracking**: Enables referrer tracking for Google Play and CafeBazaar via `WTInitialConfig` with `referrerEnabled: true`.
+
      ```gradle
-     implementation 'io.wisetrack:sdk:referrer:2.0.0' # Replace with the latest version
-     implementation 'com.android.installreferrer:installreferrer:2.2' # Google Play referrer
-     implementation 'com.github.cafebazaar:referrersdk:1.0.2' # CafeBazaar referrer
+     implementation 'io.wisetrack.sdk:referrer:2.0.0' // Replace with the latest version
+     implementation 'com.android.installreferrer:installreferrer:2.2' // Google Play referrer
+     implementation 'com.github.cafebazaar:referrersdk:1.0.2' // CafeBazaar referrer
      ```
 
    - **Firebase Installation ID (FID)**: Enables retrieval of a unique Firebase Installation ID for device identification.
+
      ```gradle
      implementation 'com.google.firebase:firebase-installations:17.2.0'
      ```
+
      To use Firebase services, register your app in the Firebase Console:
+
      - Add your package name (e.g., `com.example.app`).
      - Download the `google-services.json` file and place it in `android/app/`.
      - Update `android/build.gradle`:
        ```gradle
        buildscript {
            dependencies {
-               classpath 'com.google.gms:google-services:4.4.1' # Or latest version
+               classpath 'com.google.gms:google-services:4.4.1' // Or latest version
            }
        }
        ```
@@ -150,9 +169,11 @@ To integrate the WiseTrack Flutter Plugin into your Flutter project, follow thes
    ```
 
 ## Initialization
+
 To start using the WiseTrack Flutter Plugin, initialize it with a configuration object in your app's entry point (e.g., `main.dart`).
 
 ### Example
+
 ```dart
 import 'package:flutter/material.dart';
 import 'package:wisetrack/wisetrack.dart';
@@ -164,8 +185,8 @@ void main() async {
   final config = WTInitialConfig(
     appToken: 'your-app-token',
     userEnvironment: WTUserEnvironment.production, // Use .sandbox for testing
-    androidStore: WTAndroidStore.googlePlay,
-    iOSStore: WTIOSStore.appStore,
+    androidStore: WTAndroidStore.playstore,
+    iOSStore: WTIOSStore.appstore,
     logLevel: WTLogLevel.warning,
   );
 
@@ -178,9 +199,11 @@ void main() async {
 **Note**: Replace `'your-app-token'` with the token provided by the WiseTrack dashboard.
 
 ## Basic Usage
+
 Below are common tasks you can perform with the WiseTrack Flutter Plugin.
 
 ### Enabling/Disabling Tracking
+
 Enable or disable tracking at runtime:
 
 ```dart
@@ -196,6 +219,7 @@ print('Tracking enabled: $isTrackingEnabled');
 ```
 
 ### Requesting App Tracking Transparency (ATT) Permission (iOS)
+
 For iOS 14+, request user permission for tracking:
 
 ```dart
@@ -204,6 +228,7 @@ print('Tracking Authorized: $isAuthorized');
 ```
 
 ### Starting/Stopping Tracking
+
 Manually control tracking:
 
 ```dart
@@ -214,18 +239,101 @@ await WiseTrack.instance.startTracking();
 await WiseTrack.instance.stopTracking();
 ```
 
-### Setting Push Notification Tokens
-Set APNs or FCM tokens for push notifications:
+### Uninstall Detection and Setting Push Notification Tokens
+
+To enable WiseTrack Uninstall Detection feature, you need to configure your project to receive push notifications using **Firebase Cloud Messaging (FCM)**.
+**NOTE**: For a working implementation, you can check the [example project](https://github.com/wisetrack-io/flutter-sdk/tree/main/example/lib/firebase_messaging_handler.dart)
+
+#### 1. Configure Firebase Cloud Messaging (FCM)
+
+Follow the official FlutterFire documentation to set up FCM in your project:
+👉 [Firebase Cloud Messaging Setup Guide](https://firebase.flutter.dev/docs/messaging/overview)
+
+Ensure that:
+
+- Your app is registered in the Firebase Console.
+- The `google-services.json` (Android) or `GoogleService-Info.plist` (iOS) files are added correctly.
+- Firebase dependencies (`firebase_core` and `firebase_messaging`) are added and initialized in your project.
+
+#### 2. Handle Notification Tokens
+
+Once FCM is configured, you need to get Fcm and APNS token and pass them to WiseTrack:
 
 ```dart
-// Set APNs token (iOS)
-await WiseTrack.instance.setAPNSToken('your-apns-token');
+  static _getToken() async {
+    final token = await FirebaseMessaging.instance.getToken();
+    if (token != null) {
+      WiseTrack.instance.setFCMToken(token);
+    }
 
-// Set FCM token (Android)
-await WiseTrack.instance.setFCMToken('your-fcm-token');
+    final apnsToken = await FirebaseMessaging.instance.getAPNSToken();
+    if (apnsToken != null) WiseTrack.instance.setAPNSToken(apnsToken);
+
+    FirebaseMessaging.instance.onTokenRefresh.listen((token) {
+      WiseTrack.instance.setFCMToken(token);
+    });
+  }
 ```
 
+#### 3. Handle Incoming Notifications
+
+And finally inside your `FirebaseMessaging.onMessage` or `FirebaseMessaging.onBackgroundMessage` handlers, call the following helper method to check if the message belongs to WiseTrack:
+
+```dart
+  // For handle notification when app is in foreground:
+  FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
+    if (await WiseTrack.instance.isWiseTrackNotification(message.data)) {
+      // This notification is handled internally by WiseTrack.
+      return;
+    }
+  // Otherwise, handle your app's custom notifications here.
+  });
+
+  // For handle notification when app is in background or terminated:
+  @pragma('vm:entry-point')
+  Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+    if (await WiseTrack.instance.isWiseTrackNotification(message.data)) {
+      // This notification is handled internally by WiseTrack.
+      return;
+    }
+    // Otherwise, handle your app's custom notifications here.
+  }
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+```
+
+#### 4. Enable Background Modes & Background Task Identifier for iOS App
+
+To improve uninstall detection reliability, your app must support **Background Fetch** and **Background Processing**.
+You can enable them in two ways:
+
+- **Using Xcode Capabilities tab**:
+  Go to your project target (Runner App) → **Signing & Capabilities** → **Background Modes** and enable:
+
+  - _Background fetch_
+  - _Background processing_
+
+- **Manually via `Info.plist`**:
+  Add the following keys:
+
+  ```xml
+  <key>UIBackgroundModes</key>
+  <array>
+    <string>fetch</string>
+    <string>processing</string>
+  </array>
+  ```
+
+  Add the WiseTrack task identifier to your `ios/Runner/Info.plist`
+
+  ```xml
+  <key>BGTaskSchedulerPermittedIdentifiers</key>
+  <array>
+      <string>io.wisetrack.sdk.bgtask</string>
+  </array>
+  ```
+
 ### Logging Custom Events
+
 Log custom or revenue events:
 
 ```dart
@@ -251,6 +359,7 @@ await WiseTrack.instance.logEvent(WTEvent.revenue(
 ```
 
 ### Setting Log Levels
+
 Control the verbosity of SDK logs:
 
 ```dart
@@ -258,6 +367,7 @@ await WiseTrack.instance.setLogLevel(WTLogLevel.debug); // Options: none, error,
 ```
 
 ### Retrieving Advertising IDs
+
 Retrieve the Identifier for Advertising (IDFA) on iOS or Advertising ID (Ad ID) on Android:
 
 ```dart
@@ -273,7 +383,9 @@ print('Ad ID: ${adId ?? "Not available"}');
 ## Advanced Usaged
 
 ### Customizing SDK Behavior
+
 You can customize the SDK behavior through the `WTInitialConfig` parameters:
+
 - `appToken`: Your unique app token (required).
 - `userEnvironment`: The environment (`.production`, `.sandbox`).
 - `androidStore`: The Android app store (e.g., `.googleplay`, `.cafebazaar`, `.other`, ...).
@@ -287,6 +399,7 @@ You can customize the SDK behavior through the `WTInitialConfig` parameters:
 - `referrerEnabled`: Indicates whether the Referrer ID is enabled.
 
 Example with advanced configuration:
+
 ```dart
 final config = WTInitialConfig(
   appToken: 'your-app-token',
@@ -306,9 +419,11 @@ await WiseTrack.instance.init(config);
 ```
 
 ### WebView Integration
+
 The **WebView Integration** feature allows you to bridge communication between JavaScript running inside a WebView and your Flutter application using the `WiseTrackWebBridge` system.
 
 This is especially useful when embedding a web-based user interface or a hybrid web app in your Flutter application and you need to:
+
 - Call native features from JavaScript (like `logEvent`, `initialize`, `getIDFA`, etc.)
 - Receive asynchronous responses back from Flutter/Dart to your JS code
 
@@ -318,7 +433,9 @@ WiseTrack supports integration with the two most popular Flutter WebView package
 - [`flutter_inappwebview`](https://pub.dev/packages/flutter_inappwebview)
 
 #### Integration with `webview_flutter`
+
 1. Create JSEvaluator:
+
 ```dart
 class FlutterWebViewJSEvaluator implements WiseTrackJsEvaluator {
   final WebViewController controller;
@@ -343,7 +460,9 @@ class FlutterWebViewJSEvaluator implements WiseTrackJsEvaluator {
   }
 }
 ```
+
 2. Create and Register `WiseTrackWebBridge`:
+
 ```dart
 final _controller = WebViewController()
   ..setJavaScriptMode(JavaScriptMode.unrestricted);
@@ -356,12 +475,13 @@ webBridge.register();
 
 _controller.loadRequest(...);
 ```
-*Note*: register `WiseTrackWebBridge` before load any content in webview controller!
 
-
+_Note_: register `WiseTrackWebBridge` before load any content in webview controller!
 
 #### Integration with `flutter_inappwebview`
+
 1. Create JSEvaluator:
+
 ```dart
 class InAppWebViewJSEvaluator implements WiseTrackJsEvaluator {
   final InAppWebViewController controller;
@@ -388,6 +508,7 @@ class InAppWebViewJSEvaluator implements WiseTrackJsEvaluator {
 ```
 
 2. Create and Register `WiseTrackWebBridge`:
+
 ```dart
 InAppWebView(
   ...
@@ -402,6 +523,7 @@ InAppWebView(
 ```
 
 #### Helper Files (.js files)
+
 These JavaScript files are provided to help you build and test web pages intended for display inside the WebView. You can use them as a reference or foundation when integrating WiseTrack functionality into your in-app HTML pages.
 Located in: [`assets`](./example/assets/html/)
 
@@ -412,11 +534,12 @@ Files include:
 - `wt_event.js`: Defines the `WTEvent` structure for event logging.
 - `test.html`: A standalone page to manually trigger SDK methods via a UI or console.
 
-
 ## Example Project
+
 An example project demonstrating the WiseTrack Flutter Plugin integration is available at [GitHub Repository URL](https://github.com/wisetrack-io/flutter-sdk/tree/main/example). Clone the repository and follow the setup instructions to see the plugin in action.
 
 ## Troubleshooting
+
 - **SDK not initializing**: Ensure the `appToken` is correct and the network is reachable.
 - **Logs not appearing**: Set the log level to `WTLogLevel.debug` and ensure a log listener is set up:
   ```dart
@@ -427,4 +550,5 @@ An example project demonstrating the WiseTrack Flutter Plugin integration is ava
 For further assistance, contact support at [support@wisetrack.io](mailto:support@wisetrack.io).
 
 ## License
+
 The WiseTrack Flutter Plugin is licensed under the WiseTrack SDK License Agreement. See the [LICENSE](LICENSE) file for details.

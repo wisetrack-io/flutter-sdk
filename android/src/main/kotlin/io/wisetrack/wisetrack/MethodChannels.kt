@@ -17,4 +17,5 @@ object MethodNames {
     const val GET_IDFA = "wt.get_idfa"
     const val SET_PACKAGES_INFO = "wt.set_packages_info"
     const val GET_REFERRER = "wt.get_referrer"
+    const val IS_WISETRACK_NOTIFICATION = "wt.is_wisetrack_notification"
 }

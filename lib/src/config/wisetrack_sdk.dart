@@ -139,4 +139,11 @@ class WiseTrack {
   Future<String?> getIdfa() {
     return WisetrackPlatform.instance.getIdfa();
   }
+
+  /// Checks if the payload is a WiseTrack notification.
+  /// Pass [remoteMessage.data] received from FCM to this method.
+  /// return True if the payload is a WiseTrack notification and WiseTrack handle this notification, false otherwise.
+  Future<bool> isWiseTrackNotification(Map<String, dynamic> payload) {
+    return WisetrackPlatform.instance.isWiseTrackNotification(payload);
+  }
 }
