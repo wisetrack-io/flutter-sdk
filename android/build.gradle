@@ -57,7 +57,7 @@ android {
         // implementation ("io.sentry:sentry-android:7.20.0")
 
         // uncomment for add remotely
-        implementation "io.wisetrack.sdk:core:2.2.0"
+        implementation "io.wisetrack.sdk:core:2.2.1"
 
         // required dependency for wisetrack
         implementation 'androidx.lifecycle:lifecycle-process:2.6.1'
