@@ -3,10 +3,6 @@ import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-// ignore: implementation_imports
-import 'package:wisetrack/src/entity/sdk_environment.dart';
-// ignore: implementation_imports
-import 'package:wisetrack/src/resources/resources.dart';
 import 'package:wisetrack/wisetrack.dart';
 import 'package:wisetrack_example/views/logs_view.dart';
 
@@ -47,8 +43,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   void initState() {
-    WTResources.defaultSdkEnvironment = WTSDKEnvironment.debug;
-
     WiseTrack.instance.listenOnLogs((message) {
       logs.add(message);
       _logStreamController.add(List.from(logs));
