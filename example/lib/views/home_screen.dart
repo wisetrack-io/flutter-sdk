@@ -14,6 +14,7 @@ import '../widgets/button.dart';
 import '../widgets/dropdown.dart';
 import '../widgets/inputfield.dart';
 import '../widgets/toggle_switch.dart';
+import 'custom_event_view.dart';
 import 'flutter_webview_screen.dart';
 import 'inapp_webview_screen.dart';
 
@@ -29,7 +30,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final wisetrack = WiseTrack.instance;
   WTLogLevel logLevel = WTLogLevel.debug;
   // Color backgroundColor = const Color(0xfff0eff4);
-  String appToken = 'rMN5ZCwpOzY7';
+  String appToken = '<AppToken here>';
   final List<String> logs = [];
   final _logStreamController = StreamController<List<String>>.broadcast();
   WTAndroidStore androidStore = WTAndroidStore.other;
@@ -316,6 +317,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ],
               ),
+              Divider(),
+              CustomEventView(),
             ],
           ),
         ),

@@ -357,6 +357,7 @@ await WiseTrack.instance.logEvent(WTEvent.revenue(
   },
 ));
 ```
+**Note:** Event parameter keys and values have a maximum limit of 50 characters.
 
 ### Setting Log Levels
 

@@ -4,7 +4,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'wisetrack'
-  s.version          = '0.0.5'
+  s.version          = '0.0.6'
   s.summary          = 'A new Flutter plugin project.'
   s.description      = <<-DESC
 A new Flutter plugin project.
@@ -15,7 +15,7 @@ A new Flutter plugin project.
   s.source           = { :path => '.' }
   s.source_files = 'Classes/**/*'
   s.dependency 'Flutter'
-  s.dependency 'WiseTrackLib', '~> 2.2.0'
+  s.dependency 'WiseTrackLib', '~> 2.2.1'
   s.platform = :ios, '11.0'
 
   # Flutter.framework does not contain a i386 slice.

@@ -1,6 +1,6 @@
 name: wisetrack
 description: "WiseTrack provides advanced user tracking features for mobile apps."
-version: 2.1.4
+version: 2.1.5
 
 homepage: https://wisetrack.io
 repository: https://github.com/wisetrack-io/flutter-sdk/

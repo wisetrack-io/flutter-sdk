@@ -12,14 +12,14 @@ part 'event_type.dart';
 /// ```dart
 /// final defaultEvent = WTEvent.defaultEvent(
 ///   name: "user_signup",
-///   params: {"method": "email"},
+///   params: {"method": EventParameter.string("email")},
 /// );
 ///
 /// final revenueEvent = WTEvent.revenueEvent(
 ///   name: "purchase",
 ///   currency: RevenueCurrency.USD,
 ///   amount: 49.99,
-///   params: {"product_id": "1234"},
+///   params: {"product_id": EventParameter.string("1234")},
 /// );
 /// ```
 class WTEvent {
@@ -48,6 +48,9 @@ class WTEvent {
   /// Additional parameters associated with the event.
   ///
   /// This can include metadata such as user actions, timestamps, or other relevant details.
+  ///
+  /// **Important:** Both parameter keys and string values have a maximum length of 50 characters.
+  /// Longer keys or values may be truncated or rejected by the tracking system.
   ///
   /// Example usage:
   /// ```dart

@@ -6,12 +6,18 @@ class CustomInputField extends StatelessWidget {
   final Function(String)? onChanged;
   final String? hint;
   final TextInputType? inputType;
+  final int? maxLines;
+  final TextInputAction? textInputAction;
+  final FormFieldValidator<String?>? validator;
   const CustomInputField({
     required this.title,
     this.hint,
     this.initialValue,
     this.onChanged,
     this.inputType,
+    this.maxLines,
+    this.textInputAction,
+    this.validator,
     super.key,
   });
 
@@ -30,6 +36,9 @@ class CustomInputField extends StatelessWidget {
           onChanged: onChanged,
           keyboardType: inputType,
           decoration: InputDecoration(hintText: hint),
+          maxLines: maxLines,
+          textInputAction: textInputAction,
+          validator: validator,
         ),
       ],
     );
