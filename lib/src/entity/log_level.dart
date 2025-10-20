@@ -40,6 +40,12 @@ extension WTLogLevelPriority on WTLogLevel {
         WTLogLevel.error: 'error',
       }[this]!;
 
+  String get webLabel => {
+        WTLogLevel.debug: 'debug',
+        WTLogLevel.info: 'info',
+        WTLogLevel.warning: 'warn',
+        WTLogLevel.error: 'error',
+      }[this]!;
   static WTLogLevel fromString(String level) {
     return WTLogLevel.values.firstWhere(
       (v) => v.label.toLowerCase() == level.toLowerCase(),

@@ -1,7 +1,7 @@
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 import '../entity/entity.dart';
-import 'wisetrack_method_channel.dart';
+import 'native/wisetrack_method_channel.dart';
 
 /// An abstract platform interface for interacting with the WiseTrack library in Flutter.
 ///
@@ -31,7 +31,7 @@ abstract class WisetrackPlatform extends PlatformInterface {
 
   Future<void> init(WTInitialConfig initConfig);
 
-  Future<void> enableTestMode();
+  Future<void> clearAndStop();
 
   Future<void> setLogLevel(WTLogLevel level);
 

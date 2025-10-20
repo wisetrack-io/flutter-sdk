@@ -29,7 +29,6 @@ class WiseTrackPlugin : FlutterPlugin, MethodCallHandler {
         channel.setMethodCallHandler(this)
 
         WiseTrack.ensureInitialized(context)
-        WiseTrack.setLogLevel(WTLogLevel.DEBUG)
         WiseTrack.addLoggerOutput(FlutterChannelOutputLogger(channel))
 
 //        application = flutterPluginBinding.applicationContext as Application

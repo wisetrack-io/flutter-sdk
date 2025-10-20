@@ -23,18 +23,20 @@
   - [سفارشی سازی رفتار SDK](#سفارشی-سازی-رفتار-sdk)
   - [اتصال به WebView](#اتصال-به-webview)
 - [پروژه نمونه](#پروژه-نمونه)
+- [تغییرات مهم](#تغییرات-مهم)
 - [عیب یابی](#عیب-یابی)
 - [مجوز](#مجوز)
 
 ## ویژگی‌ ها
 
-- ردیابی چندپلتفرمی برای iOS و اندروید
+- ردیابی چندپلتفرمی برای iOS، اندروید و وب
 - پشتیبانی از ثبت رویدادهای سفارشی و درآمدی
 - مدیریت توکن اعلان پوش (APNS و FCM)
 - پشتیبانی از شفافیت ردیابی برنامه (ATT) برای iOS
 - سطوح لاگ قابل تنظیم
-- پشتیبانی از هیت‌مپ (فقط در iOS، از طریق ادغام بومی)
 - بازیابی شناسه تبلیغاتی (IDFA برای iOS، Ad ID برای اندروید)
+- پشتیبانی از پلتفرم وب با ادغام JavaScript interop
+- API یکپارچه در همه پلتفرم‌ها (موبایل و وب)
 
 ## نیازمندی ها
 
@@ -43,8 +45,7 @@
 - iOS 11.0 یا بالاتر
 - پشتیبانی از Android embedding v2
 - اندروید API 21 (لالی‌پاپ) یا بالاتر
-- Android Gradle Plugin >= 7.1.0 and Gradle 7.3 for full compatibility with Java 17.
-- پلاگین Gradle Plugin 7.1.0 و بالاتر به همراه پشتیبانی از جاوا 17
+- Android Gradle Plugin >= 7.1.0 برای سازگاری کامل با جاوا 17
 
 ## نصب
 
@@ -55,7 +56,7 @@
 
    ```yaml
    dependencies:
-     wisetrack: ^2.0.0 # با آخرین نسخه جایگزین کنید
+     wisetrack: ^2.2.0 # با آخرین نسخه جایگزین کنید
    ```
 
 2. **نصب بسته**:
@@ -65,7 +66,14 @@
    flutter pub get
    ```
 
-3. **پیکربندی iOS**:
+3. **فعال‌سازی پشتیبانی وب** (اگر وب را هدف قرار می‌دهید):
+   پشتیبانی وب به صورت خودکار گنجانده شده است. برای ویژگی‌های خاص وب، اطمینان حاصل کنید که فایل `web/index.html` شما شامل بسته SDK WiseTrack است:
+
+   ```html
+   <script src="sdk.bundle.min.js"></script>
+   ```
+
+4. **پیکربندی iOS**:
    برای پشتیبانی از شفافیت ردیابی برنامه (ATT) در iOS، کلید زیر را به فایل `ios/Runner/Info.plist` اضافه کنید:
 
    ```xml
@@ -73,7 +81,7 @@
    <string>ما از این داده‌ها برای ارائه تجربه کاربری بهتر و تبلیغات شخصی‌سازی‌شده استفاده می‌کنیم.</string>
    ```
 
-4. **پیکربندی اندروید**:
+5. **پیکربندی اندروید**:
    اطمینان حاصل کنید که فایل `android/app/build.gradle` شما تنظیمات زیر را دارد:
 
    ```gradle
@@ -165,7 +173,7 @@
      implementation 'com.google.android.gms:play-services-appset:16.1.0'
      ```
 
-5. **بازسازی پروژه**:
+6. **بازسازی پروژه**:
    پروژه خود را اجرا کنید تا مطمئن شوید همه وابستگی‌ها به درستی ادغام شده‌اند:
    ```bash
    flutter run
@@ -187,6 +195,7 @@ void main() async {
   // راه‌اندازی WiseTrack
   final config = WTInitialConfig(
     appToken: 'your-app-token',
+    webAppVersion: kIsWeb ? '1.0.0' : null, // برای پلتفرم وب الزامی است
     userEnvironment: WTUserEnvironment.production, // برای تست از .sandbox استفاده کنید
     androidStore: WTAndroidStore.playstore,
     iOSStore: WTIOSStore.appstore,
@@ -377,29 +386,48 @@ String? adId = await WiseTrack.instance.getAdId(); // دریافت Ad ID (اند
 print('Ad ID: ${adId ?? "در دسترس نیست"}');
 ```
 
+**نکته**: در پلتفرم وب، بازیابی شناسه تبلیغاتی به دلیل محدودیت‌های حریم خصوصی مرورگر پشتیبانی نمی‌شود. این متدها در وب `null` برمی‌گردانند.
+
 ## استفاده پیشرفته
 
 ### سفارشی سازی رفتار SDK
 
 شما می‌توانید رفتار SDK را از طریق پارامترهای `WTInitialConfig` سفارشی کنید:
 
+**پارامترهای عمومی:**
+
 - `appToken`: توکن یکتای برنامه شما (الزامی).
 - `userEnvironment`: محیط (`.production`, `.sandbox`).
-- `androidStore`: فروشگاه برنامه اندروید (مانند `.googleplay`, `.cafebazaar`, `.myket` `.other`).
-- `iOSStore`: فروشگاه برنامه iOS (مانند `.appstore`, `.sibche`, `.sibapp`, `.anardoni`, `.sibirani`, `.sibjo`, `.other`).
 - `trackingWaitingTime`: تاخیر قبل از شروع ردیابی (به ثانیه).
 - `startTrackerAutomatically`: آیا ردیابی به صورت خودکار شروع شود.
 - `customDeviceId`: یک شناسه دستگاه سفارشی.
 - `defaultTracker`: یک ردیاب پیش‌فرض برای تخصیص رویداد.
 - `logLevel`: تنظیم سطح لاگ اولیه.
+- `attributionDeeplink`: نشان‌دهنده فعال بودن attribution از طریق deep links.
+- `eventBuffering`: فعال‌سازی buffering رویدادها برای بهینه‌سازی انتقال داده.
+- `appSecret`: کلید مخفی استفاده شده برای احراز هویت یا رمزگذاری.
+- `secretId`: شناسه مخفی یکتا مرتبط با اعتبارنامه‌های برنامه.
+
+**پارامترهای خاص موبایل:**
+
+- `androidStore`: فروشگاه برنامه اندروید (مانند `.googleplay`, `.cafebazaar`, `.other`, ...).
+- `iOSStore`: فروشگاه برنامه iOS (مانند `.appstore`, `.sibche`, `.other`, ..).
 - `oaidEnabled`: نشان‌دهنده فعال بودن شناسه تبلیغاتی باز (OAID).
 - `referrerEnabled`: نشان‌دهنده فعال بودن شناسه ارجاع.
 
-مثال با پیکربندی پیشرفته:
+**پارامترهای خاص وب:**
+
+- `webAppVersion`: نسخه برنامه برای وب (برای پلتفرم وب الزامی است).
+
+**مثال با پیکربندی پیشرفته:**
 
 ```dart
 final config = WTInitialConfig(
   appToken: 'your-app-token',
+
+  // خاص وب (هنگام هدف قرار دادن وب الزامی است)
+  webAppVersion: kIsWeb ? '1.0.0' : null,
+
   userEnvironment: WTUserEnvironment.sandbox,
   androidStore: WTAndroidStore.googlePlay,
   iOSStore: WTIOSStore.appStore,
@@ -536,6 +564,39 @@ InAppWebView(
 
 یک پروژه نمونه که ادغام پلاگین فلاتر WiseTrack را نشان می‌دهد، در [مخزن گیت‌هاب](https://github.com/wisetrack-io/flutter-sdk/tree/main/example) در دسترس است. مخزن را کلون کرده و دستورالعمل‌های راه‌اندازی را دنبال کنید تا پلاگین را در عمل ببینید.
 
+## تغییرات مهم
+
+### نسخه 2.2.0
+
+- **تغییر نام متد**: `enableTestMode()` به `clearAndStop()` تغییر نام یافته است
+
+  ```dart
+  // قدیمی (نسخه 2.1.x و قبل از آن)
+  await WiseTrack.instance.enableTestMode();
+
+  // جدید (نسخه 2.2.0+)
+  await WiseTrack.instance.clearAndStop();
+  ```
+
+- **تغییر محیط پیش‌فرض**: محیط پیش‌فرض `userEnvironment` از `WTUserEnvironment.sandbox` به `WTUserEnvironment.production` تغییر یافته است
+
+  ```dart
+  // اگر به sandbox نیاز دارید، صراحتاً تنظیم کنید
+  final config = WTInitialConfig(
+    appToken: 'your-app-token',
+    userEnvironment: WTUserEnvironment.sandbox, // صراحتاً sandbox را تنظیم کنید
+  );
+  ```
+
+- **نیاز پلتفرم وب**: پارامتر `webAppVersion` اکنون هنگام هدف قرار دادن پلتفرم وب الزامی است
+  ```dart
+  // webAppVersion را برای build های وب اضافه کنید
+  final config = WTInitialConfig(
+    appToken: 'your-app-token',
+    webAppVersion: kIsWeb ? '1.0.0' : null, // برای وب الزامی است
+  );
+  ```
+
 ## عیب یابی
 
 - **SDK راه‌اندازی نمی‌شود**: اطمینان حاصل کنید که `appToken` صحیح است و شبکه در دسترس است.
@@ -545,6 +606,8 @@ InAppWebView(
   WiseTrack.instance.listenOnLogs((message) => print('لاگ SDK: $message'));
   ```
 - **IDFA/Ad ID در دسترس نیست**: اطمینان حاصل کنید که مجوز ATT اعطا شده است (iOS) یا Google Play Services گنجانده شده است (اندروید).
+- **راه‌اندازی وب ناموفق است**: اطمینان حاصل کنید که `webAppVersion` در `WTInitialConfig` ارائه شده است
+- **رویدادهای وب ردیابی نمی‌شوند**: کنسول مرورگر را برای خطاهای JavaScript بررسی کنید و لاگ‌گیری خاص وب را فعال کنید
 - **اعلان‌های پوش ردیابی نمی‌شوند**: بررسی کنید که توکن‌های APNS/FCM معتبر تنظیم شده‌اند.
 
 برای کمک بیشتر، با پشتیبانی در [support@wisetrack.io](mailto:support@wisetrack.io) تماس بگیرید.

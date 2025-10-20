@@ -1,6 +1,7 @@
 // ignore_for_file: unused_field
 
 import '../../resources/resources.dart';
+import '../../resources/running_platform.dart';
 import '../environments.dart';
 import '../log_level.dart';
 import '../store_name.dart';
@@ -35,9 +36,10 @@ class WTInitialConfig {
   /// - [logLevel] sets the log level for SDK logging (default: `debug`).
   /// - [oaidEnabled] enables or disables Open Advertising ID support (default: `false`).
   /// - [referrerEnabled] enables or disables Referrer ID support (default: `true`).
+  /// - [webAppVersion] the app version for web.
   WTInitialConfig({
     required this.appToken,
-    this.userEnvironment = WTUserEnvironment.sandbox,
+    this.userEnvironment = WTUserEnvironment.production,
     this.androidStore = WTAndroidStore.other,
     this.iOSStore = WTIOSStore.other,
     this.trackingWaitingTime = 0,
@@ -51,7 +53,9 @@ class WTInitialConfig {
     this.oaidEnabled = false,
     this.referrerEnabled = true,
     this.logLevel = WTResources.defaultLogLevel,
-  });
+    this.webAppVersion,
+  }) : assert(!RunningPlatform.isWeb || webAppVersion != null,
+            'webAppVersion is required when using web');
 
   /// The user environment defining the deployment setting.
   ///
@@ -123,6 +127,10 @@ class WTInitialConfig {
   /// Indicates whether the Referrer ID is enabled.
   /// The default value is `true`.
   final bool referrerEnabled;
+
+  /// The app version for web.
+  /// just fill it when you are using web.
+  final String? webAppVersion;
 
   /// Creates an instance of [WTInitialConfig] from a map.
   ///

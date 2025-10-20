@@ -1,1 +1,2 @@
 lib/firebase_options.dart
+web/firebase-config.js

@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:wisetrack/src/config/channel_names.dart';
-import 'package:wisetrack/src/config/wisetrack_method_channel.dart';
+import 'package:wisetrack/src/config/native/wisetrack_method_channel.dart';
 import 'package:wisetrack/src/entity/sdk_environment.dart';
 import 'package:wisetrack/src/resources/resources.dart';
 import 'package:wisetrack/wisetrack.dart';
@@ -101,7 +101,7 @@ void main() {
         mockChannel.invokeMethod(MethodChannelNames.methodClearAndStop),
       ).thenAnswer((_) async => null);
 
-      await wisetrack.enableTestMode();
+      await wisetrack.clearAndStop();
       verify(
         mockChannel.invokeMethod(MethodChannelNames.methodClearAndStop),
       ).called(1);
@@ -356,7 +356,7 @@ void main() {
       );
 
       await expectLater(
-        () => wisetrack.enableTestMode(),
+        () => wisetrack.clearAndStop(),
         prints(contains('Failed to enable test mode')),
       );
     });

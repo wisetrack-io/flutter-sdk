@@ -1,8 +1,7 @@
 import 'dart:convert';
 
-import 'package:wisetrack/src/config/config.dart';
-import 'package:wisetrack/src/entity/entity.dart';
-
+import '../config/wisetrack_sdk.dart';
+import '../entity/entity.dart';
 import 'js_evaluator.dart';
 
 class WiseTrackWebBridge {
@@ -41,7 +40,7 @@ class WiseTrackWebBridge {
         await WiseTrack.instance.init(WTInitialConfig.fromMap(args));
         break;
       case 'clearDataAndStop':
-        await WiseTrack.instance.enableTestMode();
+        await WiseTrack.instance.clearAndStop();
         break;
       case 'setLogLevel':
         await WiseTrack.instance

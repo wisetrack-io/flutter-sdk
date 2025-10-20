@@ -1,11 +1,12 @@
 import 'dart:async';
-import 'dart:io';
 
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:wisetrack/wisetrack.dart';
 import 'package:wisetrack_example/views/logs_view.dart';
 
+import '../app_platform.dart';
 import '../widgets/button.dart';
 import '../widgets/dropdown.dart';
 import '../widgets/inputfield.dart';
@@ -74,7 +75,12 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           IconButton(
             onPressed: () {
-              WiseTrack.instance.enableTestMode();
+              WiseTrack.instance.clearAndStop();
+              setState(() {
+                initialLoading = false;
+                isInitialized = false;
+                isStarted = false;
+              });
             },
             icon: const Icon(CupertinoIcons.refresh_thin),
           ),
@@ -114,7 +120,7 @@ class _HomeScreenState extends State<HomeScreen> {
               Row(
                 spacing: 16,
                 children: [
-                  if (Platform.isAndroid)
+                  if (AppPlatform.isAndroid)
                     Expanded(
                       child: CustomDropdown<WTAndroidStore>(
                         title: '📬 Android Store',
@@ -131,7 +137,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             }),
                       ),
                     ),
-                  if (Platform.isIOS)
+                  if (AppPlatform.isIos)
                     Expanded(
                       child: CustomDropdown<WTIOSStore>(
                         title: '📬 iOS Store',
@@ -153,7 +159,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Row(
                   spacing: 16,
                   children: [
-                    if (Platform.isAndroid && androidStore.name == 'custom')
+                    if (AppPlatform.isAndroid && androidStore.name == 'custom')
                       Expanded(
                         child: CustomInputField(
                           title: '📬 Android Custom Store',
@@ -166,7 +172,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ),
                         ),
                       ),
-                    if (Platform.isIOS && iosStore.name == 'custom')
+                    if (AppPlatform.isIos && iosStore.name == 'custom')
                       Expanded(
                         child: CustomInputField(
                           title: '📬 iOS Custom Store',
@@ -186,7 +192,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       autoStartTracker = b;
                     }),
               ),
-              if (autoStartTracker && Platform.isIOS)
+              if (autoStartTracker && AppPlatform.isIos)
                 CustomInputField(
                   title: '⏳ Tracking Watting Time',
                   onChanged:
@@ -195,7 +201,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   hint: 'Enter App token',
                   inputType: TextInputType.number,
                 ),
-              if (Platform.isIOS)
+              if (AppPlatform.isIos)
                 OutlineButton(
                   title:
                       attAuthorized
@@ -258,11 +264,15 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: OutlineButton(
                       title: '🔈 Set FCM Token',
                       onPressed: () {
-                        WiseTrack.instance.setFCMToken("my_flutter_fcm_token");
+                        FirebaseMessaging.instance.getToken().then((token) {
+                          if (token != null) {
+                            WiseTrack.instance.setFCMToken(token);
+                          }
+                        });
                       },
                     ),
                   ),
-                  if (Platform.isIOS)
+                  if (AppPlatform.isIos)
                     Expanded(
                       child: OutlineButton(
                         title: '🔈 Set APNS Token',
@@ -275,7 +285,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                 ],
               ),
-              if (Platform.isAndroid)
+              if (AppPlatform.isAndroid)
                 OutlineButton(
                   title: '📦 Set Packages Info',
                   onPressed: () {
@@ -333,24 +343,28 @@ class _HomeScreenState extends State<HomeScreen> {
         title: 'Initialize SDK${autoStartTracker ? ' + Start SDK' : ''}',
         isLoading: initialLoading,
         onPressed: () async {
-          setState(() {
-            initialLoading = true;
-          });
-          await WiseTrack.instance.init(
-            WTInitialConfig(
-              appToken: appToken,
-              iOSStore: iosCustomStore ?? iosStore,
-              androidStore: androidCustomStore ?? androidStore,
-              startTrackerAutomatically: autoStartTracker,
-              trackingWaitingTime: trackingWaitingTime,
-              logLevel: logLevel,
-            ),
-          );
-          setState(() {
-            initialLoading = false;
-            isInitialized = true;
-            isStarted = autoStartTracker;
-          });
+          try {
+            setState(() {
+              initialLoading = true;
+            });
+            await WiseTrack.instance.init(
+              WTInitialConfig(
+                appToken: appToken,
+                iOSStore: iosCustomStore ?? iosStore,
+                androidStore: androidCustomStore ?? androidStore,
+                startTrackerAutomatically: autoStartTracker,
+                trackingWaitingTime: trackingWaitingTime,
+                logLevel: logLevel,
+                webAppVersion: '1.0.0',
+              ),
+            );
+          } finally {
+            setState(() {
+              initialLoading = false;
+              isInitialized = true;
+              isStarted = autoStartTracker;
+            });
+          }
         },
       );
     }

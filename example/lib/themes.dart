@@ -7,6 +7,7 @@ class Themes {
     scaffoldBackgroundColor: const Color(0xfff0eff8),
     appBarTheme: const AppBarTheme(backgroundColor: Color(0xfff0eff8)),
     primaryColor: Colors.indigoAccent.shade400,
+    fontFamily: 'Poppins',
     textButtonTheme: const TextButtonThemeData(
       style: ButtonStyle(foregroundColor: WidgetStatePropertyAll(Colors.black)),
     ),
@@ -40,6 +41,7 @@ class Themes {
       backgroundColor: Color.fromARGB(255, 18, 17, 21),
     ),
     primaryColor: Colors.indigoAccent.shade400,
+    fontFamily: 'Poppins',
     textButtonTheme: const TextButtonThemeData(
       style: ButtonStyle(foregroundColor: WidgetStatePropertyAll(Colors.white)),
     ),

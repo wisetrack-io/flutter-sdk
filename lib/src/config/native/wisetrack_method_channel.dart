@@ -5,7 +5,8 @@ import 'package:wisetrack/src/entity/entity.dart';
 import 'package:wisetrack/src/entity/sdk_environment.dart';
 import 'package:wisetrack/src/resources/resources.dart';
 
-import 'wisetrack_platform_interface.dart';
+import '../../resources/running_platform.dart';
+import '../wisetrack_platform_interface.dart';
 
 /// An implementation of [WisetrackPlatform] that communicates with the native platform via method channels.
 class MethodChannelWisetrack extends WisetrackPlatform {
@@ -35,7 +36,7 @@ class MethodChannelWisetrack extends WisetrackPlatform {
   }
 
   @override
-  Future<void> enableTestMode() async {
+  Future<void> clearAndStop() async {
     try {
       await _channel.invokeMethod(MethodChannelNames.methodClearAndStop);
     } on PlatformException catch (e) {
@@ -68,7 +69,7 @@ class MethodChannelWisetrack extends WisetrackPlatform {
   @override
   Future<bool> iOSRequestForATT() async {
     try {
-      if (kIsWeb || defaultTargetPlatform != TargetPlatform.iOS) return false;
+      if (!RunningPlatform.isIOS) return false;
 
       final result = await _channel.invokeMethod<bool>(
         MethodChannelNames.methodIOSRequestForATT,
@@ -101,7 +102,7 @@ class MethodChannelWisetrack extends WisetrackPlatform {
   @override
   Future<void> setAPNSToken(String apnsToken) async {
     try {
-      if (kIsWeb || defaultTargetPlatform != TargetPlatform.iOS) return;
+      if (!RunningPlatform.isIOS) return;
 
       await _channel.invokeMethod(MethodChannelNames.methodSetAPNSToken, {
         "token": apnsToken,
@@ -150,9 +151,7 @@ class MethodChannelWisetrack extends WisetrackPlatform {
   @override
   Future<String?> getAdId() async {
     try {
-      if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) {
-        return null;
-      }
+      if (!RunningPlatform.isAndroid) return null;
 
       return _channel.invokeMethod(MethodChannelNames.methodGetAdId);
     } on PlatformException catch (e) {
@@ -164,7 +163,7 @@ class MethodChannelWisetrack extends WisetrackPlatform {
   @override
   Future<String?> getIdfa() async {
     try {
-      if (kIsWeb || defaultTargetPlatform != TargetPlatform.iOS) return null;
+      if (!RunningPlatform.isIOS) return null;
 
       return _channel.invokeMethod(MethodChannelNames.methodGetIdFA);
     } on PlatformException catch (e) {
@@ -176,7 +175,7 @@ class MethodChannelWisetrack extends WisetrackPlatform {
   @override
   Future<void> setPackagesInfo() async {
     try {
-      if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) return;
+      if (!RunningPlatform.isAndroid) return;
 
       return _channel.invokeMethod(MethodChannelNames.methodSetPackagesInfo);
     } on PlatformException catch (e) {
@@ -188,9 +187,8 @@ class MethodChannelWisetrack extends WisetrackPlatform {
   @override
   Future<String?> getReferrer() async {
     try {
-      if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) {
-        return null;
-      }
+      if (!RunningPlatform.isAndroid) return null;
+
       return _channel.invokeMethod(MethodChannelNames.methodGetReferrer);
     } on PlatformException catch (e) {
       debugPrint("Failed to get referrer: ${e.message}");

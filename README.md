@@ -22,17 +22,20 @@ The **WiseTrack** Flutter plugin offers a cross-platform solution to accelerate 
   - [Customizing SDK Behavior](#customizing-sdk-behavior)
   - [WebView Integration](#webview-integration)
 - [Example Project](#example-project)
+- [Breaking Changes](#breaking-changes)
 - [Troubleshooting](#troubleshooting)
 - [License](#license)
 
 ## Features
 
-- Cross-platform tracking for iOS and Android
+- Cross-platform tracking for iOS, Android, and Web
 - Support for custom and revenue event logging
 - Push notification token management (APNs and FCM)
 - App Tracking Transparency (ATT) support for iOS
 - Configurable logging levels
 - Advertising ID retrieval (IDFA for iOS, Ad ID for Android)
+- Web platform support with JavaScript interop integration
+- Unified API across all platforms (mobile and web)
 
 ## Requirements
 
@@ -41,7 +44,7 @@ The **WiseTrack** Flutter plugin offers a cross-platform solution to accelerate 
 - iOS 11.0 or later
 - Android embedding v2 enabled
 - Android API 21 (Lollipop) or later
-- Android Gradle Plugin >= 7.1.0 for full compatibility with Java 17.
+- Android Gradle Plugin >= 7.1.0 for full compatibility with Java 17
 
 ## Installation
 
@@ -52,7 +55,7 @@ To integrate the WiseTrack Flutter Plugin into your Flutter project, follow thes
 
    ```yaml
    dependencies:
-     wisetrack: ^2.0.0 # Replace with the latest version
+     wisetrack: ^2.2.0 # Replace with the latest version
    ```
 
 2. **Install the package**:
@@ -162,7 +165,7 @@ To integrate the WiseTrack Flutter Plugin into your Flutter project, follow thes
      implementation 'com.google.android.gms:play-services-appset:16.1.0'
      ```
 
-5. **Rebuild the project**:
+6. **Rebuild the project**:
    Run your project to ensure all dependencies are correctly integrated:
    ```bash
    flutter run
@@ -184,6 +187,7 @@ void main() async {
   // Initialize WiseTrack
   final config = WTInitialConfig(
     appToken: 'your-app-token',
+    webAppVersion: kIsWeb ? '1.0.0' : null, // Required for web platform
     userEnvironment: WTUserEnvironment.production, // Use .sandbox for testing
     androidStore: WTAndroidStore.playstore,
     iOSStore: WTIOSStore.appstore,
@@ -357,6 +361,7 @@ await WiseTrack.instance.logEvent(WTEvent.revenue(
   },
 ));
 ```
+
 **Note:** Event parameter keys and values have a maximum limit of 50 characters.
 
 ### Setting Log Levels
@@ -381,29 +386,45 @@ String? adId = await WiseTrack.instance.getAdId();
 print('Ad ID: ${adId ?? "Not available"}');
 ```
 
+**Note**: On web platform, advertising ID retrieval is not supported due to browser privacy restrictions. These methods will return `null` on web.
+
 ## Advanced Usaged
 
 ### Customizing SDK Behavior
 
 You can customize the SDK behavior through the `WTInitialConfig` parameters:
 
+**General Parameters:**
 - `appToken`: Your unique app token (required).
 - `userEnvironment`: The environment (`.production`, `.sandbox`).
-- `androidStore`: The Android app store (e.g., `.googleplay`, `.cafebazaar`, `.other`, ...).
-- `iOSStore`: The iOS app store (e.g., `.appstore`, `.sibche`, `.other`, ..).
 - `trackingWaitingTime`: Delay before starting tracking (in seconds).
 - `startTrackerAutomatically`: Whether to start tracking automatically.
 - `customDeviceId`: A custom device identifier.
 - `defaultTracker`: A default tracker for event attribution.
 - `logLevel`: Set the initial log level.
+- `attributionDeeplink`: Indicates whether attribution via deep links is enabled.
+- `eventBuffering`: Enables event buffering to optimize data transmission.
+- `appSecret`: The secret key used for authentication or encryption purposes.
+- `secretId`: A unique secret identifier linked to the app's credentials.
+
+**Mobile-Specific Parameters:**
+- `androidStore`: The Android app store (e.g., `.googleplay`, `.cafebazaar`, `.other`, ...).
+- `iOSStore`: The iOS app store (e.g., `.appstore`, `.sibche`, `.other`, ..).
 - `oaidEnabled`: Indicates whether the Open Advertising ID (OAID) is enabled.
 - `referrerEnabled`: Indicates whether the Referrer ID is enabled.
 
-Example with advanced configuration:
+**Web-Specific Parameters:**
+- `webAppVersion`: The app version for web (required for web platform).
+
+**Example with Advanced Configuration:**
 
 ```dart
 final config = WTInitialConfig(
   appToken: 'your-app-token',
+  
+  // Web-specific (required when targeting web)
+  webAppVersion: kIsWeb ? '1.0.0' : null,
+
   userEnvironment: WTUserEnvironment.sandbox,
   androidStore: WTAndroidStore.googlePlay,
   iOSStore: WTIOSStore.appStore,
@@ -539,6 +560,39 @@ Files include:
 
 An example project demonstrating the WiseTrack Flutter Plugin integration is available at [GitHub Repository URL](https://github.com/wisetrack-io/flutter-sdk/tree/main/example). Clone the repository and follow the setup instructions to see the plugin in action.
 
+## Breaking Changes
+
+### Version 2.2.0
+
+- **Method Rename**: `enableTestMode()` has been renamed to `clearAndStop()`
+
+  ```dart
+  // OLD (Version 2.1.x and earlier)
+  await WiseTrack.instance.enableTestMode();
+
+  // NEW (Version 2.2.0+)
+  await WiseTrack.instance.clearAndStop();
+  ```
+
+- **Default Environment Change**: The default `userEnvironment` has changed from `WTUserEnvironment.sandbox` to `WTUserEnvironment.production`
+
+  ```dart
+  // Explicitly set sandbox if needed
+  final config = WTInitialConfig(
+    appToken: 'your-app-token',
+    userEnvironment: WTUserEnvironment.sandbox, // Explicitly set sandbox
+  );
+  ```
+
+- **Web Platform Requirement**: `webAppVersion` parameter is now required when targeting web platform
+  ```dart
+  // Add webAppVersion for web builds
+  final config = WTInitialConfig(
+    appToken: 'your-app-token',
+    webAppVersion: kIsWeb ? '1.0.0' : null, // Required for web
+  );
+  ```
+
 ## Troubleshooting
 
 - **SDK not initializing**: Ensure the `appToken` is correct and the network is reachable.
@@ -547,6 +601,8 @@ An example project demonstrating the WiseTrack Flutter Plugin integration is ava
   WiseTrack.instance.listenOnLogs((message) => print('SDK Log: $message'));
   ```
 - **IDFA/Ad ID not available**: Ensure ATT permission is granted (iOS) or Google Play Services is included (Android).
+- **Web initialization fails**: Ensure `webAppVersion` is provided in `WTInitialConfig`
+- **Web events not tracking**: Check browser console for JavaScript errors and enable web-specific logging
 
 For further assistance, contact support at [support@wisetrack.io](mailto:support@wisetrack.io).
 

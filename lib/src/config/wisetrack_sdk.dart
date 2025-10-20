@@ -27,8 +27,8 @@ class WiseTrack {
   ///
   /// When enabled, the SDK operates in a test environment, preventing real data tracking.
   /// Note: Enabling test mode will `delete all previously collected data`.
-  Future<void> enableTestMode() {
-    return WisetrackPlatform.instance.enableTestMode();
+  Future<void> clearAndStop() {
+    return WisetrackPlatform.instance.clearAndStop();
   }
 
   /// Requests App Tracking Transparency (ATT) permission on iOS.

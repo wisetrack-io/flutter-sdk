@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
-import 'package:wisetrack/src/config/wisetrack_method_channel.dart';
+import 'package:wisetrack/src/config/native/wisetrack_method_channel.dart';
 import 'package:wisetrack/src/config/wisetrack_platform_interface.dart';
 import 'package:wisetrack/wisetrack.dart';
 
@@ -53,7 +53,7 @@ class MockWisetrackPlatform
     with MockPlatformInterfaceMixin
     implements WisetrackPlatform {
   @override
-  Future<void> enableTestMode() async {}
+  Future<void> clearAndStop() async {}
 
   @override
   Future<bool> iOSRequestForATT() {

@@ -5,10 +5,30 @@
 ## 🎯 Version 2.x
 
 <details open>
+<summary><strong>2.2.0</strong> — <em>Web Platform Support & Major Architecture Refactor</em></summary>
+
+- 🌐 **Major Feature: Web Platform Support**
+  - Complete web platform implementation added with full SDK functionality
+  - New web-specific configuration with `webAppVersion` parameter (required for web)
+
+- 📦 **Dependency Updates**
+  - Android SDK updated to `2.2.5`
+
+- ‼️ **Breaking Changes**
+
+  - **Method Rename**: `enableTestMode()` → `clearAndStop()`
+    - Migration: Replace all calls to `enableTestMode()` with `clearAndStop()`
+  - **Default Environment**: Changed from `WTUserEnvironment.sandbox` to `WTUserEnvironment.production`
+    - Migration: Explicitly set `userEnvironment: WTUserEnvironment.sandbox` if needed
+  - **Web Requirement**: `webAppVersion` parameter is now required when using web platform
+    - Migration: Add `webAppVersion: "your_version"` to `WTInitialConfig` for web apps
+
+</details>
+
+<details>
 <summary><strong>2.1.5</strong> — <em>Native SDK Updates & Event Parameter Validation</em></summary>
 
 - 📦 **Native SDK Updates**
-
   - Android SDK updated to `2.2.2`
   - iOS SDK updated to `2.2.1`
 
@@ -22,7 +42,6 @@
 <summary><strong>2.1.4</strong> — <em>Uninstall Detection & Firebase Integration</em></summary>
 
 - 🚀 **New Feature: Uninstall Detection**
-
   - Added support for uninstall detection using **Firebase Cloud Messaging (FCM)**.
 
 - 📦 **Native SDK Updates**

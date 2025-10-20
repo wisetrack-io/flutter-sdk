@@ -1,6 +1,6 @@
 {
-    "name": "wisetrack_example",
-    "short_name": "wisetrack_example",
+    "name": "WiseTrack",
+    "short_name": "WiseTrack",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
