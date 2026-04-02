@@ -15,10 +15,10 @@ void main() {
   group('Web Configuration Tests', () {
     test('webAppVersion is required for web platform', () {
       expect(
-        () => WTInitialConfig(
-          appToken: 'test_token',
-          // webAppVersion is missing - should throw assertion error
-        ),
+        () =>
+            WTInitialConfig(appToken: 'test_token', clientSecret: 'test_secret'
+                // webAppVersion is missing - should throw assertion error
+                ),
         throwsA(isA<AssertionError>()),
       );
     });
@@ -27,6 +27,7 @@ void main() {
       expect(
         () => WTInitialConfig(
           appToken: 'test_token',
+          clientSecret: 'test_secret',
           webAppVersion: '1.0.0',
         ),
         returnsNormally,
@@ -36,6 +37,7 @@ void main() {
     test('creates config with all web-specific parameters', () {
       final config = WTInitialConfig(
         appToken: 'web_token',
+        clientSecret: 'test_secret',
         webAppVersion: '2.0.0',
         userEnvironment: WTUserEnvironment.sandbox,
         logLevel: WTLogLevel.debug,
@@ -43,12 +45,16 @@ void main() {
         startTrackerAutomatically: true,
         customDeviceId: 'web_device_id',
         defaultTracker: 'web_tracker',
-        appSecret: 'web_secret',
-        secretId: 'web_secret_id',
-        attributionDeeplink: true,
-        eventBuffering: true,
-        oaidEnabled: false,
-        referrerEnabled: true,
+        deeplinkEnabled: true,
+        androidConfig: WTAndroidConfig(
+          store: WTAndroidStore.playstore,
+          oaidEnabled: true,
+        ),
+        iOSConfig: WTIOSConfig(
+          attWaitingInterval: 50,
+          requestATTAutomatically: true,
+          store: WTIOSStore.appstore,
+        ),
       );
 
       expect(config.appToken, 'web_token');
@@ -59,12 +65,12 @@ void main() {
       expect(config.startTrackerAutomatically, true);
       expect(config.customDeviceId, 'web_device_id');
       expect(config.defaultTracker, 'web_tracker');
-      expect(config.appSecret, 'web_secret');
-      expect(config.secretId, 'web_secret_id');
-      expect(config.attributionDeeplink, true);
-      expect(config.eventBuffering, true);
-      expect(config.oaidEnabled, false);
-      expect(config.referrerEnabled, true);
+      expect(config.deeplinkEnabled, true);
+      expect(config.androidConfig.oaidEnabled, false);
+      expect(config.androidConfig.store, WTAndroidStore.playstore);
+      expect(config.iOSConfig.attWaitingInterval, 50);
+      expect(config.iOSConfig.requestATTAutomatically, true);
+      expect(config.iOSConfig.store, WTIOSStore.appstore);
     });
   });
 
@@ -143,7 +149,8 @@ void main() {
     test('validates webAppVersion requirement', () {
       // Test that assertion error is thrown when webAppVersion is missing
       expect(
-        () => WTInitialConfig(appToken: 'test_token'),
+        () => WTInitialConfig(
+            appToken: 'test_token', clientSecret: 'test_secret'),
         throwsA(isA<AssertionError>()),
       );
     });
@@ -151,6 +158,7 @@ void main() {
     test('accepts valid web configuration', () {
       final config = WTInitialConfig(
         appToken: 'web_app_token',
+        clientSecret: 'test_secret',
         webAppVersion: '3.0.0',
         userEnvironment: WTUserEnvironment.production,
         logLevel: WTLogLevel.info,
@@ -169,6 +177,7 @@ void main() {
     test('handles web configuration with minimal parameters', () {
       final config = WTInitialConfig(
         appToken: 'minimal_token',
+        clientSecret: 'test_secret',
         webAppVersion: '1.0.0',
       );
 
@@ -176,12 +185,11 @@ void main() {
       expect(config.webAppVersion, '1.0.0');
       // Test default values
       expect(config.userEnvironment, WTUserEnvironment.production);
-      expect(config.androidStore, WTAndroidStore.other);
-      expect(config.iOSStore, WTIOSStore.other);
+      expect(config.androidConfig.store, WTAndroidStore.other);
+      expect(config.iOSConfig.store, WTIOSStore.other);
       expect(config.trackingWaitingTime, 0);
       expect(config.startTrackerAutomatically, true);
-      expect(config.oaidEnabled, false);
-      expect(config.referrerEnabled, true);
+      expect(config.androidConfig.oaidEnabled, false);
     });
   });
 
@@ -191,6 +199,7 @@ void main() {
       // by requiring webAppVersion when kIsWeb is true
       final config = WTInitialConfig(
         appToken: 'web_token',
+        clientSecret: 'test_secret',
         webAppVersion: '1.0.0',
       );
 

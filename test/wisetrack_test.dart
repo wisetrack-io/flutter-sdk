@@ -53,6 +53,9 @@ class MockWisetrackPlatform
     with MockPlatformInterfaceMixin
     implements WisetrackPlatform {
   @override
+  void registerMethodCallbacks() {}
+
+  @override
   Future<void> clearAndStop() async {}
 
   @override
@@ -132,4 +135,17 @@ class MockWisetrackPlatform
   Future<bool> isWiseTrackNotification(Map<String, dynamic> payload) {
     return Future.delayed(const Duration(seconds: 1), () => false);
   }
+
+  @override
+  Future<String?> getDeferredDeeplink() {
+    return Future.delayed(const Duration(seconds: 1), () => null);
+  }
+
+  @override
+  Future<String?> getLastDeeplink() {
+    return Future.delayed(const Duration(seconds: 1), () => null);
+  }
+
+  @override
+  void onDeeplinkReceived(DeeplinkCallback callback) {}
 }

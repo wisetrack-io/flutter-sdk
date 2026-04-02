@@ -3,10 +3,13 @@ import UIKit
 import WiseTrackLib
 
 public class WisetrackPlugin: NSObject, FlutterPlugin {
+    private var channel: FlutterMethodChannel?
     public static func register(with registrar: FlutterPluginRegistrar) {
-        let channel = FlutterMethodChannel(name: "io.wisetrack.flutter", binaryMessenger: registrar.messenger())
         let instance = WisetrackPlugin()
+        let channel = FlutterMethodChannel(name: "io.wisetrack.flutter", binaryMessenger: registrar.messenger())
+        instance.channel = channel
         registrar.addMethodCallDelegate(instance, channel: channel)
+        registrar.addApplicationDelegate(instance)
         
         WiseTrack.shared.prepareInitialization()
         WTLogger.shared.addOutput(output: FlutterChannelOutputLogger(channel: channel))
@@ -63,7 +66,7 @@ public class WisetrackPlugin: NSObject, FlutterPlugin {
             
         case WisetrackMethodChannel.getADID.rawValue:
             result(nil)
-        
+            
         case WisetrackMethodChannel.getIDFA.rawValue:
             let res = self.getIDFA()
             result(res)
@@ -94,10 +97,17 @@ public class WisetrackPlugin: NSObject, FlutterPlugin {
             self.logEvent(args: args)
             result(nil)
             
-            
         case WisetrackMethodChannel.isWiseTrackNotification.rawValue:
             guard let args = args(call, result: result) else { return }
             result(self.isWiseTrackNotification(args: args))
+            
+        case WisetrackMethodChannel.getLastDeeplink.rawValue:
+            let res = self.getLastDeeplink()
+            result(res)
+            
+        case WisetrackMethodChannel.getDeferredLink.rawValue:
+            let res = self.getDeferredLink()
+            result(res)
             
         default:
             result(FlutterMethodNotImplemented)
@@ -114,18 +124,27 @@ extension WisetrackPlugin {
         
         WiseTrack.shared.initialize(with: WTInitialConfig(
             appToken: args["app_token"] as! String,
+            clientSecret: args["client_secret"] as! String,
             storeName: WTStoreName(rawValue: args["ios_store_name"] as! String),
             environment: WTUserEnvironment(rawValue: args["user_environment"] as! String) ?? .production,
             logLevel: WTLogLevel(rawValue: args["log_level"] as! Int),
-            trackingWaitingTime: args["tracking_waiting_time"] as! Int,
+            trackingWaitingTime: TimeInterval(args["tracking_waiting_time"] as! Int),
             startTrackerAutomatically: args["start_tracker_automatically"] as! Bool,
             customDeviceId: args["custom_device_id"] as? String,
             defaultTracker: args["default_tracker"] as? String,
-            appSecret: args["app_secret"] as? String,
-            secretId: args["secret_id"] as? String,
-            attributionDeeplink: args["attribution_deeplink"] as? Bool,
-            eventBuffering: args["event_buffering_enabled"] as? Bool
+            deeplinkEnabled: args["deeplink_enabled"] as! Bool,
+            attWaitingInterval: args["att_waiting_interval"] as? TimeInterval,
+            requestATTAutomatically: args["request_att_automatically"] as! Bool,
         ))
+
+        // Set deeplink listener after initialization
+        WiseTrack.shared.onDeeplinkReceived { url, isDeferred in
+            DispatchQueue.main.async {
+                self.channel?.invokeMethod(WisetrackMethodChannel.deeplinkListener.rawValue, arguments: [
+                    "url": url.absoluteString, "is_deferred": isDeferred
+                ])
+            }
+        }
     }
     
     private func isWiseTrackNotification(args: [String: Any]) -> Bool{
@@ -187,6 +206,42 @@ extension WisetrackPlugin {
         default:
             return
         }
+    }
+    
+    private func getLastDeeplink() -> String? {
+        return WiseTrack.shared.getLastDeeplink()
+    }
+    
+    private func getDeferredLink() -> String? {
+        return WiseTrack.shared.getDeferredDeeplink()
+    }
+}
+
+// MARK: - Deep Link Handling
+extension WisetrackPlugin {
+
+    // Handle Universal Links (AppDelegate)
+    public func application(
+        _ application: UIApplication,
+        continue userActivity: NSUserActivity,
+        restorationHandler: @escaping ([Any]) -> Void
+    ) -> Bool {
+        guard userActivity.activityType == NSUserActivityTypeBrowsingWeb,
+              let url = userActivity.webpageURL else {
+            return false
+        }
+        WiseTrack.shared.handleDeepLink(with: url)
+        return true
+    }
+
+    // Handle Custom URL Schemes (AppDelegate)
+    public func application(
+        _ application: UIApplication,
+        open url: URL,
+        options: [UIApplication.OpenURLOptionsKey : Any] = [:]
+    ) -> Bool {
+        WiseTrack.shared.handleDeepLink(with: url)
+        return true
     }
 }
 

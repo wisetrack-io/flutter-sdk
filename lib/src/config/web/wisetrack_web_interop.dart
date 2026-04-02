@@ -1,43 +1,43 @@
-import 'dart:js_interop';
+@JS('WiseTrackSDK')
+library wisetrack_web_interop;
 
 import 'package:js/js.dart';
 
 /// JavaScript interop for Wisetrack Web SDK
-@JS('WiseTrackSDK.WiseTrack')
-@anonymous
+@JS('WiseTrack')
 class WiseTrackJS {
   external static WiseTrackJS get instance;
 
-  external JSPromise<JSAny?> init(JSObject config);
-  external JSPromise<JSAny?> startTracking();
-  external JSPromise<JSAny?> stopTracking();
-  external JSPromise<JSAny?> trackEvent(WTEventJS event);
+  external Object init(Object config);
+  external Object startTracking();
+  external Object stopTracking();
+  external Object trackEvent(WTEventJS event);
   external void setEnabled(bool enabled);
-  external JSBoolean isEnabled();
+  external bool isEnabled();
   external void setLogLevel(String level);
-  external JSPromise<JSAny?> setFCMToken(String token);
+  external Object setFCMToken(String token);
   external void flush();
+  external String? getLastDeeplink();
+  external String? getDeferredDeeplink();
+  external void setOnDeeplinkListener(Function callback);
 }
 
-@JS('WiseTrackSDK.WTEvent')
-@anonymous
+@JS('WTEvent')
 class WTEventJS {
-  external static WTEventJS defaultEvent(String name, [JSObject? params]);
+  external static WTEventJS defaultEvent(String name, [Object? params]);
 
   external static WTEventJS revenueEvent(
-      String name, JSNumber amount, String currency,
-      [JSObject? params]);
+      String name, num amount, String currency,
+      [Object? params]);
 }
 
-@JS('WiseTrackSDK.ResourceWrapper')
-@anonymous
+@JS('ResourceWrapper')
 class ResourceWrapperJS {
   external static void sdkEnvironment(String environment);
   external static void sdkVersion(String version);
 }
 
-@JS('WiseTrackSDK.WTLogger')
-@anonymous
+@JS('WTLogger')
 class WTLoggerJS {
-  external static void addOutputEngine(JSFunction callback);
+  external static void addOutputEngine(Function callback);
 }

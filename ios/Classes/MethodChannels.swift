@@ -14,4 +14,7 @@ enum WisetrackMethodChannel: String {
     case getADID                    = "wt.get_adid"
     case getIDFA                    = "wt.get_idfa"
     case isWiseTrackNotification    = "wt.is_wisetrack_notification"
+    case getLastDeeplink            = "wt.get_last_deeplink"
+    case getDeferredLink            = "wt.get_deferred_link"
+    case deeplinkListener           = "wt.deeplink_listener"
 }

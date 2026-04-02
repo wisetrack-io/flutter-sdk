@@ -2,7 +2,7 @@ package io.wisetrack.wisetrack
 
 import io.flutter.plugin.common.MethodChannel
 import io.wisetrack.sdk.core.models.WTLogLevel
-import io.wisetrack.sdk.core.utils.WTLoggerOutput
+import io.wisetrack.sdk.core.resources.WTLoggerOutput
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
@@ -13,10 +13,10 @@ class FlutterChannelOutputLogger(private val channel: MethodChannel) : WTLoggerO
         MainScope().launch(Dispatchers.Main) {
             channel.invokeMethod(
                 MethodNames.LOG, mapOf(
-                    "level" to level.priority, "message" to message
+                    "level" to level.priority, 
+                    "message" to message
                 )
             )
         }
     }
-
 }

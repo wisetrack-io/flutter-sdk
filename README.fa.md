@@ -16,6 +16,7 @@
   - [شروع/توقف ردیابی](#شروعتوقف-ردیابی)
   - [تشخیص حذف نصب و تنظیم توکن‌ های اعلان پوش](#تشخیص-حذف-نصب-و-تنظیم-توکن‌-های-اعلان-پوش)
   - [تنظیم توکن‌ های اعلان پوش](#تنظیم-توکن-های-اعلان-پوش)
+  - [مدیریت Deep Link](#مدیریت-deep-link)
   - [ثبت رویدادهای سفارشی](#ثبت-رویدادهای-سفارشی)
   - [تنظیم سطوح لاگ](#تنظیم-سطوح-لاگ)
   - [بازیابی شناسه های تبلیغاتی](#بازیابی-شناسه-های-تبلیغاتی)
@@ -32,10 +33,12 @@
 - ردیابی چندپلتفرمی برای iOS، اندروید و وب
 - پشتیبانی از ثبت رویدادهای سفارشی و درآمدی
 - مدیریت توکن اعلان پوش (APNS و FCM)
-- پشتیبانی از شفافیت ردیابی برنامه (ATT) برای iOS
+- پشتیبانی از شفافیت ردیابی برنامه (ATT) برای iOS با رفتار قابل تنظیم
+- مدیریت Deep Link و Deferred Deep Link
 - سطوح لاگ قابل تنظیم
 - بازیابی شناسه تبلیغاتی (IDFA برای iOS، Ad ID برای اندروید)
 - پشتیبانی از پلتفرم وب با ادغام JavaScript interop
+- کلاس‌های پیکربندی اختصاصی برای اندروید و iOS
 - API یکپارچه در همه پلتفرم‌ها (موبایل و وب)
 
 ## نیازمندی ها
@@ -56,7 +59,7 @@
 
    ```yaml
    dependencies:
-     wisetrack: ^2.2.0 # با آخرین نسخه جایگزین کنید
+     wisetrack: ^2.3.0 # با آخرین نسخه جایگزین کنید
    ```
 
 2. **نصب بسته**:
@@ -195,10 +198,18 @@ void main() async {
   // راه‌اندازی WiseTrack
   final config = WTInitialConfig(
     appToken: 'your-app-token',
+    clientSecret: 'your-client-secret', // الزامی برای احراز هویت
     webAppVersion: kIsWeb ? '1.0.0' : null, // برای پلتفرم وب الزامی است
     userEnvironment: WTUserEnvironment.production, // برای تست از .sandbox استفاده کنید
-    androidStore: WTAndroidStore.playstore,
-    iOSStore: WTIOSStore.appstore,
+    androidConfig: WTAndroidConfig(
+      store: WTAndroidStore.playstore,
+      oaidEnabled: false,
+    ),
+    iOSConfig: WTIOSConfig(
+      store: WTIOSStore.appstore,
+      attWaitingInterval: 30,
+      requestATTAutomatically: true,
+    ),
     logLevel: WTLogLevel.warning,
   );
 
@@ -208,7 +219,7 @@ void main() async {
 }
 ```
 
-**توجه**: `'your-app-token'` را با توکن ارائه‌شده توسط داشبورد WiseTrack جایگزین کنید.
+**توجه**: مقادیر `'your-app-token'` و `'your-client-secret'` را با اعتبارنامه‌های ارائه‌شده توسط داشبورد WiseTrack جایگزین کنید.
 
 ## استفاده پایه
 
@@ -338,6 +349,50 @@ print('ردیابی مجاز است: $isAuthorized');
   </array>
   ```
 
+### مدیریت Deep Link
+
+SDK WiseTrack از مدیریت کامل Deep Link و Deferred Deep Link پشتیبانی می‌کند. این امکان به شما اجازه می‌دهد جذب کاربر از طریق Deep Link را ردیابی کرده و ناوبری مناسب را انجام دهید.
+
+#### فعال‌سازی مدیریت Deep Link
+
+مدیریت Deep Link به صورت پیش‌فرض فعال است. می‌توانید آن را در پیکربندی غیرفعال کنید:
+
+```dart
+final config = WTInitialConfig(
+  appToken: 'your-app-token',
+  clientSecret: 'your-client-secret',
+  deeplinkEnabled: false, // غیرفعال کردن مدیریت Deep Link
+);
+```
+
+#### دریافت Deep Link ها
+
+```dart
+// دریافت آخرین Deep Link دریافت‌شده
+String? lastDeeplink = await WiseTrack.instance.getLastDeeplink();
+print('آخرین Deep Link: ${lastDeeplink ?? "ندارد"}');
+
+// دریافت Deferred Deep Link (برای کاربرانی که اپ را از طریق Deep Link نصب کرده‌اند)
+String? deferredDeeplink = await WiseTrack.instance.getDeferredDeeplink();
+print('Deferred Deep Link: ${deferredDeeplink ?? "ندارد"}');
+```
+
+#### گوش دادن به رویدادهای Deep Link
+
+می‌توانید یک listener برای دریافت رویدادهای Deep Link در لحظه تنظیم کنید:
+
+```dart
+WiseTrack.instance.onDeeplinkReceived((String url, bool isDeferred) {
+  print('Deep Link دریافت شد: $url');
+  print('آیا Deferred است: $isDeferred');
+
+  // مدیریت ناوبری بر اساس Deep Link
+  if (url.contains('/product/')) {
+    // هدایت به صفحه محصول
+  }
+});
+```
+
 ### ثبت رویدادهای سفارشی
 
 رویدادهای سفارشی یا درآمدی را ثبت کنید:
@@ -397,23 +452,25 @@ print('Ad ID: ${adId ?? "در دسترس نیست"}');
 **پارامترهای عمومی:**
 
 - `appToken`: توکن یکتای برنامه شما (الزامی).
+- `clientSecret`: کلید مخفی برای احراز هویت (الزامی).
 - `userEnvironment`: محیط (`.production`, `.sandbox`).
 - `trackingWaitingTime`: تاخیر قبل از شروع ردیابی (به ثانیه).
 - `startTrackerAutomatically`: آیا ردیابی به صورت خودکار شروع شود.
 - `customDeviceId`: یک شناسه دستگاه سفارشی.
 - `defaultTracker`: یک ردیاب پیش‌فرض برای تخصیص رویداد.
 - `logLevel`: تنظیم سطح لاگ اولیه.
-- `attributionDeeplink`: نشان‌دهنده فعال بودن attribution از طریق deep links.
-- `eventBuffering`: فعال‌سازی buffering رویدادها برای بهینه‌سازی انتقال داده.
-- `appSecret`: کلید مخفی استفاده شده برای احراز هویت یا رمزگذاری.
-- `secretId`: شناسه مخفی یکتا مرتبط با اعتبارنامه‌های برنامه.
+- `deeplinkEnabled`: نشان‌دهنده فعال بودن مدیریت Deep Link (پیش‌فرض: `true`).
 
-**پارامترهای خاص موبایل:**
+**پارامترهای خاص اندروید (WTAndroidConfig):**
 
-- `androidStore`: فروشگاه برنامه اندروید (مانند `.googleplay`, `.cafebazaar`, `.other`, ...).
-- `iOSStore`: فروشگاه برنامه iOS (مانند `.appstore`, `.sibche`, `.other`, ..).
+- `store`: فروشگاه برنامه اندروید (مانند `.googleplay`, `.cafebazaar`, `.other`, ...).
 - `oaidEnabled`: نشان‌دهنده فعال بودن شناسه تبلیغاتی باز (OAID).
-- `referrerEnabled`: نشان‌دهنده فعال بودن شناسه ارجاع.
+
+**پارامترهای خاص iOS (WTIOSConfig):**
+
+- `store`: فروشگاه برنامه iOS (مانند `.appstore`, `.sibche`, `.other`, ..).
+- `attWaitingInterval`: حداکثر زمان انتظار برای مجوز ATT (پیش‌فرض: ۳۰ ثانیه). برای غیرفعال کردن انتظار، `null` قرار دهید.
+- `requestATTAutomatically`: آیا SDK به صورت خودکار ATT را درخواست کند (پیش‌فرض: `true`).
 
 **پارامترهای خاص وب:**
 
@@ -424,20 +481,32 @@ print('Ad ID: ${adId ?? "در دسترس نیست"}');
 ```dart
 final config = WTInitialConfig(
   appToken: 'your-app-token',
+  clientSecret: 'your-client-secret',
 
   // خاص وب (هنگام هدف قرار دادن وب الزامی است)
   webAppVersion: kIsWeb ? '1.0.0' : null,
 
   userEnvironment: WTUserEnvironment.sandbox,
-  androidStore: WTAndroidStore.googlePlay,
-  iOSStore: WTIOSStore.appStore,
-  trackingWaitingTime: 3,
+
+  // پیکربندی خاص اندروید
+  androidConfig: WTAndroidConfig(
+    store: WTAndroidStore.googlePlay,
+    oaidEnabled: false,
+  ),
+
+  // پیکربندی خاص iOS
+  iOSConfig: WTIOSConfig(
+    store: WTIOSStore.appStore,
+    attWaitingInterval: 30,
+    requestATTAutomatically: true,
+  ),
+
+  trackingWaitingTime: 5,
   startTrackerAutomatically: true,
   customDeviceId: 'custom-device-123',
   defaultTracker: 'default-tracker',
+  deeplinkEnabled: true,
   logLevel: WTLogLevel.debug,
-  oaidEnabled: false,
-  referrerEnabled: true,
 );
 
 await WiseTrack.instance.init(config);
@@ -566,6 +635,41 @@ InAppWebView(
 
 ## تغییرات مهم
 
+### نسخه 2.3.0
+
+- **تغییر ساختار پیکربندی**: پارامترهای خاص پلتفرم به کلاس‌های پیکربندی اختصاصی منتقل شده‌اند
+
+  ```dart
+  // قدیمی (نسخه 2.2.x و قبل از آن)
+  final config = WTInitialConfig(
+    appToken: 'your-app-token',
+    androidStore: WTAndroidStore.googlePlay,
+    iOSStore: WTIOSStore.appStore,
+    oaidEnabled: false,
+  );
+
+  // جدید (نسخه 2.3.0+)
+  final config = WTInitialConfig(
+    appToken: 'your-app-token',
+    clientSecret: 'your-client-secret', // اکنون الزامی است
+    androidConfig: WTAndroidConfig(
+      store: WTAndroidStore.googlePlay,
+      oaidEnabled: false,
+    ),
+    iOSConfig: WTIOSConfig(
+      store: WTIOSStore.appStore,
+      attWaitingInterval: 30,
+      requestATTAutomatically: true,
+    ),
+  );
+  ```
+
+- **پارامتر الزامی جدید**: `clientSecret` اکنون در `WTInitialConfig` الزامی است
+
+- **پیکربندی جدید ATT برای iOS**: رفتار App Tracking Transparency در iOS اکنون از طریق `WTIOSConfig` قابل تنظیم است:
+  - `attWaitingInterval`: حداکثر زمان انتظار برای مجوز ATT (پیش‌فرض: ۳۰ ثانیه)
+  - `requestATTAutomatically`: آیا SDK به صورت خودکار ATT را درخواست کند (پیش‌فرض: true)
+
 ### نسخه 2.2.0
 
 - **تغییر نام متد**: `enableTestMode()` به `clearAndStop()` تغییر نام یافته است
@@ -584,6 +688,7 @@ InAppWebView(
   // اگر به sandbox نیاز دارید، صراحتاً تنظیم کنید
   final config = WTInitialConfig(
     appToken: 'your-app-token',
+    clientSecret: 'your-client-secret',
     userEnvironment: WTUserEnvironment.sandbox, // صراحتاً sandbox را تنظیم کنید
   );
   ```
@@ -593,6 +698,7 @@ InAppWebView(
   // webAppVersion را برای build های وب اضافه کنید
   final config = WTInitialConfig(
     appToken: 'your-app-token',
+    clientSecret: 'your-client-secret',
     webAppVersion: kIsWeb ? '1.0.0' : null, // برای وب الزامی است
   );
   ```

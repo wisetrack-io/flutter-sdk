@@ -19,4 +19,7 @@ class MethodChannelNames {
   static const String methodSetPackagesInfo = "wt.set_packages_info";
   static const String methodIsWiseTrackNotification =
       "wt.is_wisetrack_notification";
+  static const String methodGetLastDeeplink = "wt.get_last_deeplink";
+  static const String methodGetDeferredLink = "wt.get_deferred_link";
+  static const String methodDeeplinkListener = "wt.deeplink_listener";
 }

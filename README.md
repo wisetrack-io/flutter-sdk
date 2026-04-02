@@ -15,6 +15,7 @@ The **WiseTrack** Flutter plugin offers a cross-platform solution to accelerate 
   - [Requesting App Tracking Transparency (ATT) Permission (iOS)](#requesting-app-tracking-transparency-att-permission-ios)
   - [Starting/Stopping Tracking](#startingstopping-tracking)
   - [Uninstall Detection and Setting Push Notification Tokens](#uninstall-detection-and-setting-push-notification-tokens)
+  - [Deep Link Handling](#deep-link-handling)
   - [Logging Custom Events](#logging-custom-events)
   - [Setting Log Levels](#setting-log-levels)
   - [Retrieving Advertising IDs](#retrieving-advertising-ids)
@@ -31,10 +32,12 @@ The **WiseTrack** Flutter plugin offers a cross-platform solution to accelerate 
 - Cross-platform tracking for iOS, Android, and Web
 - Support for custom and revenue event logging
 - Push notification token management (APNs and FCM)
-- App Tracking Transparency (ATT) support for iOS
+- App Tracking Transparency (ATT) support for iOS with configurable behavior
+- Deep link and deferred deep link handling
 - Configurable logging levels
 - Advertising ID retrieval (IDFA for iOS, Ad ID for Android)
 - Web platform support with JavaScript interop integration
+- Platform-specific configuration classes for Android and iOS
 - Unified API across all platforms (mobile and web)
 
 ## Requirements
@@ -55,7 +58,7 @@ To integrate the WiseTrack Flutter Plugin into your Flutter project, follow thes
 
    ```yaml
    dependencies:
-     wisetrack: ^2.2.0 # Replace with the latest version
+     wisetrack: ^2.3.0 # Replace with the latest version
    ```
 
 2. **Install the package**:
@@ -187,10 +190,18 @@ void main() async {
   // Initialize WiseTrack
   final config = WTInitialConfig(
     appToken: 'your-app-token',
+    clientSecret: 'your-client-secret', // Required for authentication
     webAppVersion: kIsWeb ? '1.0.0' : null, // Required for web platform
     userEnvironment: WTUserEnvironment.production, // Use .sandbox for testing
-    androidStore: WTAndroidStore.playstore,
-    iOSStore: WTIOSStore.appstore,
+    androidConfig: WTAndroidConfig(
+      store: WTAndroidStore.playstore,
+      oaidEnabled: false,
+    ),
+    iOSConfig: WTIOSConfig(
+      store: WTIOSStore.appstore,
+      attWaitingInterval: 30,
+      requestATTAutomatically: true,
+    ),
     logLevel: WTLogLevel.warning,
   );
 
@@ -200,7 +211,7 @@ void main() async {
 }
 ```
 
-**Note**: Replace `'your-app-token'` with the token provided by the WiseTrack dashboard.
+**Note**: Replace `'your-app-token'` and `'your-client-secret'` with the credentials provided by the WiseTrack dashboard.
 
 ## Basic Usage
 
@@ -336,6 +347,50 @@ You can enable them in two ways:
   </array>
   ```
 
+### Deep Link Handling
+
+WiseTrack SDK provides comprehensive support for handling deep links and deferred deep links. This allows you to track user acquisition through deep links and handle navigation accordingly.
+
+#### Enabling Deep Link Handling
+
+Deep link handling is enabled by default. You can disable it in the configuration:
+
+```dart
+final config = WTInitialConfig(
+  appToken: 'your-app-token',
+  clientSecret: 'your-client-secret',
+  deeplinkEnabled: false, // Disable deep link handling
+);
+```
+
+#### Retrieving Deep Links
+
+```dart
+// Get the last received deep link
+String? lastDeeplink = await WiseTrack.instance.getLastDeeplink();
+print('Last Deep Link: ${lastDeeplink ?? "None"}');
+
+// Get deferred deep link (for users who installed the app via a deep link)
+String? deferredDeeplink = await WiseTrack.instance.getDeferredDeeplink();
+print('Deferred Deep Link: ${deferredDeeplink ?? "None"}');
+```
+
+#### Listening for Deep Link Events
+
+You can set up a listener to receive deep link events in real-time:
+
+```dart
+WiseTrack.instance.onDeeplinkReceived((String url, bool isDeferred) {
+  print('Deep Link Received: $url');
+  print('Is Deferred: $isDeferred');
+
+  // Handle navigation based on the deep link
+  if (url.contains('/product/')) {
+    // Navigate to product page
+  }
+});
+```
+
 ### Logging Custom Events
 
 Log custom or revenue events:
@@ -396,22 +451,23 @@ You can customize the SDK behavior through the `WTInitialConfig` parameters:
 
 **General Parameters:**
 - `appToken`: Your unique app token (required).
+- `clientSecret`: The secret key for authentication (required).
 - `userEnvironment`: The environment (`.production`, `.sandbox`).
 - `trackingWaitingTime`: Delay before starting tracking (in seconds).
 - `startTrackerAutomatically`: Whether to start tracking automatically.
 - `customDeviceId`: A custom device identifier.
 - `defaultTracker`: A default tracker for event attribution.
 - `logLevel`: Set the initial log level.
-- `attributionDeeplink`: Indicates whether attribution via deep links is enabled.
-- `eventBuffering`: Enables event buffering to optimize data transmission.
-- `appSecret`: The secret key used for authentication or encryption purposes.
-- `secretId`: A unique secret identifier linked to the app's credentials.
+- `deeplinkEnabled`: Indicates whether deep link handling is enabled (default: `true`).
 
-**Mobile-Specific Parameters:**
-- `androidStore`: The Android app store (e.g., `.googleplay`, `.cafebazaar`, `.other`, ...).
-- `iOSStore`: The iOS app store (e.g., `.appstore`, `.sibche`, `.other`, ..).
+**Android-Specific Parameters (WTAndroidConfig):**
+- `store`: The Android app store (e.g., `.googleplay`, `.cafebazaar`, `.other`, ...).
 - `oaidEnabled`: Indicates whether the Open Advertising ID (OAID) is enabled.
-- `referrerEnabled`: Indicates whether the Referrer ID is enabled.
+
+**iOS-Specific Parameters (WTIOSConfig):**
+- `store`: The iOS app store (e.g., `.appstore`, `.sibche`, `.other`, ..).
+- `attWaitingInterval`: Maximum time to wait for ATT authorization (default: 30 seconds), Set to null to disable waiting.
+- `requestATTAutomatically`: Whether SDK should automatically request ATT (default: `true`).
 
 **Web-Specific Parameters:**
 - `webAppVersion`: The app version for web (required for web platform).
@@ -421,20 +477,32 @@ You can customize the SDK behavior through the `WTInitialConfig` parameters:
 ```dart
 final config = WTInitialConfig(
   appToken: 'your-app-token',
-  
+  clientSecret: 'your-client-secret',
+
   // Web-specific (required when targeting web)
   webAppVersion: kIsWeb ? '1.0.0' : null,
 
   userEnvironment: WTUserEnvironment.sandbox,
-  androidStore: WTAndroidStore.googlePlay,
-  iOSStore: WTIOSStore.appStore,
+
+  // Android-specific configuration
+  androidConfig: WTAndroidConfig(
+    store: WTAndroidStore.googlePlay,
+    oaidEnabled: false,
+  ),
+
+  // iOS-specific configuration
+  iOSConfig: WTIOSConfig(
+    store: WTIOSStore.appStore,
+    attWaitingInterval: 30,
+    requestATTAutomatically: true,
+  ),
+
   trackingWaitingTime: 5,
   startTrackerAutomatically: true,
   customDeviceId: 'custom-device-123',
   defaultTracker: 'default-tracker',
+  deeplinkEnabled: true,
   logLevel: WTLogLevel.debug,
-  oaidEnabled: false,
-  referrerEnabled: true,
 );
 
 await WiseTrack.instance.init(config);
@@ -562,6 +630,41 @@ An example project demonstrating the WiseTrack Flutter Plugin integration is ava
 
 ## Breaking Changes
 
+### Version 2.3.0
+
+- **Configuration Structure Change**: Platform-specific parameters moved to dedicated config classes
+
+  ```dart
+  // OLD (Version 2.2.x and earlier)
+  final config = WTInitialConfig(
+    appToken: 'your-app-token',
+    androidStore: WTAndroidStore.googlePlay,
+    iOSStore: WTIOSStore.appStore,
+    oaidEnabled: false,
+  );
+
+  // NEW (Version 2.3.0+)
+  final config = WTInitialConfig(
+    appToken: 'your-app-token',
+    clientSecret: 'your-client-secret', // Now required
+    androidConfig: WTAndroidConfig(
+      store: WTAndroidStore.googlePlay,
+      oaidEnabled: false,
+    ),
+    iOSConfig: WTIOSConfig(
+      store: WTIOSStore.appStore,
+      attWaitingInterval: 30,
+      requestATTAutomatically: true,
+    ),
+  );
+  ```
+
+- **Required Parameter**: `clientSecret` is now a required parameter in `WTInitialConfig`
+
+- **New iOS ATT Configuration**: iOS App Tracking Transparency behavior can now be configured via `WTIOSConfig`:
+  - `attWaitingInterval`: Maximum wait time for ATT authorization (default: 30 seconds)
+  - `requestATTAutomatically`: Whether SDK should automatically request ATT (default: true)
+
 ### Version 2.2.0
 
 - **Method Rename**: `enableTestMode()` has been renamed to `clearAndStop()`
@@ -580,6 +683,7 @@ An example project demonstrating the WiseTrack Flutter Plugin integration is ava
   // Explicitly set sandbox if needed
   final config = WTInitialConfig(
     appToken: 'your-app-token',
+    clientSecret: 'your-client-secret',
     userEnvironment: WTUserEnvironment.sandbox, // Explicitly set sandbox
   );
   ```
@@ -589,6 +693,7 @@ An example project demonstrating the WiseTrack Flutter Plugin integration is ava
   // Add webAppVersion for web builds
   final config = WTInitialConfig(
     appToken: 'your-app-token',
+    clientSecret: 'your-client-secret',
     webAppVersion: kIsWeb ? '1.0.0' : null, // Required for web
   );
   ```

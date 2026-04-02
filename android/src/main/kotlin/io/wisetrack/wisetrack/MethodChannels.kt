@@ -18,4 +18,7 @@ object MethodNames {
     const val SET_PACKAGES_INFO = "wt.set_packages_info"
     const val GET_REFERRER = "wt.get_referrer"
     const val IS_WISETRACK_NOTIFICATION = "wt.is_wisetrack_notification"
+    const val GET_LAST_DEEPLINK = "wt.get_last_deeplink"
+    const val GET_DEFERRED_LINK = "wt.get_deferred_link"
+    const val DEEPLINK_LISTENER = "wt.deeplink_listener"
 }

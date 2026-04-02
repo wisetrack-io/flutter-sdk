@@ -38,8 +38,13 @@ void main() {
     test('init succeeds with valid config', () async {
       final initConfig = WTInitialConfig(
         appToken: 'test_token',
-        androidStore: WTAndroidStore.playstore,
-        iOSStore: WTIOSStore.appstore,
+        clientSecret: 'test_secret',
+        androidConfig: WTAndroidConfig(
+          store: WTAndroidStore.playstore,
+        ),
+        iOSConfig: WTIOSConfig(
+          store: WTIOSStore.appstore,
+        ),
         startTrackerAutomatically: true,
         trackingWaitingTime: 10,
         userEnvironment: WTUserEnvironment.sandbox,
@@ -59,20 +64,20 @@ void main() {
           'sdk_env': WTResources.defaultSdkEnvironment.label,
           'sdk_version': WTResources.sdkVersion,
           'app_token': initConfig.appToken,
+          'client_secret': initConfig.clientSecret,
           'user_environment': initConfig.userEnvironment.label,
-          'android_store_name': initConfig.androidStore.name,
-          'ios_store_name': initConfig.iOSStore.name,
+          'android_store_name': initConfig.androidConfig.store.name,
+          'ios_store_name': initConfig.iOSConfig.store.name,
           'tracking_waiting_time': initConfig.trackingWaitingTime,
           'start_tracker_automatically': initConfig.startTrackerAutomatically,
           'custom_device_id': initConfig.customDeviceId,
           'default_tracker': initConfig.defaultTracker,
-          'app_secret': initConfig.appSecret,
-          'secret_id': initConfig.secretId,
-          'attribution_deeplink': initConfig.attributionDeeplink,
-          'event_buffering_enabled': initConfig.eventBuffering,
+          'deeplink_enabled': initConfig.deeplinkEnabled,
           'log_level': initConfig.logLevel.level,
-          'oaid_enabled': initConfig.oaidEnabled,
-          'referrer_enabled': initConfig.referrerEnabled,
+          'oaid_enabled': initConfig.androidConfig.oaidEnabled,
+          'att_waiting_interval': initConfig.iOSConfig.attWaitingInterval,
+          'request_att_automatically':
+              initConfig.iOSConfig.requestATTAutomatically,
         }),
       ).called(1);
     });
@@ -80,8 +85,13 @@ void main() {
     test('init handles PlatformException', () async {
       final initConfig = WTInitialConfig(
         appToken: 'test_token',
-        androidStore: WTAndroidStore.playstore,
-        iOSStore: WTIOSStore.appstore,
+        clientSecret: 'test_secret',
+        androidConfig: WTAndroidConfig(
+          store: WTAndroidStore.playstore,
+        ),
+        iOSConfig: WTIOSConfig(
+          store: WTIOSStore.appstore,
+        ),
         startTrackerAutomatically: true,
         trackingWaitingTime: 10,
         userEnvironment: WTUserEnvironment.sandbox,
@@ -341,7 +351,8 @@ void main() {
       ).thenThrow(PlatformException(code: 'ERROR'));
 
       await expectLater(
-        () => wisetrack.init(WTInitialConfig(appToken: 'appToken')),
+        () => wisetrack.init(
+            WTInitialConfig(appToken: 'appToken', clientSecret: 'test_secret')),
         prints(contains('Failed to initialize sdk')),
       );
 

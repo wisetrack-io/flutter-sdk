@@ -6,6 +6,9 @@ import '../environments.dart';
 import '../log_level.dart';
 import '../store_name.dart';
 
+part 'ios_config.dart';
+part 'android_config.dart';
+
 /// Configuration class for initializing the WiseTrack SDK.
 ///
 /// This class provides essential parameters required for initializing the SDK,
@@ -26,6 +29,7 @@ class WTInitialConfig {
   /// Creates a new instance of [WTInitialConfig] with required and optional parameters.
   ///
   /// - [appToken] is required for authentication.
+  /// - [clientSecret] is required for authentication.
   /// - [userEnvironment] defines the deployment environment (default: `production`).
   /// - [androidStore] specifies the app store for Android (default: `other`).
   /// - [iOSStore] specifies the app store for iOS (default: `other`).
@@ -35,23 +39,19 @@ class WTInitialConfig {
   /// - [defaultTracker] sets the default tracker identifier for event attribution (optional).
   /// - [logLevel] sets the log level for SDK logging (default: `debug`).
   /// - [oaidEnabled] enables or disables Open Advertising ID support (default: `false`).
-  /// - [referrerEnabled] enables or disables Referrer ID support (default: `true`).
+  /// - [deeplinkEnabled] enables or disables Deeplink handling support (default: `true`).
   /// - [webAppVersion] the app version for web.
   WTInitialConfig({
     required this.appToken,
+    required this.clientSecret,
     this.userEnvironment = WTUserEnvironment.production,
-    this.androidStore = WTAndroidStore.other,
-    this.iOSStore = WTIOSStore.other,
+    this.androidConfig = const WTAndroidConfig(),
+    this.iOSConfig = const WTIOSConfig(),
     this.trackingWaitingTime = 0,
     this.startTrackerAutomatically = true,
     this.customDeviceId,
     this.defaultTracker,
-    this.appSecret,
-    this.secretId,
-    this.attributionDeeplink,
-    this.eventBuffering,
-    this.oaidEnabled = false,
-    this.referrerEnabled = true,
+    this.deeplinkEnabled = true,
     this.logLevel = WTResources.defaultLogLevel,
     this.webAppVersion,
   }) : assert(!RunningPlatform.isWeb || webAppVersion != null,
@@ -64,21 +64,9 @@ class WTInitialConfig {
   /// - `WTUserEnvironment.sandbox`
   final WTUserEnvironment userEnvironment;
 
-  /// Specifies the app store for Android.
-  ///
-  /// Possible values:
-  /// - `WTAndroidStore.googlePlay`
-  /// - `WTAndroidStore.huaweiAppGallery`
-  /// - `WTAndroidStore.other` (default)
-  final WTAndroidStore androidStore;
+  final WTAndroidConfig androidConfig;
 
-  /// Specifies the app store for iOS.
-  ///
-  /// Possible values:
-  /// - `WTIOSStore.appStore`
-  /// - `WTIOSStore.testFlight`
-  /// - `WTIOSStore.other` (default)
-  final WTIOSStore iOSStore;
+  final WTIOSConfig iOSConfig;
 
   /// The delay time (in seconds) before tracking starts.
   ///
@@ -101,17 +89,11 @@ class WTInitialConfig {
   /// The default tracker identifier for event attribution.
   final String? defaultTracker;
 
-  /// The secret key used for authentication or encryption purposes.
-  final String? appSecret;
+  /// The secret key used for authentication.
+  final String clientSecret;
 
-  /// A unique secret identifier linked to the app's credentials.
-  final String? secretId;
-
-  /// Indicates whether attribution via deep links is enabled.
-  final bool? attributionDeeplink;
-
-  /// Enables event buffering to optimize data transmission.
-  final bool? eventBuffering;
+  /// Indicates whether deep links handling is enabled.
+  final bool? deeplinkEnabled;
 
   /// The log level used for printing logs, you can change it after by:
   /// ```dart
@@ -119,14 +101,6 @@ class WTInitialConfig {
   /// ```
   /// The default log level is set to debug.
   final WTLogLevel logLevel;
-
-  /// Indicates whether the Open Advertising ID (OAID) is enabled.
-  /// The default value is `false`.
-  final bool oaidEnabled;
-
-  /// Indicates whether the Referrer ID is enabled.
-  /// The default value is `true`.
-  final bool referrerEnabled;
 
   /// The app version for web.
   /// just fill it when you are using web.
@@ -138,30 +112,25 @@ class WTInitialConfig {
   factory WTInitialConfig.fromMap(Map<String, dynamic> map) {
     return WTInitialConfig(
       appToken: map['app_token'],
+      clientSecret: map['client_secret'],
       userEnvironment: WTUserEnvironment.values.firstWhere(
         (e) => e.label == map['user_environment'].toString().toLowerCase(),
         orElse: () => WTUserEnvironment.production,
       ),
-      androidStore:
-          WTAndroidStore.fromString(map['android_store_name'].toString()),
-      iOSStore: WTIOSStore.fromString(map['ios_store_name'].toString()),
+      androidConfig: WTAndroidConfig.fromMap(map),
+      iOSConfig: WTIOSConfig.fromMap(map),
       trackingWaitingTime: map['tracking_waiting_time'] as int? ?? 0,
       startTrackerAutomatically:
           map['start_tracker_automatically'] as bool? ?? false,
       customDeviceId: map['custom_device_id'],
       defaultTracker: map['default_tracker'],
-      secretId: map['secret_id'],
-      appSecret: map['app_secret'],
-      attributionDeeplink: map['attribution_deeplink'],
-      eventBuffering: map['event_buffering_enabled'],
+      deeplinkEnabled: map['deeplink_enabled'] as bool? ?? true,
       logLevel: WTLogLevel.values.firstWhere(
         (l) =>
             l.level == map['log_level'] ||
             l.label.toLowerCase() == map['log_level'].toString().toLowerCase(),
         orElse: () => WTResources.defaultLogLevel,
       ),
-      oaidEnabled: map['oaid_enabled'] as bool? ?? false,
-      referrerEnabled: map['referrer_enabled'] as bool? ?? true,
     );
   }
 
@@ -171,20 +140,16 @@ class WTInitialConfig {
   Map<String, dynamic> toMap() {
     return {
       'app_token': appToken,
+      'client_secret': clientSecret,
       'user_environment': userEnvironment.label,
-      'android_store_name': androidStore.name,
-      'ios_store_name': iOSStore.name,
+      ...androidConfig.toMap(),
+      ...iOSConfig.toMap(),
       'tracking_waiting_time': trackingWaitingTime,
       'start_tracker_automatically': startTrackerAutomatically,
       'custom_device_id': customDeviceId,
       'default_tracker': defaultTracker,
-      'app_secret': appSecret,
-      'secret_id': secretId,
-      'attribution_deeplink': attributionDeeplink,
-      'event_buffering_enabled': eventBuffering,
+      'deeplink_enabled': deeplinkEnabled,
       'log_level': logLevel.level,
-      'oaid_enabled': oaidEnabled,
-      'referrer_enabled': referrerEnabled,
     };
   }
 }

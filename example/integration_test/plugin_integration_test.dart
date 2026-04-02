@@ -21,7 +21,10 @@ void main() {
   });
 
   testWidgets('init method works correctly', (WidgetTester tester) async {
-    final config = WTInitialConfig(appToken: "app-token");
+    final config = WTInitialConfig(
+      appToken: "app-token",
+      clientSecret: "client-secret",
+    );
     await wisetrack.init(config);
     expect(true, isTrue);
   });

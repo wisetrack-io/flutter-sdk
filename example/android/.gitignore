@@ -13,3 +13,5 @@ key.properties
 **/*.jks
 
 app/google-services.json
+
+*.hprof

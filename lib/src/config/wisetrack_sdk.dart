@@ -3,17 +3,9 @@ import 'package:wisetrack/src/entity/entity.dart';
 import 'wisetrack_platform_interface.dart';
 
 class WiseTrack {
-  WiseTrack._() {
-    _init();
-  }
+  WiseTrack._();
   static final WiseTrack _instance = WiseTrack._();
   static WiseTrack get instance => _instance;
-
-  _init() {
-    // WisetrackPlatform.instance.listenOnLogs((message) {
-    //   // log(message);
-    // });
-  }
 
   /// Listens for log messages from the SDK.
   ///
@@ -145,5 +137,17 @@ class WiseTrack {
   /// return True if the payload is a WiseTrack notification and WiseTrack handle this notification, false otherwise.
   Future<bool> isWiseTrackNotification(Map<String, dynamic> payload) {
     return WisetrackPlatform.instance.isWiseTrackNotification(payload);
+  }
+
+  Future<String?> getLastDeeplink() {
+    return WisetrackPlatform.instance.getLastDeeplink();
+  }
+
+  Future<String?> getDeferredDeeplink() {
+    return WisetrackPlatform.instance.getDeferredDeeplink();
+  }
+
+  void onDeeplinkReceived(DeeplinkCallback callback) {
+    WisetrackPlatform.instance.onDeeplinkReceived(callback);
   }
 }

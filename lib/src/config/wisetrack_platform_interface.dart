@@ -9,7 +9,9 @@ import 'native/wisetrack_method_channel.dart';
 /// and should be extended by any platform-specific class to provide its own implementation.
 abstract class WisetrackPlatform extends PlatformInterface {
   /// Constructs a `WisetrackPlatform`.
-  WisetrackPlatform() : super(token: _token);
+  WisetrackPlatform() : super(token: _token) {
+    registerMethodCallbacks();
+  }
 
   static final Object _token = Object();
 
@@ -26,6 +28,8 @@ abstract class WisetrackPlatform extends PlatformInterface {
     PlatformInterface.verifyToken(instance, _token);
     _instance = instance;
   }
+
+  void registerMethodCallbacks();
 
   void listenOnLogs(Function(String message) listener);
 
@@ -60,4 +64,12 @@ abstract class WisetrackPlatform extends PlatformInterface {
   Future<String?> getIdfa();
 
   Future<bool> isWiseTrackNotification(Map<String, dynamic> payload);
+
+  Future<String?> getLastDeeplink();
+
+  Future<String?> getDeferredDeeplink();
+
+  void onDeeplinkReceived(DeeplinkCallback callback);
 }
+
+typedef DeeplinkCallback = void Function(String url, bool isDeferred);

@@ -5,6 +5,39 @@
 ## 🎯 Version 2.x
 
 <details open>
+<summary><strong>2.3.0</strong> — <em>Deep Link Handling & Platform-Specific Configurations</em></summary>
+
+- 🔗 **Major Feature: Deep Link Handling**
+  - Added `getLastDeeplink()` to retrieve the last received deep link
+  - Added `getDeferredDeeplink()` to retrieve deferred deep links
+  - Added `onDeeplinkReceived(callback)` listener for real-time deep link events
+  - New `deeplinkEnabled` configuration option to enable/disable deep link handling
+
+- ⚙️ **Platform-Specific Configuration Classes**
+  - Introduced `WTAndroidConfig` for Android-specific settings:
+    - `store` - Android app store selection
+    - `oaidEnabled` - Open Advertising ID support
+  - Introduced `WTIOSConfig` for iOS-specific settings:
+    - `store` - iOS app store selection
+    - `attWaitingInterval` - Maximum wait time for ATT authorization (default: 30 seconds)
+    - `requestATTAutomatically` - Automatic ATT request (default: true)
+
+- 🔐 **Authentication Update**
+  - Added `clientSecret` as a required parameter in `WTInitialConfig`
+
+- 🔧 **Plugin Improvements**
+  - Refined and refactored Android, iOS, and Web plugins to latest versions
+  - Improved web module compatibility with older Flutter versions
+
+- ‼️ **Breaking Changes**
+  - **Configuration Structure**: `androidStore`, `iOSStore`, and `oaidEnabled` moved to platform-specific config classes
+    - Migration: Use `androidConfig: WTAndroidConfig(store: ..., oaidEnabled: ...)` instead of direct parameters
+    - Migration: Use `iOSConfig: WTIOSConfig(store: ..., attWaitingInterval: ..., requestATTAutomatically: ...)` instead of direct parameters
+  - **Required Parameter**: `clientSecret` is now required in `WTInitialConfig`
+
+</details>
+
+<details>
 <summary><strong>2.2.0</strong> — <em>Web Platform Support & Major Architecture Refactor</em></summary>
 
 - 🌐 **Major Feature: Web Platform Support**

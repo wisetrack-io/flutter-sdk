@@ -46,7 +46,7 @@ dependencies {
     implementation 'com.google.firebase:firebase-installations:17.2.0'
     implementation 'com.huawei.hms:ads-identifier:3.4.62.300'
     implementation 'com.android.installreferrer:installreferrer:2.2'
-    implementation 'com.github.cafebazaar:referrersdk:1.0.2'
+    implementation 'com.github.cafebazaar:referrersdk:1.1.1'
 
     implementation 'io.wisetrack.sdk:oaid:2.0.0'
     implementation 'io.wisetrack.sdk:referrer:2.0.0'

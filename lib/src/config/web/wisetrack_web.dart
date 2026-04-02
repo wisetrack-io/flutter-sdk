@@ -1,7 +1,8 @@
 import 'dart:async';
+// ignore: deprecated_member_use
+import 'dart:html';
 
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
-import 'package:web/web.dart' as web;
 
 import 'wisetrack_web_impl.dart';
 
@@ -23,9 +24,9 @@ class WisetrackPlugin {
     _loadingCompleter = Completer<void>();
 
     try {
-      final script =
-          web.document.createElement('script') as web.HTMLScriptElement;
+      final script = ScriptElement();
       script.src = 'https://unpkg.com/wisetrack/dist/cdn/sdk.bundle.min.js';
+      // script.src = 'sdk.bundle.min.js';
       script.type = 'text/javascript';
       script.async = true;
 
@@ -38,7 +39,7 @@ class WisetrackPlugin {
         _loadingCompleter?.completeError('Failed to load WiseTrack SDK');
       });
 
-      web.document.head?.appendChild(script);
+      document.head?.append(script);
     } catch (e) {
       _loadingCompleter?.completeError(e);
     }

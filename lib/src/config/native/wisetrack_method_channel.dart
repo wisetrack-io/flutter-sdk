@@ -12,14 +12,27 @@ import '../wisetrack_platform_interface.dart';
 class MethodChannelWisetrack extends WisetrackPlatform {
   /// The method channel used for communication with the native side.
   static const MethodChannel _channel = MethodChannel('io.wisetrack.flutter');
+  DeeplinkCallback? _deeplinkCallback;
+  Function(String message)? _logCallback;
+
+  @override
+  void registerMethodCallbacks() {
+    _channel.setMethodCallHandler((call) async {
+      switch (call.method) {
+        case MethodChannelNames.methodDeeplinkListener:
+          _deeplinkCallback?.call(
+              call.arguments['url'], call.arguments['is_deferred']);
+          break;
+        case MethodChannelNames.methodLog:
+          _logCallback?.call(call.arguments['message']);
+          break;
+      }
+    });
+  }
 
   @override
   void listenOnLogs(Function(String message) listener) {
-    _channel.setMethodCallHandler((call) async {
-      if (call.method == MethodChannelNames.methodLog) {
-        listener(call.arguments["message"]);
-      }
-    });
+    _logCallback = listener;
   }
 
   @override
@@ -208,5 +221,36 @@ class MethodChannelWisetrack extends WisetrackPlatform {
       debugPrint("Failed get isWiseTrackNotification: ${e.message}");
       return false;
     }
+  }
+
+  @override
+  Future<String?> getLastDeeplink() async {
+    try {
+      final result = await _channel.invokeMethod(
+        MethodChannelNames.methodGetLastDeeplink,
+      );
+      return result;
+    } on PlatformException catch (e) {
+      debugPrint("Failed get last deeplink: ${e.message}");
+      return null;
+    }
+  }
+
+  @override
+  Future<String?> getDeferredDeeplink() async {
+    try {
+      final result = await _channel.invokeMethod(
+        MethodChannelNames.methodGetDeferredLink,
+      );
+      return result;
+    } on PlatformException catch (e) {
+      debugPrint("Failed get deferred deeplink: ${e.message}");
+      return null;
+    }
+  }
+
+  @override
+  void onDeeplinkReceived(DeeplinkCallback callback) {
+    _deeplinkCallback = callback;
   }
 }

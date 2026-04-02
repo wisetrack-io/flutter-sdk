@@ -3,6 +3,10 @@ import 'dart:async';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+// ignore: implementation_imports
+import 'package:wisetrack/src/entity/sdk_environment.dart';
+// ignore: implementation_imports
+import 'package:wisetrack/src/resources/resources.dart';
 import 'package:wisetrack/wisetrack.dart';
 import 'package:wisetrack_example/views/logs_view.dart';
 
@@ -28,6 +32,7 @@ class _HomeScreenState extends State<HomeScreen> {
   WTLogLevel logLevel = WTLogLevel.debug;
   // Color backgroundColor = const Color(0xfff0eff4);
   String appToken = '<AppToken here>';
+  String clientSecret = '<ClientSecret here>';
   final List<String> logs = [];
   final _logStreamController = StreamController<List<String>>.broadcast();
   WTAndroidStore androidStore = WTAndroidStore.other;
@@ -111,11 +116,27 @@ class _HomeScreenState extends State<HomeScreen> {
                   setState(() => logLevel = level);
                 },
               ),
-              CustomInputField(
-                title: '🔑 App Token',
-                onChanged: (str) => appToken = str,
-                initialValue: appToken,
-                hint: 'Enter App token',
+              Row(
+                spacing: 16,
+                children: [
+                  Expanded(
+                    child: CustomInputField(
+                      title: '🔑 App Token',
+                      onChanged: (str) => appToken = str,
+                      initialValue: appToken,
+                      hint: 'Enter App token',
+                    ),
+                  ),
+                  Expanded(
+                    child: CustomInputField(
+                      title: '🔐 Client Secret',
+                      onChanged: (str) => clientSecret = str,
+                      initialValue: clientSecret,
+                      hint: 'Enter Client secret',
+                      maxLines: 1,
+                    ),
+                  ),
+                ],
               ),
               Row(
                 spacing: 16,
@@ -347,11 +368,23 @@ class _HomeScreenState extends State<HomeScreen> {
             setState(() {
               initialLoading = true;
             });
+            WiseTrack.instance.onDeeplinkReceived((url, isDeferred) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    'Deeplink received: $url, isDeferred: $isDeferred',
+                  ),
+                ),
+              );
+            });
             await WiseTrack.instance.init(
               WTInitialConfig(
                 appToken: appToken,
-                iOSStore: iosCustomStore ?? iosStore,
-                androidStore: androidCustomStore ?? androidStore,
+                clientSecret: clientSecret,
+                iOSConfig: WTIOSConfig(store: iosCustomStore ?? iosStore),
+                androidConfig: WTAndroidConfig(
+                  store: androidCustomStore ?? androidStore,
+                ),
                 startTrackerAutomatically: autoStartTracker,
                 trackingWaitingTime: trackingWaitingTime,
                 logLevel: logLevel,

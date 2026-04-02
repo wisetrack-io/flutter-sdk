@@ -1,13 +1,15 @@
 package io.wisetrack.wisetrack
 
 import android.content.Context
+import android.os.Handler
+import android.os.Looper
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
 import io.wisetrack.sdk.core.WiseTrack
-import io.wisetrack.sdk.core.core.WTUserEnvironment
+import io.wisetrack.sdk.core.models.DeeplinkCallback
 import io.wisetrack.sdk.core.models.EventParam
 import io.wisetrack.sdk.core.models.RevenueCurrency
 import io.wisetrack.sdk.core.models.WTEvent
@@ -15,6 +17,7 @@ import io.wisetrack.sdk.core.models.WTEventType
 import io.wisetrack.sdk.core.models.WTInitialConfig
 import io.wisetrack.sdk.core.models.WTLogLevel
 import io.wisetrack.sdk.core.models.WTStoreName
+import io.wisetrack.sdk.core.models.WTUserEnvironment
 import io.wisetrack.sdk.core.utils.wrapper.ResourceWrapper
 
 
@@ -118,6 +121,16 @@ class WiseTrackPlugin : FlutterPlugin, MethodCallHandler {
                 result.success(referrer)
             }
 
+            MethodNames.GET_LAST_DEEPLINK -> {
+                val link = getLastDeeplink()
+                result.success(link)
+            }
+
+            MethodNames.GET_DEFERRED_LINK -> {
+                val link = getDeferredDeeplink()
+                result.success(link)
+            }
+
             MethodNames.IS_WISETRACK_NOTIFICATION -> {
                 val isWiseTrackNotification = isWiseTrackNotification(call)
                 result.success(isWiseTrackNotification)
@@ -138,6 +151,7 @@ class WiseTrackPlugin : FlutterPlugin, MethodCallHandler {
 
         val initialConfig = WTInitialConfig(
             appToken = call.argument<String>("app_token")!!,
+            clientSecret = call.argument<String>("client_secret")!!,
             environment = WTUserEnvironment.valueOf(
                 call.argument<String>("user_environment")!!.uppercase()
             ),
@@ -146,16 +160,25 @@ class WiseTrackPlugin : FlutterPlugin, MethodCallHandler {
             startTrackerAutomatically = call.argument<Boolean>("start_tracker_automatically")!!,
             customDeviceId = call.argument<String?>("custom_device_id"),
             defaultTracker = call.argument<String?>("default_tracker"),
-            appSecret = call.argument<String?>("app_secret"),
-            secretId = call.argument<String?>("secret_id"),
-            attributionDeeplink = call.argument<Boolean?>("attribution_deeplink"),
-            eventBuffering = call.argument<Boolean?>("event_buffering_enabled"),
+            deeplinkEnabled = call.argument<Boolean?>("deeplink_enabled") ?: true,
             logLevel = WTLogLevel.fromPriority(call.argument<Int>("log_level")!!),
             oaidEnabled = call.argument<Boolean>("oaid_enabled") ?: false,
-            referrerEnabled = call.argument<Boolean>("referrer_enabled") ?: false,
         )
 
         WiseTrack.initialize(context, initialConfig)
+
+        // Set deeplink listener after initialization
+        WiseTrack.setOnDeeplinkListener { intent, isDeferred ->
+            Handler(Looper.getMainLooper()).post {
+                channel.invokeMethod(
+                    MethodNames.DEEPLINK_LISTENER,
+                    mapOf(
+                        "url" to intent.dataString,
+                        "is_deferred" to isDeferred
+                    ),
+                )
+            }
+        }
     }
 
     private fun clearDataAndStop() {
@@ -229,6 +252,14 @@ class WiseTrackPlugin : FlutterPlugin, MethodCallHandler {
 
     private fun getReferrer(): String? {
         return WiseTrack.getReferrer()
+    }
+
+    private fun getLastDeeplink(): String? {
+        return WiseTrack.getLastDeeplink()
+    }
+
+    private fun getDeferredDeeplink(): String? {
+        return WiseTrack.getDeferredDeeplink()
     }
 
     private fun isWiseTrackNotification(call: MethodCall): Boolean? {

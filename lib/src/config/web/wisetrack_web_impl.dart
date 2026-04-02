@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:js_interop';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
@@ -8,6 +7,7 @@ import 'package:wisetrack/src/entity/sdk_environment.dart';
 
 import '../../resources/resources.dart';
 import '../wisetrack_platform_interface.dart';
+import 'js_interop_util.dart' as js_util;
 import 'wisetrack_web.dart';
 import 'wisetrack_web_interop.dart';
 
@@ -19,12 +19,16 @@ class WisetrackWebImpl extends WisetrackPlatform {
   }
 
   @override
+  void registerMethodCallbacks() {}
+
+  @override
   Future<void> listenOnLogs(Function(String message) listener) async {
     try {
       await WisetrackPlugin.ensureSDKLoaded();
-      final logCallback = (String level, String prefix, JSArray args) {
-        listener('$prefix ${args.toDart.join(', ')}');
-      }.toJS;
+      final logCallback =
+          js_util.allowInterop((String level, String prefix, List args) {
+        listener('$prefix ${args.join(', ')}');
+      });
       WTLoggerJS.addOutputEngine(logCallback);
     } catch (e) {
       debugPrint('WisetrackWeb: Failed to register log listener: $e');
@@ -42,6 +46,7 @@ class WisetrackWebImpl extends WisetrackPlatform {
 
       final config = <String, dynamic>{
         'appToken': initConfig.appToken,
+        'clientSecret': initConfig.clientSecret,
         'appVersion': initConfig.webAppVersion,
         'appFrameWork': 'flutter',
         'userEnvironment': initConfig.userEnvironment.label.toUpperCase(),
@@ -50,8 +55,10 @@ class WisetrackWebImpl extends WisetrackPlatform {
         'startTrackerAutomatically': initConfig.startTrackerAutomatically,
         'customDeviceId': initConfig.customDeviceId,
         'defaultTracker': initConfig.defaultTracker,
+        'deeplinkEnabled': initConfig.deeplinkEnabled,
       };
-      await WiseTrackJS.instance.init(config.jsify() as JSObject).toDart;
+      await js_util
+          .promiseToFuture(WiseTrackJS.instance.init(js_util.jsify(config)));
     } catch (e) {
       debugPrint('WisetrackWeb: Failed to initialize: $e');
     }
@@ -79,25 +86,25 @@ class WisetrackWebImpl extends WisetrackPlatform {
 
       late WTEventJS eventJS;
 
-      JSObject? paramsJS;
+      Object? paramsJS;
       if (event.params != null && event.params!.isNotEmpty) {
         final paramsMap = <String, dynamic>{};
         for (final entry in event.params!.entries) {
           paramsMap[entry.key] = _mapEventParameter(entry.value);
         }
-        paramsJS = paramsMap.jsify() as JSObject;
+        paramsJS = js_util.jsify(paramsMap);
       }
 
       eventJS = event.type == WTEventType.defaultEvent
           ? WTEventJS.defaultEvent(event.name, paramsJS)
           : WTEventJS.revenueEvent(
               event.name,
-              event.revenueAmount!.toJS,
+              event.revenueAmount!,
               event.revenueCurrency!.label,
               paramsJS,
             );
 
-      await WiseTrackJS.instance.trackEvent(eventJS).toDart;
+      await js_util.promiseToFuture(WiseTrackJS.instance.trackEvent(eventJS));
 
       if (kDebugMode) {
         print('WisetrackWeb: Event logged: ${event.name}');
@@ -129,8 +136,7 @@ class WisetrackWebImpl extends WisetrackPlatform {
   Future<void> setFCMToken(String fcmToken) async {
     try {
       await WisetrackPlugin.ensureSDKLoaded();
-
-      await WiseTrackJS.instance.setFCMToken(fcmToken).toDart;
+      await js_util.promiseToFuture(WiseTrackJS.instance.setFCMToken(fcmToken));
     } catch (e) {
       debugPrint('WisetrackWeb: Failed to set fcm token: $e');
     }
@@ -148,7 +154,7 @@ class WisetrackWebImpl extends WisetrackPlatform {
   @override
   Future<void> startTracking() async {
     try {
-      await WiseTrackJS.instance.startTracking().toDart;
+      await js_util.promiseToFuture(WiseTrackJS.instance.startTracking());
     } catch (e) {
       debugPrint('WisetrackWeb: Failed to start tracking: $e');
     }
@@ -157,7 +163,7 @@ class WisetrackWebImpl extends WisetrackPlatform {
   @override
   Future<void> stopTracking() async {
     try {
-      await WiseTrackJS.instance.stopTracking().toDart;
+      await js_util.promiseToFuture(WiseTrackJS.instance.stopTracking());
     } catch (e) {
       debugPrint('WisetrackWeb: Failed to stop tracking: $e');
     }
@@ -166,8 +172,7 @@ class WisetrackWebImpl extends WisetrackPlatform {
   @override
   Future<bool> isEnabled() async {
     try {
-      final result = WiseTrackJS.instance.isEnabled();
-      return result.toDart;
+      return WiseTrackJS.instance.isEnabled();
     } catch (e) {
       debugPrint('WisetrackWeb: Failed to get enabled status: $e');
       return false;
@@ -209,16 +214,50 @@ class WisetrackWebImpl extends WisetrackPlatform {
     return false;
   }
 
-  JSAny? _mapEventParameter(EventParameter param) {
+  @override
+  Future<String?> getDeferredDeeplink() async {
+    try {
+      return WiseTrackJS.instance.getDeferredDeeplink();
+    } catch (e) {
+      debugPrint('WisetrackWeb: Failed to get deferred deeplink: $e');
+      return null;
+    }
+  }
+
+  @override
+  Future<String?> getLastDeeplink() async {
+    try {
+      return WiseTrackJS.instance.getLastDeeplink();
+    } catch (e) {
+      debugPrint('WisetrackWeb: Failed to get last deeplink: $e');
+      return null;
+    }
+  }
+
+  @override
+  void onDeeplinkReceived(DeeplinkCallback callback) async {
+    try {
+      await WisetrackPlugin.ensureSDKLoaded();
+      WiseTrackJS.instance.setOnDeeplinkListener(
+        js_util.allowInterop((String uri, bool isDeferred) {
+          callback(uri, isDeferred);
+        }),
+      );
+    } catch (e) {
+      debugPrint('WisetrackWeb: Failed to register deeplink listener: $e');
+    }
+  }
+
+  dynamic _mapEventParameter(EventParameter param) {
     final value = param.value;
     if (value is String) {
-      return value.toJS;
+      return value;
     } else if (value is num) {
-      return value.toJS;
+      return value;
     } else if (value is bool) {
-      return value.toJS;
+      return value;
     } else {
-      return value.toString().toJS;
+      return value.toString();
     }
   }
 }
