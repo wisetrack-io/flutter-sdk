@@ -58,7 +58,7 @@ To integrate the WiseTrack Flutter Plugin into your Flutter project, follow thes
 
    ```yaml
    dependencies:
-     wisetrack: ^2.3.0 # Replace with the latest version
+     wisetrack: ^2.3.1 # Replace with the latest version
    ```
 
 2. **Install the package**:

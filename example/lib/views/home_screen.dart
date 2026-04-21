@@ -3,10 +3,6 @@ import 'dart:async';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-// ignore: implementation_imports
-import 'package:wisetrack/src/entity/sdk_environment.dart';
-// ignore: implementation_imports
-import 'package:wisetrack/src/resources/resources.dart';
 import 'package:wisetrack/wisetrack.dart';
 import 'package:wisetrack_example/views/logs_view.dart';
 

@@ -9,6 +9,7 @@ class CustomInputField extends StatelessWidget {
   final int? maxLines;
   final TextInputAction? textInputAction;
   final FormFieldValidator<String?>? validator;
+  final int? maxLength;
   const CustomInputField({
     required this.title,
     this.hint,
@@ -18,6 +19,7 @@ class CustomInputField extends StatelessWidget {
     this.maxLines,
     this.textInputAction,
     this.validator,
+    this.maxLength,
     super.key,
   });
 
@@ -33,6 +35,7 @@ class CustomInputField extends StatelessWidget {
         const SizedBox(height: 8),
         TextFormField(
           initialValue: initialValue,
+          maxLength: maxLength,
           onChanged: onChanged,
           keyboardType: inputType,
           decoration: InputDecoration(hintText: hint),

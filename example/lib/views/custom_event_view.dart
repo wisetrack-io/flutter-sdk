@@ -74,6 +74,7 @@ class _CustomEventViewState extends State<CustomEventView> {
                 child: CustomInputField(
                   title: 'Event Name',
                   hint: 'Name ...',
+                  maxLength: 50,
                   onChanged: (p) => eventName = p,
                   validator:
                       (value) =>
