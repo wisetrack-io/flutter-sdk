@@ -85,12 +85,12 @@ var WiseTrack = (function () {
             callBridge("setAPNSToken", { token });
         },
 
-        logEvent(event) {
+        trackEvent(event) {
             if (!(event instanceof WTEvent)) {
                 console.warn('[WiseTrack]: Event must be an instance of WTEvent');
                 return;
             }
-            callBridge("logEvent", event.toJSON());
+            callBridge("trackEvent", event.toJSON());
         },
 
         isEnabled() {

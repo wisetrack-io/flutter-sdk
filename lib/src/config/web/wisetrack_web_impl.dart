@@ -56,6 +56,10 @@ class WisetrackWebImpl extends WisetrackPlatform {
         'customDeviceId': initConfig.customDeviceId,
         'defaultTracker': initConfig.defaultTracker,
         'deeplinkEnabled': initConfig.deeplinkEnabled,
+        'screenTrackingConfig': {
+          'autoTrackScreens': false,
+          'autoTrackDialogs': false,
+        }
       };
       await js_util
           .promiseToFuture(WiseTrackJS.instance.init(js_util.jsify(config)));
@@ -80,7 +84,7 @@ class WisetrackWebImpl extends WisetrackPlatform {
   }
 
   @override
-  Future<void> logEvent(WTEvent event) async {
+  Future<void> trackEvent(WTEvent event) async {
     try {
       await WisetrackPlugin.ensureSDKLoaded();
 
@@ -90,7 +94,7 @@ class WisetrackWebImpl extends WisetrackPlatform {
       if (event.params != null && event.params!.isNotEmpty) {
         final paramsMap = <String, dynamic>{};
         for (final entry in event.params!.entries) {
-          paramsMap[entry.key] = _mapEventParameter(entry.value);
+          paramsMap[entry.key] = _mapWTParam(entry.value);
         }
         paramsJS = js_util.jsify(paramsMap);
       }
@@ -113,6 +117,39 @@ class WisetrackWebImpl extends WisetrackPlatform {
       if (kDebugMode) {
         print('WisetrackWeb: Failed to log event: $e');
       }
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> trackScreen(WTScreen screen) async {
+    try {
+      Object? paramsJS;
+      if (screen.params != null && screen.params!.isNotEmpty) {
+        final paramsMap = <String, dynamic>{};
+        for (final entry in screen.params!.entries) {
+          paramsMap[entry.key] = _mapWTParam(entry.value);
+        }
+        paramsJS = js_util.jsify(paramsMap);
+      }
+
+      final screenData = <String, dynamic>{
+        'name': screen.name,
+        'type': screen.type.label,
+        'displayName': screen.displayName,
+        'params': paramsJS,
+        'isAuto': screen.isAuto,
+        'trigger': screen.trigger,
+      };
+
+      await js_util.promiseToFuture(
+          WiseTrackJS.instance.trackScreen(js_util.jsify(screenData)));
+
+      if (kDebugMode) {
+        print('WisetrackWeb: Screen tracked: ${screen.name}');
+      }
+    } catch (e) {
+      debugPrint('WisetrackWeb: Failed to track screen: $e');
       rethrow;
     }
   }
@@ -248,7 +285,7 @@ class WisetrackWebImpl extends WisetrackPlatform {
     }
   }
 
-  dynamic _mapEventParameter(EventParameter param) {
+  dynamic _mapWTParam(WTParam param) {
     final value = param.value;
     if (value is String) {
       return value;

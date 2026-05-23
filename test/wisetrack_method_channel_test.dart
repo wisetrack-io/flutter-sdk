@@ -242,23 +242,23 @@ void main() {
       ).called(1);
     });
 
-    test('logEvent Default succeeds', () async {
+    test('trackEvent Default succeeds', () async {
       final event = WTEvent.defaultEvent(
         name: "test_event-1",
         params: {
-          'key-1': EventParameter.string("val"),
-          'key-2': EventParameter.number(1.5),
-          'key-3': EventParameter.boolean(true),
+          'key-1': WTParam.string("val"),
+          'key-2': WTParam.number(1.5),
+          'key-3': WTParam.boolean(true),
         },
       );
 
       when(
-        mockChannel.invokeMethod(MethodChannelNames.methodLogEvent, any),
+        mockChannel.invokeMethod(MethodChannelNames.methodTrackEvent, any),
       ).thenAnswer((_) async => null);
 
-      await wisetrack.logEvent(event);
+      await wisetrack.trackEvent(event);
       verify(
-        mockChannel.invokeMethod(MethodChannelNames.methodLogEvent, {
+        mockChannel.invokeMethod(MethodChannelNames.methodTrackEvent, {
           "type": WTEventType.defaultEvent.label,
           "name": event.name,
           "params": {'key-1': "val", 'key-2': 1.5, 'key-3': true},
@@ -268,11 +268,11 @@ void main() {
       ).called(1);
     });
 
-    test('logEvent Revenue succeeds', () async {
+    test('trackEvent Revenue succeeds', () async {
       final eventParams = {
-        'key-1': EventParameter.string("val"),
-        'key-2': EventParameter.number(1.5),
-        'key-3': EventParameter.boolean(true),
+        'key-1': WTParam.string("val"),
+        'key-2': WTParam.number(1.5),
+        'key-3': WTParam.boolean(true),
       };
       final event = WTEvent.revenueEvent(
         name: "test_event-1",
@@ -282,12 +282,12 @@ void main() {
       );
 
       when(
-        mockChannel.invokeMethod(MethodChannelNames.methodLogEvent, any),
+        mockChannel.invokeMethod(MethodChannelNames.methodTrackEvent, any),
       ).thenAnswer((_) async => null);
 
-      await wisetrack.logEvent(event);
+      await wisetrack.trackEvent(event);
       verify(
-        mockChannel.invokeMethod(MethodChannelNames.methodLogEvent, {
+        mockChannel.invokeMethod(MethodChannelNames.methodTrackEvent, {
           "type": WTEventType.revenueEvent.label,
           "name": event.name,
           "params": {'key-1': "val", 'key-2': 1.5, 'key-3': true},
@@ -343,6 +343,66 @@ void main() {
       ).called(1);
 
       debugDefaultTargetPlatformOverride = null;
+    });
+
+    test('trackScreen sends correct payload', () async {
+      final screen = WTScreen(
+        'checkout',
+        WTScreenType.page,
+        displayName: 'Checkout',
+        params: {
+          'items': WTParam.number(3),
+          'promo': WTParam.boolean(true),
+        },
+        isAuto: false,
+      );
+
+      when(
+        mockChannel.invokeMethod(MethodChannelNames.methodTrackScreen, any),
+      ).thenAnswer((_) async => null);
+
+      await wisetrack.trackScreen(screen);
+
+      verify(
+        mockChannel.invokeMethod(MethodChannelNames.methodTrackScreen, {
+          'type': 'page',
+          'name': 'checkout',
+          'display_name': 'Checkout',
+          'params': {'items': 3, 'promo': true},
+          'is_auto': false,
+        }),
+      ).called(1);
+    });
+
+    test('trackScreen with null params and displayName', () async {
+      final screen = WTScreen('home', WTScreenType.page);
+
+      when(
+        mockChannel.invokeMethod(MethodChannelNames.methodTrackScreen, any),
+      ).thenAnswer((_) async => null);
+
+      await wisetrack.trackScreen(screen);
+
+      verify(
+        mockChannel.invokeMethod(MethodChannelNames.methodTrackScreen, {
+          'type': 'page',
+          'name': 'home',
+          'display_name': null,
+          'params': null,
+          'is_auto': false,
+        }),
+      ).called(1);
+    });
+
+    test('trackScreen handles PlatformException gracefully', () async {
+      when(
+        mockChannel.invokeMethod(MethodChannelNames.methodTrackScreen, any),
+      ).thenThrow(PlatformException(code: 'TRACK_ERROR'));
+
+      await expectLater(
+        () => wisetrack.trackScreen(WTScreen('home', WTScreenType.page)),
+        prints(contains('Failed to track screen')),
+      );
     });
 
     test('methods handle PlatformException gracefully', () async {

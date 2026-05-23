@@ -26,7 +26,6 @@ class WisetrackPlugin {
     try {
       final script = ScriptElement();
       script.src = 'https://unpkg.com/wisetrack/dist/cdn/sdk.bundle.min.js';
-      // script.src = 'sdk.bundle.min.js';
       script.type = 'text/javascript';
       script.async = true;
 

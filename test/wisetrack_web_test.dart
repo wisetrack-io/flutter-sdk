@@ -66,7 +66,7 @@ void main() {
       expect(config.customDeviceId, 'web_device_id');
       expect(config.defaultTracker, 'web_tracker');
       expect(config.deeplinkEnabled, true);
-      expect(config.androidConfig.oaidEnabled, false);
+      expect(config.androidConfig.oaidEnabled, true);
       expect(config.androidConfig.store, WTAndroidStore.playstore);
       expect(config.iOSConfig.attWaitingInterval, 50);
       expect(config.iOSConfig.requestATTAutomatically, true);
@@ -79,9 +79,9 @@ void main() {
       final event = WTEvent.defaultEvent(
         name: 'web_test_event',
         params: {
-          'web_param1': EventParameter.string('web_value'),
-          'web_param2': EventParameter.number(42.5),
-          'web_param3': EventParameter.boolean(true),
+          'web_param1': WTParam.string('web_value'),
+          'web_param2': WTParam.number(42.5),
+          'web_param3': WTParam.boolean(true),
         },
       );
 
@@ -96,8 +96,8 @@ void main() {
       final event = WTEvent.revenueEvent(
         name: 'web_purchase',
         params: {
-          'product_id': EventParameter.string('web_product_123'),
-          'quantity': EventParameter.number(2),
+          'product_id': WTParam.string('web_product_123'),
+          'quantity': WTParam.number(2),
         },
         amount: 99.99,
         currency: RevenueCurrency.USD,
@@ -115,11 +115,11 @@ void main() {
       final event = WTEvent.revenueEvent(
         name: 'web_complex_purchase',
         params: {
-          'product_name': EventParameter.string('Web Product'),
-          'price': EventParameter.number(29.99),
-          'is_premium': EventParameter.boolean(true),
-          'category': EventParameter.string('web_apps'),
-          'quantity': EventParameter.number(1),
+          'product_name': WTParam.string('Web Product'),
+          'price': WTParam.number(29.99),
+          'is_premium': WTParam.boolean(true),
+          'category': WTParam.string('web_apps'),
+          'quantity': WTParam.number(1),
         },
         amount: 29.99,
         currency: RevenueCurrency.EUR,
@@ -213,11 +213,11 @@ void main() {
       final event = WTEvent.defaultEvent(
         name: 'web_parameter_test',
         params: {
-          'string_param': EventParameter.string('test_string'),
-          'number_param': EventParameter.number(123.45),
-          'boolean_param': EventParameter.boolean(true),
-          'integer_param': EventParameter.number(42),
-          'float_param': EventParameter.number(3.14159),
+          'string_param': WTParam.string('test_string'),
+          'number_param': WTParam.number(123.45),
+          'boolean_param': WTParam.boolean(true),
+          'integer_param': WTParam.number(42),
+          'float_param': WTParam.number(3.14159),
         },
       );
 

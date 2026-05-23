@@ -72,7 +72,7 @@ class MockWisetrackPlatform
   void listenOnLogs(Function(String message) listener) {}
 
   @override
-  Future<void> logEvent(WTEvent event) {
+  Future<void> trackEvent(WTEvent event) {
     return Future.delayed(const Duration(seconds: 1), () => null);
   }
 
@@ -148,4 +148,9 @@ class MockWisetrackPlatform
 
   @override
   void onDeeplinkReceived(DeeplinkCallback callback) {}
+
+  @override
+  Future<void> trackScreen(WTScreen screen) {
+    return Future.delayed(const Duration(seconds: 1), () => null);
+  }
 }

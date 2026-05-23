@@ -12,6 +12,7 @@ class WiseTrackJS {
   external Object startTracking();
   external Object stopTracking();
   external Object trackEvent(WTEventJS event);
+  external Object trackScreen(Object config);
   external void setEnabled(bool enabled);
   external bool isEnabled();
   external void setLogLevel(String level);

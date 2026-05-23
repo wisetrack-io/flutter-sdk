@@ -17,6 +17,7 @@ The **WiseTrack** Flutter plugin offers a cross-platform solution to accelerate 
   - [Uninstall Detection and Setting Push Notification Tokens](#uninstall-detection-and-setting-push-notification-tokens)
   - [Deep Link Handling](#deep-link-handling)
   - [Logging Custom Events](#logging-custom-events)
+  - [Screen Tracking](#screen-tracking)
   - [Setting Log Levels](#setting-log-levels)
   - [Retrieving Advertising IDs](#retrieving-advertising-ids)
 - [Advanced Usage](#advanced-usage)
@@ -58,7 +59,7 @@ To integrate the WiseTrack Flutter Plugin into your Flutter project, follow thes
 
    ```yaml
    dependencies:
-     wisetrack: ^2.3.1 # Replace with the latest version
+     wisetrack: ^2.4.1 # Replace with the latest version
    ```
 
 2. **Install the package**:
@@ -397,27 +398,197 @@ Log custom or revenue events:
 
 ```dart
 // Log a default event
-await WiseTrack.instance.logEvent(WTEvent(
+await WiseTrack.instance.trackEvent(WTEvent(
   name: 'Custom Event',
   params: {
-    'key-str': 'value',
-    'key-num': 1.1,
-    'key-bool': true,
+    'key-str': WTParam.string('value1'),
+    'key-num': WTParam.number(1.1),
+    'key-bool': WTParam.boolean(true),
   },
 ));
 
 // Log a revenue event
-await WiseTrack.instance.logEvent(WTEvent.revenue(
+await WiseTrack.instance.trackEvent(WTEvent.revenue(
   name: 'Purchase',
   currency: 'USD',
   amount: 9.99,
   params: {
-    'item': 'Premium Subscription',
+    'item': WTParam.string('Premium Subscription'),
   },
 ));
 ```
 
-**Note:** Event parameter keys and values have a maximum limit of 50 characters.
+**Character limits for events:**
+
+| Field | Max length |
+|-------|-----------|
+| `name` | 50 characters |
+| param key | 50 characters |
+| param value (string) | 100 characters |
+
+### Screen Tracking
+
+WiseTrack supports two complementary approaches to screen tracking: **automatic** (zero per-screen code) and **manual** (full control per screen). Both approaches attach a `name`, an optional `displayName` shown in the analytics dashboard, a `type` (page / dialog / bottom sheet), and optional `params`.
+
+---
+
+#### Automatic Screen Tracking
+
+Add `WTNavigatorObserver` to your navigator observers. The SDK intercepts every `push`, `pop`, and `replace` navigation event and resolves screen metadata automatically.
+
+```dart
+import 'package:wisetrack/wisetrack.dart';
+
+MaterialApp(
+  navigatorObservers: [
+    WTNavigatorObserver(
+      config: WTScreenTrackingConfig(
+        enabled: true,           // default — can toggle at runtime
+        trackDialogs: false,     // skip dialogs/popups (default)
+        excludedScreens: {'/splash', '/loading'},
+        excludePatterns: [RegExp(r'^/internal/.*')],
+      ),
+    ),
+  ],
+  ...
+)
+```
+
+**Screen name & display name resolution (highest → lowest priority):**
+
+| Priority | Source | Example route | `name` result | `displayName` result |
+|----------|--------|--------------|---------------|----------------------|
+| 1 | `screenDataProvider` callback | any route | your value | your value |
+| 2 | `RouteSettings.name` as URI path | `/product/123?tab=reviews` | `product/123` | `Product` |
+| 2 | `RouteSettings.name` as full URL | `myapp://home/feed` | `myapp://home/feed` | `Feed` |
+| 2 | `RouteSettings.name` (plain string) | `ProductPage` | `ProductPage` | `Product` |
+| 3 | `Route.runtimeType` generic arg | `MaterialPageRoute<CheckoutPage>` | `CheckoutPage` | `Checkout` |
+
+**Routing package examples:**
+
+| Package | Route setup | Resolved `name` | Resolved `displayName` |
+|---------|------------|-----------------|------------------------|
+| Navigator 1.0 | `pushNamed('/cart')` | `cart` | `Cart` |
+| Navigator 1.0 | `pushNamed('/product/42?color=red')` | `product/42` | `Product` + param `color=red` |
+| go_router | `GoRoute(path: '/profile')` | `profile` | `Profile` |
+| GetX | `Get.toNamed('/settings')` | `settings` | `Settings` |
+| auto_route | `@RoutePage()` on `OrderDetailPage` | `OrderDetailPage` | `Order Detail` |
+| No routing | `Navigator.push(…, MaterialPageRoute(builder: …))` | `CheckoutPage` | `Checkout` |
+
+**Custom screen data provider:**
+
+Use `screenDataProvider` when the automatic resolution is not enough — for example to attach extra params or override a generated name.
+
+```dart
+WTScreenTrackingConfig(
+  screenDataProvider: (route) {
+    if (route.settings.name?.startsWith('/item/') == true) {
+      final id = route.settings.name!.split('/').last;
+      return WTScreenDataProvider(
+        screenName: 'item_detail',
+        screenDisplayName: 'Item Detail',
+        screenParams: {'item_id': id},
+      );
+    }
+    return null; // fall back to automatic resolution
+  },
+)
+```
+
+---
+
+#### Manual Screen Tracking — `WTNavigatorObserver` not needed
+
+Call `WiseTrack.instance.trackScreen` directly whenever you need full control:
+
+```dart
+await WiseTrack.instance.trackScreen(WTScreen(
+  'checkout',
+  WTScreenType.page,
+  displayName: 'Checkout',
+  params: {
+    'cart_items': WTParam.number(3),
+    'promo_applied': WTParam.boolean(true),
+  },
+));
+```
+
+---
+
+#### Manual Screen Tracking — `WTScreenTrackMixin`
+
+Mix `WTScreenTrackMixin` into a `StatefulWidget`'s `State` to track that specific screen on push and on pop-return, without any per-route configuration.
+
+**Step 1 — create a shared `RouteObserver` and wire it up once:**
+
+```dart
+final wtRouteObserver = RouteObserver<ModalRoute<void>>();
+
+void main() async {
+  WTScreenTrackMixin.routeObserver = wtRouteObserver;
+  // ...
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      navigatorObservers: [wtRouteObserver],
+      // ...
+    );
+  }
+}
+```
+
+**Step 2 — apply the mixin to any screen state:**
+
+```dart
+class _ProductDetailState extends State<ProductDetailScreen>
+    with RouteAware, WTScreenTrackMixin {
+
+  @override
+  String get screenName => 'product_detail';
+
+  @override
+  String? get screenDisplayName => 'Product Detail';
+
+  @override
+  Map<String, WTParam>? get screenParams => {
+    'product_id': WTParam.string(widget.productId),
+  };
+
+  @override
+  Widget build(BuildContext context) => /* your UI */;
+}
+```
+
+The mixin fires `trackScreen` automatically when the screen is pushed and again when the user navigates back to it from a deeper route.
+
+---
+
+**Character limits for screens:**
+
+| Field | Max length |
+|-------|-----------|
+| `name` | 150 characters |
+| param key | 50 characters |
+| param value (string) | 100 characters |
+
+---
+
+#### Screen types
+
+| Value | When to use |
+|-------|-------------|
+| `WTScreenType.page` | Standard full-page route |
+| `WTScreenType.dialog` | Alert dialog or custom popup |
+| `WTScreenType.bottomSheet` | Modal bottom sheet |
+| `WTScreenType.other` | Any other presentation style |
+
+The automatic tracker sets the type based on route class: `ModalBottomSheetRoute` → `bottomSheet`, any other `PopupRoute` → `dialog`, everything else → `page`.
+
+---
 
 ### Setting Log Levels
 
@@ -514,7 +685,7 @@ The **WebView Integration** feature allows you to bridge communication between J
 
 This is especially useful when embedding a web-based user interface or a hybrid web app in your Flutter application and you need to:
 
-- Call native features from JavaScript (like `logEvent`, `initialize`, `getIDFA`, etc.)
+- Call native features from JavaScript (like `trackEvent`, `initialize`, `getIDFA`, etc.)
 - Receive asynchronous responses back from Flutter/Dart to your JS code
 
 WiseTrack supports integration with the two most popular Flutter WebView packages:

@@ -97,12 +97,12 @@
             callBridge("setAPNSToken", { token });
         },
 
-        logEvent(event) {
+        trackEvent(event) {
             if (!(event instanceof WTEvent)) {
                 console.warn('[WiseTrack]: Event must be an instance of WTEvent');
                 return;
             }
-            callBridge("logEvent", event.toJSON());
+            callBridge("trackEvent", event.toJSON());
         },
 
         isEnabled() {
@@ -543,7 +543,7 @@ class WTEvent {
 
             function init() {
                 try {
-                    const config = new WTInitConfig("<AppToken here>");
+                    const config = new WTInitConfig("rMN5ZCwpOzY7");
                     config.setUserEnvironment("production");
                     config.setLogLevel("DEBUG");
                     WiseTrack.initialize(config);
@@ -567,7 +567,7 @@ class WTEvent {
                 event.addParam("param-1", "home");
                 event.addParam("param-2", 2.3);
                 event.addParam("param-3", true);
-                WiseTrack.logEvent(event);
+                WiseTrack.trackEvent(event);
                 log('Default event logged');
             }
 
@@ -576,7 +576,7 @@ class WTEvent {
                 event.addParam("param-1", "home");
                 event.addParam("param-2", 1.3);
                 event.addParam("param-3", true);
-                WiseTrack.logEvent(event);
+                WiseTrack.trackEvent(event);
                 log('Revenue event logged');
             }
 

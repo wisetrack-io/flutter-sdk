@@ -1,5 +1,6 @@
+import '../wt_param.dart';
+
 part 'event_currency.dart';
-part 'event_param.dart';
 part 'event_type.dart';
 
 /// A class representing an event that can be tracked within the WiseTrack SDK.
@@ -12,14 +13,14 @@ part 'event_type.dart';
 /// ```dart
 /// final defaultEvent = WTEvent.defaultEvent(
 ///   name: "user_signup",
-///   params: {"method": EventParameter.string("email")},
+///   params: {"method": WTParam.string("email")},
 /// );
 ///
 /// final revenueEvent = WTEvent.revenueEvent(
 ///   name: "purchase",
 ///   currency: RevenueCurrency.USD,
 ///   amount: 49.99,
-///   params: {"product_id": EventParameter.string("1234")},
+///   params: {"product_id": WTParam.string("1234")},
 /// );
 /// ```
 class WTEvent {
@@ -43,24 +44,28 @@ class WTEvent {
   /// The name of the event.
   ///
   /// This should be a descriptive string representing the action being tracked.
+  ///
+  /// **Important:** Maximum 50 characters. Longer values may be truncated or
+  /// rejected by the tracking system.
   final String name;
 
   /// Additional parameters associated with the event.
   ///
   /// This can include metadata such as user actions, timestamps, or other relevant details.
   ///
-  /// **Important:** Both parameter keys and string values have a maximum length of 50 characters.
+  /// **Important:** Parameter keys have a maximum length of 50 characters;
+  /// string values have a maximum length of 100 characters.
   /// Longer keys or values may be truncated or rejected by the tracking system.
   ///
   /// Example usage:
   /// ```dart
   /// final params = {
-  ///   'key-1': EventParameter.string('string-value'),
-  ///   'key-2': EventParameter.number(12.5),
-  ///   'key-3': EventParameter.bool(true)
+  ///   'key-1': WTParam.string('string-value'),
+  ///   'key-2': WTParam.number(12.5),
+  ///   'key-3': WTParam.bool(true)
   /// }
   /// ```
-  final Map<String, EventParameter>? params;
+  final Map<String, WTParam>? params;
 
   /// The revenue amount associated with the event (only applicable for `revenue` events).
   final double? revenueAmount;
@@ -76,12 +81,12 @@ class WTEvent {
   /// ```dart
   /// final event = WTEvent.defaultEvent(
   ///   name: "level_completed",
-  ///   params: {"level": EventParameter.number(5)},
+  ///   params: {"level": WTParam.number(5)},
   /// );
   /// ```
   factory WTEvent.defaultEvent({
     required String name,
-    Map<String, EventParameter>? params,
+    Map<String, WTParam>? params,
   }) {
     return WTEvent._(WTEventType.defaultEvent, name, params: params);
   }
@@ -96,14 +101,14 @@ class WTEvent {
   ///   name: "subscription_purchase",
   ///   currency: RevenueCurrency.EUR,
   ///   amount: 9.99,
-  ///   params: {"plan": EventParameter.string("monthly")},
+  ///   params: {"plan": WTParam.string("monthly")},
   /// );
   /// ```
   factory WTEvent.revenueEvent({
     required String name,
     required RevenueCurrency currency,
     required double amount,
-    Map<String, EventParameter>? params,
+    Map<String, WTParam>? params,
   }) {
     return WTEvent._(
       WTEventType.revenueEvent,

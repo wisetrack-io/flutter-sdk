@@ -9,15 +9,17 @@ import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
 import io.wisetrack.sdk.core.WiseTrack
-import io.wisetrack.sdk.core.models.DeeplinkCallback
-import io.wisetrack.sdk.core.models.EventParam
+import io.wisetrack.sdk.core.models.WTParam
 import io.wisetrack.sdk.core.models.RevenueCurrency
 import io.wisetrack.sdk.core.models.WTEvent
 import io.wisetrack.sdk.core.models.WTEventType
 import io.wisetrack.sdk.core.models.WTInitialConfig
 import io.wisetrack.sdk.core.models.WTLogLevel
+import io.wisetrack.sdk.core.models.WTScreen
+import io.wisetrack.sdk.core.models.WTScreenType
 import io.wisetrack.sdk.core.models.WTStoreName
 import io.wisetrack.sdk.core.models.WTUserEnvironment
+import io.wisetrack.sdk.core.screen.WTScreenAutoTrackingConfig
 import io.wisetrack.sdk.core.utils.wrapper.ResourceWrapper
 
 
@@ -100,8 +102,13 @@ class WiseTrackPlugin : FlutterPlugin, MethodCallHandler {
                 result.success(null)
             }
 
-            MethodNames.LOG_EVENT -> {
-                logEvent(call)
+            MethodNames.TRACK_EVENT -> {
+                trackEvent(call)
+                result.success(null)
+            }
+
+            MethodNames.TRACK_SCREEN -> {
+                trackScreen(call)
                 result.success(null)
             }
 
@@ -160,9 +167,10 @@ class WiseTrackPlugin : FlutterPlugin, MethodCallHandler {
             startTrackerAutomatically = call.argument<Boolean>("start_tracker_automatically")!!,
             customDeviceId = call.argument<String?>("custom_device_id"),
             defaultTracker = call.argument<String?>("default_tracker"),
-            deeplinkEnabled = call.argument<Boolean?>("deeplink_enabled") ?: true,
+            deeplinkEnabled = call.argument<Boolean?>("deeplink_enabled") != false,
             logLevel = WTLogLevel.fromPriority(call.argument<Int>("log_level")!!),
-            oaidEnabled = call.argument<Boolean>("oaid_enabled") ?: false,
+            oaidEnabled = call.argument<Boolean>("oaid_enabled") == true,
+            screenTrackingConfig = WTScreenAutoTrackingConfig(enabled = false),
         )
 
         WiseTrack.initialize(context, initialConfig)
@@ -215,15 +223,15 @@ class WiseTrackPlugin : FlutterPlugin, MethodCallHandler {
         WiseTrack.setPackagesInfo()
     }
 
-    private fun logEvent(call: MethodCall) {
+    private fun trackEvent(call: MethodCall) {
         val eventType = WTEventType.valueOf(call.argument<String>("type")!!.uppercase())
         val eventName = call.argument<String>("name")!!
         val eventParam = call.argument<Map<String, Any>>("params")?.mapValues {
             when (it.value) {
-                is Int -> EventParam((it.value as Int).toDouble())
-                is Double -> EventParam(it.value as Double)
-                is Boolean -> EventParam(it.value as Boolean)
-                else -> EventParam(it.value.toString())
+                is Int -> WTParam((it.value as Int).toDouble())
+                is Double -> WTParam(it.value as Double)
+                is Boolean -> WTParam(it.value as Boolean)
+                else -> WTParam(it.value.toString())
             }
         }
 
@@ -243,7 +251,37 @@ class WiseTrackPlugin : FlutterPlugin, MethodCallHandler {
                 )
             }
         }
-        WiseTrack.logEvent(event)
+        WiseTrack.trackEvent(event)
+    }
+
+    private fun trackScreen(call: MethodCall) {
+        var screenType: WTScreenType
+        try {
+            screenType = WTScreenType.valueOf(call.argument<String>("type")!!.uppercase())
+        } catch (e: Throwable) {
+            screenType = WTScreenType.OTHER
+        }
+        val screenName = call.argument<String>("name")!!
+        val screenTrigger = call.argument<String?>("trigger")
+        val screenDisplayName = call.argument<String?>("display_name")
+        val screenParam = call.argument<Map<String, Any>>("params")?.mapValues {
+            when (it.value) {
+                is Int -> WTParam((it.value as Int).toDouble())
+                is Double -> WTParam(it.value as Double)
+                is Boolean -> WTParam(it.value as Boolean)
+                else -> WTParam(it.value.toString())
+            }
+        }
+
+        val screen = WTScreen(
+            name = screenName,
+            displayName = screenDisplayName,
+            type = screenType,
+            params = screenParam,
+            trigger = screenTrigger,
+        )
+        screen.isAuto = call.argument<Boolean?>("is_auto") == true
+        WiseTrack.trackScreen(screen)
     }
 
     private fun getAdId(): String? {

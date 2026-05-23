@@ -5,6 +5,7 @@ import '../../resources/running_platform.dart';
 import '../environments.dart';
 import '../log_level.dart';
 import '../store_name.dart';
+import 'screen_tracking_config.dart';
 
 part 'ios_config.dart';
 part 'android_config.dart';
@@ -54,6 +55,7 @@ class WTInitialConfig {
     this.deeplinkEnabled = true,
     this.logLevel = WTResources.defaultLogLevel,
     this.webAppVersion,
+    this.screenTrackingConfig = const WTScreenTrackingConfig(),
   }) : assert(!RunningPlatform.isWeb || webAppVersion != null,
             'webAppVersion is required when using web');
 
@@ -105,6 +107,9 @@ class WTInitialConfig {
   /// The app version for web.
   /// just fill it when you are using web.
   final String? webAppVersion;
+
+  /// The screen tracking configuration.
+  final WTScreenTrackingConfig screenTrackingConfig;
 
   /// Creates an instance of [WTInitialConfig] from a map.
   ///

@@ -83,10 +83,10 @@ class WiseTrackWebBridge {
       case 'setAPNSToken':
         await WiseTrack.instance.setAPNSToken(args['token']);
         break;
-      case 'logEvent':
+      case 'trackEvent':
         final type = args['type'].toString().toLowerCase();
         final eventParams = (args['params'] as Map<String, dynamic>?)
-            ?.map((k, v) => MapEntry(k, EventParameter.dynamic(v)));
+            ?.map((k, v) => MapEntry(k, WTParam.dynamic(v)));
         final WTEvent event;
         if (type == WTEventType.defaultEvent.label) {
           event = WTEvent.defaultEvent(name: args['name'], params: eventParams);
@@ -102,7 +102,19 @@ class WiseTrackWebBridge {
         } else {
           throw Exception('Invalid event type, `$type`');
         }
-        await WiseTrack.instance.logEvent(event);
+        await WiseTrack.instance.trackEvent(event);
+        break;
+      case 'trackScreen':
+        final screenParams = (args['params'] as Map<String, dynamic>?)
+            ?.map((k, v) => MapEntry(k, WTParam.dynamic(v)));
+        final WTScreen screen = WTScreen(
+          args['name'],
+          args['type'],
+          displayName: args['display_name'],
+          trigger: args['trigger'],
+          params: screenParams,
+        );
+        await WiseTrack.instance.trackScreen(screen);
         break;
       case 'isEnabled':
         final isEnabled = await WiseTrack.instance.isEnabled();

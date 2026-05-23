@@ -24,20 +24,20 @@ class _CustomEventViewState extends State<CustomEventView> {
     if (eventName.isEmpty) return;
 
     final paramTuples = eventParams.trim().split(',');
-    final params = <String, EventParameter>{};
+    final params = <String, WTParam>{};
     for (var pt in paramTuples) {
       try {
         final keyValue = pt.trim().split('=');
         final key = keyValue[0];
         final value = keyValue[1];
         if (bool.tryParse(value) != null) {
-          params[key] = EventParameter.boolean(bool.parse(value));
+          params[key] = WTParam.boolean(bool.parse(value));
         } else if (int.tryParse(value) != null) {
-          params[key] = EventParameter.number(int.parse(value));
+          params[key] = WTParam.number(int.parse(value));
         } else if (double.tryParse(value) != null) {
-          params[key] = EventParameter.number(double.parse(value));
+          params[key] = WTParam.number(double.parse(value));
         } else {
-          params[key] = EventParameter.dynamic(value);
+          params[key] = WTParam.dynamic(value);
         }
       } catch (_) {}
     }
@@ -55,7 +55,7 @@ class _CustomEventViewState extends State<CustomEventView> {
               params: params.isEmpty ? null : params,
             );
 
-    WiseTrack.instance.logEvent(event);
+    WiseTrack.instance.trackEvent(event);
   }
 
   @override

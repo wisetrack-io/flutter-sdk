@@ -91,10 +91,16 @@ public class WisetrackPlugin: NSObject, FlutterPlugin {
             self.setFCMToken(fcmToken: args["token"] as! String)
             result(nil)
             
-        case WisetrackMethodChannel.logEvent.rawValue:
+        case WisetrackMethodChannel.trackEvent.rawValue:
             guard let args = args(call, result: result) else { return }
             
-            self.logEvent(args: args)
+            self.trackEvent(args: args)
+            result(nil)
+            
+        case WisetrackMethodChannel.trackScreen.rawValue:
+            guard let args = args(call, result: result) else { return }
+            
+            self.trackScreen(args: args)
             result(nil)
             
         case WisetrackMethodChannel.isWiseTrackNotification.rawValue:
@@ -135,6 +141,7 @@ extension WisetrackPlugin {
             deeplinkEnabled: args["deeplink_enabled"] as! Bool,
             attWaitingInterval: args["att_waiting_interval"] as? TimeInterval,
             requestATTAutomatically: args["request_att_automatically"] as! Bool,
+            screenTrackingConfig: WTScreenAutoTrackingConfig(enabled: false),
         ))
 
         // Set deeplink listener after initialization
@@ -191,21 +198,34 @@ extension WisetrackPlugin {
         return WiseTrack.shared.getIDFA()
     }
     
-    private func logEvent(args: [String: Any]) {
-        let params: [String: JSONValue]? = (args["params"] as? [String: Any])?.mapValues({ JSONValue.convert(value: $0)})
+    private func trackEvent(args: [String: Any]) {
+        let params: [String: WTParam]? = (args["params"] as? [String: Any])?.mapValues({ WTParam.convert(value: $0)})
         
         switch args["type"] as! String {
         case WTEventType.default.name:
-            WiseTrack.shared.logEvent(WTEvent.default(for: args["name"] as! String,
+            WiseTrack.shared.trackEvent(WTEvent.default(for: args["name"] as! String,
                                                       params: params))
         case WTEventType.revenue(currency: RevenueCurrency.USD, amount: 0).name:
-            WiseTrack.shared.logEvent(WTEvent.revenue(for: args["name"] as! String,
+            WiseTrack.shared.trackEvent(WTEvent.revenue(for: args["name"] as! String,
                                                       currency: RevenueCurrency(rawValue: args["currency"] as! String)!,
                                                       amount: args["revenue"] as! Double,
                                                       params: params))
         default:
             return
         }
+    }
+    
+    private func trackScreen(args: [String: Any]) {
+        let params: [String: WTParam]? = (args["params"] as? [String: Any])?.mapValues({ WTParam.convert(value: $0)})
+        var screen = WTScreen(
+            name: args["name"] as! String,
+            type: WTScreenType(rawValue: args["type"] as! String),
+            displayName: args["display_name"] as? String,
+            trigger: args["trigger"] as? String,
+            params: params
+        )
+        screen.isAuto = (args["is_auto"] as? Bool) == true
+        WiseTrack.shared.trackScreen(screen)
     }
     
     private func getLastDeeplink() -> String? {

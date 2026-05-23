@@ -55,7 +55,9 @@ abstract class WisetrackPlatform extends PlatformInterface {
 
   Future<void> setPackagesInfo();
 
-  Future<void> logEvent(WTEvent event);
+  Future<void> trackEvent(WTEvent event);
+
+  Future<void> trackScreen(WTScreen screen);
 
   Future<String?> getAdId();
 

@@ -1,9 +1,8 @@
-import 'dart:async';
-
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:wisetrack/wisetrack.dart';
+import 'package:wisetrack_example/sdk_logger.dart';
 import 'package:wisetrack_example/views/logs_view.dart';
 
 import '../app_platform.dart';
@@ -14,6 +13,7 @@ import '../widgets/toggle_switch.dart';
 import 'custom_event_view.dart';
 import 'flutter_webview_screen.dart';
 import 'inapp_webview_screen.dart';
+import 'screen_tracking/screen_tracking_hub.dart';
 
 class HomeScreen extends StatefulWidget {
   final VoidCallback? onToggleTheme;
@@ -26,11 +26,8 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final wisetrack = WiseTrack.instance;
   WTLogLevel logLevel = WTLogLevel.debug;
-  // Color backgroundColor = const Color(0xfff0eff4);
   String appToken = '<AppToken here>';
   String clientSecret = '<ClientSecret here>';
-  final List<String> logs = [];
-  final _logStreamController = StreamController<List<String>>.broadcast();
   WTAndroidStore androidStore = WTAndroidStore.other;
   WTAndroidStore? androidCustomStore;
   WTIOSStore iosStore = WTIOSStore.other;
@@ -43,20 +40,12 @@ class _HomeScreenState extends State<HomeScreen> {
   bool attRequestLoading = false;
   bool attAuthorized = false;
 
-  @override
-  void initState() {
-    WiseTrack.instance.listenOnLogs((message) {
-      logs.add(message);
-      _logStreamController.add(List.from(logs));
-      // log(message);
-    });
-    super.initState();
-  }
+  final _logger = SdkLogger.instance;
 
   @override
-  void dispose() {
-    _logStreamController.close();
-    super.dispose();
+  void initState() {
+    WiseTrack.instance.listenOnLogs(_logger.add);
+    super.initState();
   }
 
   @override
@@ -244,12 +233,12 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: OutlineButton(
                       title: '⚡️ Default Event',
                       onPressed: () {
-                        WiseTrack.instance.logEvent(
+                        WiseTrack.instance.trackEvent(
                           WTEvent.defaultEvent(
                             name: "flutter_default_event",
                             params: {
-                              'key-1': EventParameter.string('value'),
-                              'key-2': EventParameter.number(2.3),
+                              'key-1': WTParam.string('value'),
+                              'key-2': WTParam.number(2.3),
                             },
                           ),
                         );
@@ -261,12 +250,12 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: OutlineButton(
                       title: '💵 Revenue Event',
                       onPressed: () {
-                        WiseTrack.instance.logEvent(
+                        WiseTrack.instance.trackEvent(
                           WTEvent.revenueEvent(
                             name: "flutter_revenue_event",
                             amount: 120000,
                             currency: RevenueCurrency.IRR,
-                            params: {'key': EventParameter.string('value')},
+                            params: {'key': WTParam.string('value')},
                           ),
                         );
                       },
@@ -337,6 +326,18 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                 ],
+              ),
+              Divider(),
+              OutlineButton(
+                title: '📱 Screen Tracking Demo',
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      settings: const RouteSettings(name: '/screen-tracking'),
+                      builder: (_) => const ScreenTrackingHubScreen(),
+                    ),
+                  );
+                },
               ),
               Divider(),
               CustomEventView(),
@@ -426,8 +427,10 @@ class _HomeScreenState extends State<HomeScreen> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder:
-          (context) =>
-              LogsView(logs: logs, logStreamController: _logStreamController),
+          (_) => LogsView(
+            logs: _logger.logs,
+            logStreamController: _logger.controller,
+          ),
     );
   }
 }

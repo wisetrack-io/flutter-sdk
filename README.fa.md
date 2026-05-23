@@ -59,7 +59,7 @@
 
    ```yaml
    dependencies:
-     wisetrack: ^2.3.1 # با آخرین نسخه جایگزین کنید
+     wisetrack: ^2.4.1 # با آخرین نسخه جایگزین کنید
    ```
 
 2. **نصب بسته**:
@@ -399,7 +399,7 @@ WiseTrack.instance.onDeeplinkReceived((String url, bool isDeferred) {
 
 ```dart
 // default event => تنظیم توکن FCM (اندروید)
-await WiseTrack.instance.logEvent(WTEvent(
+await WiseTrack.instance.trackEvent(WTEvent(
   name: 'رویداد پیشفرض',
   params: {
     'key-str': 'مقدار',
@@ -409,7 +409,7 @@ await WiseTrack.instance.logEvent(WTEvent(
 ));
 
 // revenue event =>  ثبت یک رویداد درآمدی
-await WiseTrack.instance.logEvent(WTEvent.revenue(
+await WiseTrack.instance.trackEvent(WTEvent.revenue(
   name: 'خرید',
   currency: 'USD',
   amount: 9.99,
@@ -518,7 +518,7 @@ await WiseTrack.instance.init(config);
 این ویژگی به‌خصوص زمانی کاربردی است که:
 
 - رابط کاربری تحت وب یا اپ هیبریدی را درون اپلیکیشن Flutter خود نمایش می‌دهید
-- نیاز دارید از داخل JavaScript به متدهای بومی (native) مثل `logEvent`، `initialize`، `getIDFA` و ... دسترسی داشته باشید
+- نیاز دارید از داخل JavaScript به متدهای بومی (native) مثل `trackEvent`، `initialize`، `getIDFA` و ... دسترسی داشته باشید
 - بخواهید پاسخ‌های ناهم‌زمان (asynchronous) را از Flutter/Dart به سمت JavaScript دریافت کنید
 
 پکیج WiseTrack از دو پکیج WebView محبوب Flutter پشتیبانی می‌کند:

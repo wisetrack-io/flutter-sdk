@@ -54,8 +54,29 @@ class WiseTrack {
   /// Create events to the tracking system.
   ///
   /// - [event]: The event data to be logged.
-  Future<void> logEvent(WTEvent event) {
-    return WisetrackPlatform.instance.logEvent(event);
+  Future<void> trackEvent(WTEvent event) {
+    return WisetrackPlatform.instance.trackEvent(event);
+  }
+
+  /// Records a screen view in the WiseTrack analytics system.
+  ///
+  /// Use this for **manual** screen tracking when you need full control
+  /// over the name, display name, type, or params for a specific screen.
+  /// For automatic tracking across all routes, use [WTNavigatorObserver] instead.
+  ///
+  /// - [screen]: The screen data to record.
+  ///
+  /// Example:
+  /// ```dart
+  /// await WiseTrack.instance.trackScreen(WTScreen(
+  ///   'checkout',
+  ///   WTScreenType.page,
+  ///   displayName: 'Checkout',
+  ///   params: {'cart_items': WTParam.number(3)},
+  /// ));
+  /// ```
+  Future<void> trackScreen(WTScreen screen) {
+    return WisetrackPlatform.instance.trackScreen(screen);
   }
 
   /// Sets the Apple Push Notification Service (APNS) token for push notification tracking.

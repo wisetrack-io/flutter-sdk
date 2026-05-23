@@ -137,14 +137,26 @@ class MethodChannelWisetrack extends WisetrackPlatform {
   }
 
   @override
-  Future<void> logEvent(WTEvent event) async {
+  Future<void> trackEvent(WTEvent event) async {
     try {
       await _channel.invokeMethod(
-        MethodChannelNames.methodLogEvent,
+        MethodChannelNames.methodTrackEvent,
         event.toMap(),
       );
     } on PlatformException catch (e) {
-      debugPrint("Failed to log event: ${e.message}");
+      debugPrint("Failed to track event: ${e.message}");
+    }
+  }
+
+  @override
+  Future<void> trackScreen(WTScreen screen) async {
+    try {
+      await _channel.invokeMethod(
+        MethodChannelNames.methodTrackScreen,
+        screen.toMap(),
+      );
+    } on PlatformException catch (e) {
+      debugPrint("Failed to track screen: ${e.message}");
     }
   }
 
