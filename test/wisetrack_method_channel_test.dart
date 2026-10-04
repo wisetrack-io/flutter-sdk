@@ -5,7 +5,6 @@ import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:wisetrack/src/config/channel_names.dart';
 import 'package:wisetrack/src/config/native/wisetrack_method_channel.dart';
-import 'package:wisetrack/src/entity/sdk_environment.dart';
 import 'package:wisetrack/src/resources/resources.dart';
 import 'package:wisetrack/wisetrack.dart';
 
@@ -39,10 +38,10 @@ void main() {
       final initConfig = WTInitialConfig(
         appToken: 'test_token',
         clientSecret: 'test_secret',
-        androidConfig: WTAndroidConfig(
+        androidConfig: const WTAndroidConfig(
           store: WTAndroidStore.playstore,
         ),
-        iOSConfig: WTIOSConfig(
+        iOSConfig: const WTIOSConfig(
           store: WTIOSStore.appstore,
         ),
         startTrackerAutomatically: true,
@@ -61,7 +60,6 @@ void main() {
 
       verify(
         mockChannel.invokeMethod(MethodChannelNames.methodInit, {
-          'sdk_env': WTResources.defaultSdkEnvironment.label,
           'sdk_version': WTResources.sdkVersion,
           'app_token': initConfig.appToken,
           'client_secret': initConfig.clientSecret,
@@ -86,10 +84,10 @@ void main() {
       final initConfig = WTInitialConfig(
         appToken: 'test_token',
         clientSecret: 'test_secret',
-        androidConfig: WTAndroidConfig(
+        androidConfig: const WTAndroidConfig(
           store: WTAndroidStore.playstore,
         ),
-        iOSConfig: WTIOSConfig(
+        iOSConfig: const WTIOSConfig(
           store: WTIOSStore.appstore,
         ),
         startTrackerAutomatically: true,
@@ -370,6 +368,7 @@ void main() {
           'display_name': 'Checkout',
           'params': {'items': 3, 'promo': true},
           'is_auto': false,
+          'trigger': null,
         }),
       ).called(1);
     });
@@ -390,6 +389,7 @@ void main() {
           'display_name': null,
           'params': null,
           'is_auto': false,
+          'trigger': null,
         }),
       ).called(1);
     });

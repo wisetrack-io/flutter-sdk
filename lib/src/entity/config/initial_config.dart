@@ -19,11 +19,13 @@ part 'android_config.dart';
 /// ```dart
 /// final config = WTInitialConfig(
 ///   appToken: "your_app_token",
+///   clientSecret: "your_client_secret",
 ///   userEnvironment: WTUserEnvironment.production,
-///   androidStoreName: WTAndroidStoreName.googlePlay,
-///   iOSStoreName: WTIOSStoreName.appStore,
+///   androidConfig: WTAndroidConfig(store: WTAndroidStore.playstore),
+///   iOSConfig: WTIOSConfig(store: WTIOSStore.appstore),
 ///   trackingWaitingTime: 3,
 ///   startTrackerAutomatically: true,
+///   webAppVersion: kIsWeb ? '1.0.0' : null,
 /// );
 /// ```
 class WTInitialConfig {
@@ -32,14 +34,13 @@ class WTInitialConfig {
   /// - [appToken] is required for authentication.
   /// - [clientSecret] is required for authentication.
   /// - [userEnvironment] defines the deployment environment (default: `production`).
-  /// - [androidStore] specifies the app store for Android (default: `other`).
-  /// - [iOSStore] specifies the app store for iOS (default: `other`).
+  /// - [androidConfig] Android specific settings, e.g. store (default store: `other`).
+  /// - [iOSConfig] iOS specific settings, e.g. store and ATT behaviour (default store: `other`).
   /// - [trackingWaitingTime] sets a delay before tracking starts (default: `0` seconds).
   /// - [startTrackerAutomatically] determines if tracking starts automatically (default: `true`).
   /// - [customDeviceId] allows specifying a custom device identifier (optional).
   /// - [defaultTracker] sets the default tracker identifier for event attribution (optional).
-  /// - [logLevel] sets the log level for SDK logging (default: `debug`).
-  /// - [oaidEnabled] enables or disables Open Advertising ID support (default: `false`).
+  /// - [logLevel] sets the log level for SDK logging (default: `warning`).
   /// - [deeplinkEnabled] enables or disables Deeplink handling support (default: `true`).
   /// - [webAppVersion] the app version for web.
   WTInitialConfig({
@@ -77,7 +78,8 @@ class WTInitialConfig {
 
   /// Determines whether tracking starts automatically upon initialization.
   ///
-  /// Defaults to `false`, meaning tracking must be started manually.
+  /// Defaults to `true`. When `false`, tracking must be started manually
+  /// with [WiseTrack.startTracking].
   final bool startTrackerAutomatically;
 
   /// The authentication token required to initialize the SDK.
@@ -95,13 +97,15 @@ class WTInitialConfig {
   final String clientSecret;
 
   /// Indicates whether deep links handling is enabled.
+  ///
+  /// Defaults to `true`; `null` is treated as `true`.
   final bool? deeplinkEnabled;
 
   /// The log level used for printing logs, you can change it after by:
   /// ```dart
-  /// WTLogLevel.setLogLevel(WTLogLevel.debug);
+  /// WiseTrack.instance.setLogLevel(WTLogLevel.debug);
   /// ```
-  /// The default log level is set to debug.
+  /// The default log level is [WTLogLevel.warning].
   final WTLogLevel logLevel;
 
   /// The app version for web.
@@ -124,9 +128,9 @@ class WTInitialConfig {
       ),
       androidConfig: WTAndroidConfig.fromMap(map),
       iOSConfig: WTIOSConfig.fromMap(map),
-      trackingWaitingTime: map['tracking_waiting_time'] as int? ?? 0,
+      trackingWaitingTime: (map['tracking_waiting_time'] as num?)?.toInt() ?? 0,
       startTrackerAutomatically:
-          map['start_tracker_automatically'] as bool? ?? false,
+          map['start_tracker_automatically'] as bool? ?? true,
       customDeviceId: map['custom_device_id'],
       defaultTracker: map['default_tracker'],
       deeplinkEnabled: map['deeplink_enabled'] as bool? ?? true,

@@ -2,16 +2,9 @@ group = "io.wisetrack.wisetrack"
 version = "1.0-SNAPSHOT"
 
 buildscript {
-    ext.kotlin_version = "1.9.0"
     repositories {
-        mavenLocal()
         google()
         mavenCentral()
-    }
-
-    dependencies {
-        classpath("com.android.tools.build:gradle:8.1.4")
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version")
     }
 }
 
@@ -24,22 +17,31 @@ allprojects {
 }
 
 apply plugin: "com.android.library"
-apply plugin: "kotlin-android"
+
+// AGP 9+ compiles Kotlin itself (built-in Kotlin) unless the app opts out with
+// android.builtInKotlin=false; older AGP versions need the Kotlin Gradle Plugin.
+def agpMajor = com.android.Version.ANDROID_GRADLE_PLUGIN_VERSION.tokenize('.')[0] as int
+def builtInKotlin = providers.gradleProperty("android.builtInKotlin")
+        .map { it.toBoolean() }
+        .orElse(agpMajor >= 9)
+        .get()
+def applyKotlinPlugin = agpMajor < 9 || !builtInKotlin
+if (applyKotlinPlugin) {
+    project.pluginManager.apply("kotlin-android")
+}
+
+def javaTarget = JavaVersion.VERSION_17
 
 android {
     if (project.android.hasProperty("namespace")) {
         namespace = "io.wisetrack.wisetrack"
     }
 
-    compileSdk = 34
+    compileSdk = 36
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
-    }
-
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_1_8
+        sourceCompatibility = javaTarget
+        targetCompatibility = javaTarget
     }
 
     sourceSets {
@@ -54,16 +56,14 @@ android {
     dependencies {
         testImplementation("org.jetbrains.kotlin:kotlin-test")
         testImplementation("org.mockito:mockito-core:5.0.0")
-        // implementation ("io.sentry:sentry-android:7.20.0")
 
         // uncomment for add remotely
-        implementation "io.wisetrack.sdk:core:2.4.1"
+        implementation "io.wisetrack.sdk:core:2.5.0"
 
         // required dependency for wisetrack
         implementation 'androidx.lifecycle:lifecycle-process:2.6.1'
         implementation 'com.google.code.gson:gson:2.10.1'
         implementation 'com.squareup.okhttp3:okhttp:4.12.0'
-        implementation 'io.sentry:sentry-android:8.11.1'
     }
 
     testOptions {
@@ -77,4 +77,22 @@ android {
             }
         }
     }
+}
+
+// Kotlin JVM target, resolved dynamically so this script works with old KGP
+// (kotlinOptions), new KGP (compilerOptions) and AGP built-in Kotlin alike.
+def configureKotlinJvmTarget = {
+    def kotlinExtension = project.extensions.findByName("kotlin")
+    if (kotlinExtension != null && kotlinExtension.hasProperty("compilerOptions")) {
+        def jvmTargetClass = Class.forName(
+                "org.jetbrains.kotlin.gradle.dsl.JvmTarget", true, kotlinExtension.getClass().classLoader)
+        kotlinExtension.compilerOptions.jvmTarget.set(jvmTargetClass.fromTarget(javaTarget.toString()))
+    } else if (project.android.hasProperty("kotlinOptions")) {
+        project.android.kotlinOptions.jvmTarget = javaTarget.toString()
+    }
+}
+if (applyKotlinPlugin) {
+    plugins.withId("org.jetbrains.kotlin.android") { configureKotlinJvmTarget() }
+} else {
+    configureKotlinJvmTarget()
 }

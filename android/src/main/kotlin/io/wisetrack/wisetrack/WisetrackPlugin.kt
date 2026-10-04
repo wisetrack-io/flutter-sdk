@@ -1,8 +1,6 @@
 package io.wisetrack.wisetrack
 
 import android.content.Context
-import android.os.Handler
-import android.os.Looper
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
@@ -28,19 +26,38 @@ class WiseTrackPlugin : FlutterPlugin, MethodCallHandler {
     private lateinit var channel: MethodChannel
     private lateinit var context: Context
 
+    companion object {
+        // The native logger is process-wide; register the broadcasting output once.
+        @Volatile
+        private var loggerRegistered = false
+
+        @Synchronized
+        private fun registerLoggerOnce() {
+            if (loggerRegistered) return
+            WiseTrack.addLoggerOutput(FlutterChannelOutputLogger)
+            loggerRegistered = true
+        }
+    }
+
     override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         context = flutterPluginBinding.applicationContext
         channel = MethodChannel(flutterPluginBinding.binaryMessenger, "io.wisetrack.flutter")
         channel.setMethodCallHandler(this)
+        FlutterChannels.add(channel)
 
         WiseTrack.ensureInitialized(context)
-        WiseTrack.addLoggerOutput(FlutterChannelOutputLogger(channel))
-
-//        application = flutterPluginBinding.applicationContext as Application
-//        application?.registerActivityLifecycleCallbacks(lifecycleHandler)
+        registerLoggerOnce()
     }
 
     override fun onMethodCall(call: MethodCall, result: Result) {
+        try {
+            handleMethodCall(call, result)
+        } catch (e: Exception) {
+            result.error("WISETRACK_ERROR", "${call.method} failed: ${e.message}", null)
+        }
+    }
+
+    private fun handleMethodCall(call: MethodCall, result: Result) {
         WiseTrack.ensureInitialized(context)
 
         when (call.method) {
@@ -151,24 +168,30 @@ class WiseTrackPlugin : FlutterPlugin, MethodCallHandler {
 
     private fun initSDK(call: MethodCall) {
 
+        val appToken = requireNotNull(call.argument<String>("app_token")) { "app_token is required" }
+        val clientSecret =
+            requireNotNull(call.argument<String>("client_secret")) { "client_secret is required" }
+
         val resourceWrapper = ResourceWrapper(context)
         resourceWrapper.setFramework("flutter")
-        resourceWrapper.setEnvironment(call.argument<String>("sdk_env")!!)
-        resourceWrapper.setVersion(call.argument<String>("sdk_version")!!)
+        call.argument<String>("sdk_version")?.let { resourceWrapper.setVersion(it) }
+
+        val environment = runCatching {
+            WTUserEnvironment.valueOf(call.argument<String>("user_environment")!!.uppercase())
+        }.getOrDefault(WTUserEnvironment.PRODUCTION)
 
         val initialConfig = WTInitialConfig(
-            appToken = call.argument<String>("app_token")!!,
-            clientSecret = call.argument<String>("client_secret")!!,
-            environment = WTUserEnvironment.valueOf(
-                call.argument<String>("user_environment")!!.uppercase()
-            ),
-            storeName = WTStoreName.fromString(call.argument<String>("android_store_name")!!),
-            trackingWaitingTime = call.argument<Int>("tracking_waiting_time")!!,
-            startTrackerAutomatically = call.argument<Boolean>("start_tracker_automatically")!!,
+            appToken = appToken,
+            clientSecret = clientSecret,
+            environment = environment,
+            storeName = WTStoreName.fromString(call.argument<String>("android_store_name") ?: "other"),
+            trackingWaitingTime = call.argument<Int>("tracking_waiting_time") ?: 0,
+            startTrackerAutomatically = call.argument<Boolean>("start_tracker_automatically") != false,
             customDeviceId = call.argument<String?>("custom_device_id"),
             defaultTracker = call.argument<String?>("default_tracker"),
             deeplinkEnabled = call.argument<Boolean?>("deeplink_enabled") != false,
-            logLevel = WTLogLevel.fromPriority(call.argument<Int>("log_level")!!),
+            logLevel = call.argument<Int>("log_level")?.let { WTLogLevel.fromPriority(it) }
+                ?: WTLogLevel.WARNING,
             oaidEnabled = call.argument<Boolean>("oaid_enabled") == true,
             screenTrackingConfig = WTScreenAutoTrackingConfig(enabled = false),
         )
@@ -177,15 +200,13 @@ class WiseTrackPlugin : FlutterPlugin, MethodCallHandler {
 
         // Set deeplink listener after initialization
         WiseTrack.setOnDeeplinkListener { intent, isDeferred ->
-            Handler(Looper.getMainLooper()).post {
-                channel.invokeMethod(
-                    MethodNames.DEEPLINK_LISTENER,
-                    mapOf(
-                        "url" to intent.dataString,
-                        "is_deferred" to isDeferred
-                    ),
-                )
-            }
+            FlutterChannels.broadcast(
+                MethodNames.DEEPLINK_LISTENER,
+                mapOf(
+                    "url" to intent.dataString,
+                    "is_deferred" to isDeferred
+                ),
+            )
         }
     }
 
@@ -226,14 +247,7 @@ class WiseTrackPlugin : FlutterPlugin, MethodCallHandler {
     private fun trackEvent(call: MethodCall) {
         val eventType = WTEventType.valueOf(call.argument<String>("type")!!.uppercase())
         val eventName = call.argument<String>("name")!!
-        val eventParam = call.argument<Map<String, Any>>("params")?.mapValues {
-            when (it.value) {
-                is Int -> WTParam((it.value as Int).toDouble())
-                is Double -> WTParam(it.value as Double)
-                is Boolean -> WTParam(it.value as Boolean)
-                else -> WTParam(it.value.toString())
-            }
-        }
+        val eventParam = toParams(call.argument<Map<String, Any?>>("params"))
 
         val event = when (eventType) {
             WTEventType.DEFAULT -> {
@@ -243,7 +257,7 @@ class WiseTrackPlugin : FlutterPlugin, MethodCallHandler {
             WTEventType.REVENUE -> {
                 WTEvent.revenueEvent(
                     eventName,
-                    amount = call.argument<Double>("revenue")!!,
+                    amount = call.argument<Number>("revenue")!!.toDouble(),
                     currency = RevenueCurrency.valueOf(
                         call.argument<String>("currency")!!.uppercase()
                     ),
@@ -264,14 +278,7 @@ class WiseTrackPlugin : FlutterPlugin, MethodCallHandler {
         val screenName = call.argument<String>("name")!!
         val screenTrigger = call.argument<String?>("trigger")
         val screenDisplayName = call.argument<String?>("display_name")
-        val screenParam = call.argument<Map<String, Any>>("params")?.mapValues {
-            when (it.value) {
-                is Int -> WTParam((it.value as Int).toDouble())
-                is Double -> WTParam(it.value as Double)
-                is Boolean -> WTParam(it.value as Boolean)
-                else -> WTParam(it.value.toString())
-            }
-        }
+        val screenParam = toParams(call.argument<Map<String, Any?>>("params"))
 
         val screen = WTScreen(
             name = screenName,
@@ -283,6 +290,16 @@ class WiseTrackPlugin : FlutterPlugin, MethodCallHandler {
         screen.isAuto = call.argument<Boolean?>("is_auto") == true
         WiseTrack.trackScreen(screen)
     }
+
+    private fun toParams(raw: Map<String, Any?>?): Map<String, WTParam>? =
+        raw?.filterValues { it != null }?.mapValues { (_, value) ->
+            when (value) {
+                // Dart ints arrive as Int or, beyond 32 bits, as Long.
+                is Number -> WTParam(value.toDouble())
+                is Boolean -> WTParam(value)
+                else -> WTParam(value.toString())
+            }
+        }
 
     private fun getAdId(): String? {
         return WiseTrack.getADID()
@@ -315,6 +332,7 @@ class WiseTrackPlugin : FlutterPlugin, MethodCallHandler {
 
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
         channel.setMethodCallHandler(null)
+        FlutterChannels.remove(channel)
     }
 }
 

@@ -31,7 +31,7 @@ class _CapturingPlatform
   Future<void> init(WTInitialConfig config) async {}
 
   @override
-  void listenOnLogs(Function(String message) listener) {}
+  void listenOnLogs(void Function(String message) listener) {}
 
   @override
   Future<void> setAPNSToken(String apnsToken) async {}
@@ -119,6 +119,43 @@ class _FakePopupRoute extends PopupRoute<void> {
       const SizedBox.shrink();
 }
 
+/// A custom route subclass whose class name identifies the screen.
+class ProductRoute extends MaterialPageRoute<void> {
+  ProductRoute() : super(builder: (_) => const SizedBox.shrink());
+}
+
+class _DropdownPage extends StatelessWidget {
+  const _DropdownPage();
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+        body: DropdownButton<String>(
+          value: 'a',
+          items: const [
+            DropdownMenuItem(value: 'a', child: Text('a')),
+            DropdownMenuItem(value: 'b', child: Text('b')),
+          ],
+          onChanged: (_) {},
+        ),
+      );
+}
+
+class _MixinPage extends StatefulWidget {
+  const _MixinPage();
+
+  @override
+  State<_MixinPage> createState() => _MixinPageState();
+}
+
+class _MixinPageState extends State<_MixinPage>
+    with RouteAware, WTScreenTrackMixin {
+  @override
+  String get screenName => 'mixin_page';
+
+  @override
+  Widget build(BuildContext context) => const Scaffold(body: SizedBox());
+}
+
 // ---------- main ----------
 
 void main() {
@@ -199,11 +236,11 @@ void main() {
       test('accepts int', () => expect(WTParam.dynamic(99).value, 99));
       test('accepts bool', () => expect(WTParam.dynamic(true).value, true));
       test('rejects Object',
-          () => expect(() => WTParam.dynamic(Object()), throwsException));
+          () => expect(() => WTParam.dynamic(Object()), throwsArgumentError));
       test('rejects List',
-          () => expect(() => WTParam.dynamic([1, 2]), throwsException));
+          () => expect(() => WTParam.dynamic([1, 2]), throwsArgumentError));
       test('rejects null',
-          () => expect(() => WTParam.dynamic(null), throwsException));
+          () => expect(() => WTParam.dynamic(null), throwsArgumentError));
     });
   });
 
@@ -560,6 +597,171 @@ void main() {
       );
       observer.didPush(_NamedRoute('/item'), null);
       expect(platform.screens.first.params?['source']?.value, 'home_feed');
+    });
+  });
+
+  // ─────────────────────────────────────────────────────────
+  // WTNavigatorObserver — real navigator behaviour
+  // ─────────────────────────────────────────────────────────
+
+  group('WTNavigatorObserver with a real Navigator', () {
+    late GlobalKey<NavigatorState> navKey;
+
+    Future<void> pumpApp(WidgetTester tester,
+        {WTScreenTrackingConfig config =
+            const WTScreenTrackingConfig(deduplicationWindowMs: 0)}) async {
+      navKey = GlobalKey<NavigatorState>();
+      await tester.pumpWidget(MaterialApp(
+        navigatorKey: navKey,
+        navigatorObservers: [WTNavigatorObserver(config: config)],
+        home: const SizedBox(),
+      ));
+      platform.screens.clear();
+    }
+
+    List<String> tracked() =>
+        platform.screens.map((s) => '${s.name}|${s.trigger}').toList();
+
+    testWidgets('unnamed MaterialPageRoute is not tracked', (tester) async {
+      await pumpApp(tester);
+      navKey.currentState!
+          .push(MaterialPageRoute<void>(builder: (_) => const SizedBox()));
+      await tester.pumpAndSettle();
+      expect(platform.screens, isEmpty);
+    });
+
+    testWidgets('named MaterialPageRoute is tracked by its name',
+        (tester) async {
+      await pumpApp(tester);
+      navKey.currentState!.push(MaterialPageRoute<void>(
+        settings: const RouteSettings(name: '/product'),
+        builder: (_) => const SizedBox(),
+      ));
+      await tester.pumpAndSettle();
+      expect(tracked(), ['product|push']);
+    });
+
+    testWidgets('custom Route subclass is tracked by its class name',
+        (tester) async {
+      await pumpApp(tester);
+      navKey.currentState!.push(ProductRoute());
+      await tester.pumpAndSettle();
+      expect(tracked(), ['ProductRoute|push']);
+      expect(platform.screens.single.displayName, 'Product');
+    });
+
+    testWidgets('opening and closing a dropdown does not re-track the page',
+        (tester) async {
+      await pumpApp(tester);
+      navKey.currentState!.push(MaterialPageRoute<void>(
+        settings: const RouteSettings(name: '/form'),
+        builder: (_) => const _DropdownPage(),
+      ));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('a'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('b').last);
+      await tester.pumpAndSettle();
+      expect(tracked(), ['form|push']);
+    });
+
+    testWidgets('closing a dialog does not re-track the page', (tester) async {
+      await pumpApp(tester);
+      navKey.currentState!.push(MaterialPageRoute<void>(
+        settings: const RouteSettings(name: '/form'),
+        builder: (_) => const SizedBox(),
+      ));
+      await tester.pumpAndSettle();
+      showDialog<void>(
+        context: navKey.currentContext!,
+        builder: (_) => const AlertDialog(),
+      );
+      await tester.pumpAndSettle();
+      navKey.currentState!.pop();
+      await tester.pumpAndSettle();
+      expect(tracked(), ['form|push']);
+    });
+
+    testWidgets('tracked dialog is reported but closing it does not re-track',
+        (tester) async {
+      await pumpApp(tester,
+          config: const WTScreenTrackingConfig(
+            trackDialogs: true,
+            deduplicationWindowMs: 0,
+          ));
+      navKey.currentState!.push(MaterialPageRoute<void>(
+        settings: const RouteSettings(name: '/form'),
+        builder: (_) => const SizedBox(),
+      ));
+      await tester.pumpAndSettle();
+      showDialog<void>(
+        context: navKey.currentContext!,
+        routeSettings: const RouteSettings(name: 'confirm'),
+        builder: (_) => const AlertDialog(),
+      );
+      await tester.pumpAndSettle();
+      navKey.currentState!.pop();
+      await tester.pumpAndSettle();
+      expect(tracked(), ['form|push', 'confirm|push']);
+      expect(platform.screens.last.type, WTScreenType.dialog);
+    });
+
+    testWidgets('popping a page re-tracks the page underneath', (tester) async {
+      await pumpApp(tester);
+      navKey.currentState!.push(MaterialPageRoute<void>(
+        settings: const RouteSettings(name: '/list'),
+        builder: (_) => const SizedBox(),
+      ));
+      await tester.pumpAndSettle();
+      navKey.currentState!.push(MaterialPageRoute<void>(
+        settings: const RouteSettings(name: '/detail'),
+        builder: (_) => const SizedBox(),
+      ));
+      await tester.pumpAndSettle();
+      navKey.currentState!.pop();
+      await tester.pumpAndSettle();
+      expect(tracked(), ['list|push', 'detail|push', 'list|pop']);
+    });
+  });
+
+  // ─────────────────────────────────────────────────────────
+  // WTScreenTrackMixin
+  // ─────────────────────────────────────────────────────────
+
+  group('WTScreenTrackMixin', () {
+    testWidgets('tracks push, dialog close is ignored, page pop is tracked',
+        (tester) async {
+      final routeObserver = RouteObserver<ModalRoute<void>>();
+      WTScreenTrackMixin.routeObserver = routeObserver;
+      final navKey = GlobalKey<NavigatorState>();
+      await tester.pumpWidget(MaterialApp(
+        navigatorKey: navKey,
+        navigatorObservers: [routeObserver],
+        home: const SizedBox(),
+      ));
+
+      navKey.currentState!
+          .push(MaterialPageRoute<void>(builder: (_) => const _MixinPage()));
+      await tester.pumpAndSettle();
+
+      showDialog<void>(
+        context: navKey.currentContext!,
+        builder: (_) => const AlertDialog(),
+      );
+      await tester.pumpAndSettle();
+      navKey.currentState!.pop();
+      await tester.pumpAndSettle();
+
+      navKey.currentState!
+          .push(MaterialPageRoute<void>(builder: (_) => const SizedBox()));
+      await tester.pumpAndSettle();
+      navKey.currentState!.pop();
+      await tester.pumpAndSettle();
+
+      expect(
+        platform.screens.map((s) => '${s.name}|${s.trigger}').toList(),
+        ['mixin_page|push', 'mixin_page|pop_return'],
+      );
     });
   });
 }

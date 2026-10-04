@@ -69,7 +69,7 @@ class MockWisetrackPlatform
   }
 
   @override
-  void listenOnLogs(Function(String message) listener) {}
+  void listenOnLogs(void Function(String message) listener) {}
 
   @override
   Future<void> trackEvent(WTEvent event) {

@@ -4,6 +4,39 @@
 
 ## 🎯 Version 2.x
 
+**2.5.0** — _Modern Web Interop, Reliability & Platform Hardening_
+
+- 🌐 **Web**
+  - Migrated to `dart:js_interop` + `package:web` (discontinued `js` package removed); now WASM compatible
+  - JS SDK pinned to `2.3.0`, loaded from jsDelivr with automatic fallback to unpkg
+  - If the app already includes the WiseTrack SDK `<script>` in `web/index.html` (self-hosted or own CDN), that copy is used and nothing is injected
+- 📱 **Screen Tracking Fixes**
+  - Unnamed routes are no longer tracked as `MaterialPageRoute<dynamic>` (or other generic route type names); give them `RouteSettings(name: ...)`
+  - Opening/closing dialogs, bottom sheets and popup menus no longer re-tracks the screen below (`WTNavigatorObserver` and `WTScreenTrackMixin`)
+- 🔗 **Deeplinks (iOS)**
+  - Added UIScene lifecycle support (`FlutterSceneLifeCycleDelegate`) for apps migrated to scenes
+  - Deeplinks are no longer consumed by the plugin — other plugins and Flutter deep linking still receive them
+- 🌉 **WebView Bridge**
+  - Integer revenue amounts are accepted; unknown currencies are rejected instead of crashing
+  - Pending JS callbacks are always resolved, even when a call fails
+- 🛠 **Reliability**
+  - Native callbacks (logs, deeplinks) are broadcast to every attached Flutter engine (background isolates, add-to-app)
+  - Android/iOS method handlers validate arguments and return errors instead of crashing
+  - `getAdId`, `getIdfa` and `getReferrer` platform errors are now caught (return `null`) instead of escaping as unhandled exceptions
+- 🤖 **Android**
+  - Java/Kotlin JVM target 17, `compileSdk 36`
+  - Compatible with AGP 7.3 → 9.x (plugin no longer pins AGP/Kotlin Gradle Plugin versions)
+- 🍏 **iOS**
+  - Minimum iOS version is now `13.0`
+  - Removed the placeholder privacy manifest (provided by the native SDK)
+- 📦 **Native SDK Updates**
+  - Android SDK updated to `2.5.0`
+  - iOS SDK updated to `2.5.0`
+- ‼️ **Breaking Changes**
+  - Minimum versions: Flutter `3.22.0`, Dart `3.4.0`, iOS `13.0`; Android apps need Kotlin Gradle Plugin `1.8+`
+  - Unnamed routes are not auto-tracked anymore
+  - `WTParam.dynamic` throws `ArgumentError` for unsupported value types
+
 **2.4.1** — _Screen Tracking Webview Bridge_
 
 - 🌎 **Major Feature: Screen Tracking WebBridge Integration**

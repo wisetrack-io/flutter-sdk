@@ -29,7 +29,7 @@ enum RevenueCurrency {
   SAR,
   OMR,
   BTC,
-  EHT,
+  ETH,
   LTC,
 }
 
@@ -62,7 +62,7 @@ extension EventCurrencyLabel on RevenueCurrency {
         RevenueCurrency.SAR: 'SAR',
         RevenueCurrency.OMR: 'OMR',
         RevenueCurrency.BTC: 'BTC',
-        RevenueCurrency.EHT: 'EHT',
+        RevenueCurrency.ETH: 'ETH',
         RevenueCurrency.LTC: 'LTC',
       }[this]!;
 }

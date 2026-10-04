@@ -50,7 +50,7 @@ class WTParam {
   /// **Important:** String values have a maximum length of 100 characters.
   /// Longer values may be truncated or rejected by the tracking system.
   ///
-  /// Throws an [Exception] if the value is not of a supported type.
+  /// Throws an [ArgumentError] if the value is not of a supported type.
   ///
   /// Example:
   /// ```dart
@@ -60,11 +60,12 @@ class WTParam {
   /// ```
   ///
   /// Throws:
-  /// * [Exception] when [value] is not a [String], [num], or [bool].
+  /// * [ArgumentError] when [value] is not a [String], [num], or [bool].
   factory WTParam.dynamic(dynamic value) {
     if (value is String || value is num || value is bool) {
       return WTParam._(value);
     }
-    throw Exception('Invalid value for WTParam, `$value`');
+    throw ArgumentError.value(
+        value, 'value', 'WTParam supports only String, num or bool');
   }
 }

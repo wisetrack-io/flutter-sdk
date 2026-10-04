@@ -62,7 +62,7 @@ class WTEvent {
   /// final params = {
   ///   'key-1': WTParam.string('string-value'),
   ///   'key-2': WTParam.number(12.5),
-  ///   'key-3': WTParam.bool(true)
+  ///   'key-3': WTParam.boolean(true)
   /// }
   /// ```
   final Map<String, WTParam>? params;

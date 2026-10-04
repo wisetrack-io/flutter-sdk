@@ -1,3 +1,4 @@
+export 'src/config/wisetrack_platform_interface.dart' show DeeplinkCallback;
 export 'src/config/wisetrack_sdk.dart';
 export 'src/entity/entity.dart';
 export 'src/services/navigator_observer.dart';

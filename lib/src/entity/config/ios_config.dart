@@ -27,9 +27,12 @@ class WTIOSConfig {
   factory WTIOSConfig.fromMap(Map<String, dynamic> map) {
     return WTIOSConfig(
       store: WTIOSStore.fromString(map['ios_store_name'].toString()),
-      attWaitingInterval: map['att_waiting_interval'] as int? ?? 30,
+      // An explicit null disables waiting, a missing key keeps the default.
+      attWaitingInterval: map.containsKey('att_waiting_interval')
+          ? (map['att_waiting_interval'] as num?)?.toInt()
+          : 30,
       requestATTAutomatically:
-          map['request_att_automatically'] as bool? ?? false,
+          map['request_att_automatically'] as bool? ?? true,
     );
   }
 

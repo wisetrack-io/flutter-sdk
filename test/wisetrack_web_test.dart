@@ -46,11 +46,11 @@ void main() {
         customDeviceId: 'web_device_id',
         defaultTracker: 'web_tracker',
         deeplinkEnabled: true,
-        androidConfig: WTAndroidConfig(
+        androidConfig: const WTAndroidConfig(
           store: WTAndroidStore.playstore,
           oaidEnabled: true,
         ),
-        iOSConfig: WTIOSConfig(
+        iOSConfig: const WTIOSConfig(
           attWaitingInterval: 50,
           requestATTAutomatically: true,
           store: WTIOSStore.appstore,

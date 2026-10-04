@@ -27,9 +27,8 @@ class WTScreenTrackingConfig {
   /// [WTNavigatorObserver] in the observers list.
   final bool enabled;
 
-  /// Whether dialogs and popups (routes extending [PopupRoute]) are tracked.
-  ///
-  /// Bottom sheets are always distinguished from dialogs regardless of this flag.
+  /// Whether dialogs, bottom sheets and other popups (routes extending
+  /// [PopupRoute]) are tracked.
   final bool trackDialogs;
 
   /// Screen names to exclude from automatic tracking.

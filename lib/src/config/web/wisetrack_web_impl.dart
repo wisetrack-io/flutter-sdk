@@ -1,13 +1,12 @@
 import 'dart:async';
+import 'dart:js_interop';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 import 'package:wisetrack/src/entity/entity.dart';
-import 'package:wisetrack/src/entity/sdk_environment.dart';
 
 import '../../resources/resources.dart';
 import '../wisetrack_platform_interface.dart';
-import 'js_interop_util.dart' as js_util;
 import 'wisetrack_web.dart';
 import 'wisetrack_web_interop.dart';
 
@@ -18,33 +17,41 @@ class WisetrackWebImpl extends WisetrackPlatform {
     WisetrackPlatform.instance = WisetrackWebImpl();
   }
 
-  @override
-  void registerMethodCallbacks() {}
-
-  @override
-  Future<void> listenOnLogs(Function(String message) listener) async {
+  Future<T> _run<T>(
+    String action,
+    T fallback,
+    FutureOr<T> Function(WiseTrackJS sdk) body,
+  ) async {
     try {
       await WisetrackPlugin.ensureSDKLoaded();
-      final logCallback =
-          js_util.allowInterop((String level, String prefix, List args) {
-        listener('$prefix ${args.join(', ')}');
-      });
-      WTLoggerJS.addOutputEngine(logCallback);
+      return await body(WiseTrackJS.instance);
     } catch (e) {
-      debugPrint('WisetrackWeb: Failed to register log listener: $e');
+      debugPrint('WisetrackWeb: Failed to $action: $e');
+      return fallback;
     }
   }
 
   @override
-  Future<void> init(WTInitialConfig initConfig) async {
-    try {
-      await WisetrackPlugin.ensureSDKLoaded();
-      await Future.delayed(Duration(milliseconds: 100));
+  void registerMethodCallbacks() {}
 
-      ResourceWrapperJS.sdkEnvironment(WTResources.defaultSdkEnvironment.label);
+  @override
+  Future<void> listenOnLogs(void Function(String message) listener) {
+    return _run<void>('register log listener', null, (_) {
+      WTLoggerJS.addOutputEngine(
+        ((JSString level, JSString prefix, JSArray<JSAny?> args) {
+          final message = args.toDart.map((a) => a.dartify()).join(', ');
+          listener('${prefix.toDart} $message');
+        }).toJS,
+      );
+    });
+  }
+
+  @override
+  Future<void> init(WTInitialConfig initConfig) {
+    return _run<void>('initialize', null, (sdk) async {
       ResourceWrapperJS.sdkVersion(WTResources.sdkVersion);
 
-      final config = <String, dynamic>{
+      final config = <String, Object?>{
         'appToken': initConfig.appToken,
         'clientSecret': initConfig.clientSecret,
         'appVersion': initConfig.webAppVersion,
@@ -55,26 +62,20 @@ class WisetrackWebImpl extends WisetrackPlatform {
         'startTrackerAutomatically': initConfig.startTrackerAutomatically,
         'customDeviceId': initConfig.customDeviceId,
         'defaultTracker': initConfig.defaultTracker,
-        'deeplinkEnabled': initConfig.deeplinkEnabled,
+        'deeplinkEnabled': initConfig.deeplinkEnabled ?? true,
+        // Screens are tracked from Dart (WTNavigatorObserver / WTScreenTrackMixin).
         'screenTrackingConfig': {
           'autoTrackScreens': false,
           'autoTrackDialogs': false,
-        }
+        },
       };
-      await js_util
-          .promiseToFuture(WiseTrackJS.instance.init(js_util.jsify(config)));
-    } catch (e) {
-      debugPrint('WisetrackWeb: Failed to initialize: $e');
-    }
+      await sdk.init(config.jsify()!).toDart;
+    });
   }
 
   @override
-  Future<void> clearAndStop() async {
-    try {
-      WiseTrackJS.instance.flush();
-    } catch (e) {
-      debugPrint('WisetrackWeb: Failed to flush SDK: $e');
-    }
+  Future<void> clearAndStop() {
+    return _run<void>('flush SDK', null, (sdk) => sdk.flush());
   }
 
   @override
@@ -84,74 +85,42 @@ class WisetrackWebImpl extends WisetrackPlatform {
   }
 
   @override
-  Future<void> trackEvent(WTEvent event) async {
-    try {
-      await WisetrackPlugin.ensureSDKLoaded();
-
-      late WTEventJS eventJS;
-
-      Object? paramsJS;
-      if (event.params != null && event.params!.isNotEmpty) {
-        final paramsMap = <String, dynamic>{};
-        for (final entry in event.params!.entries) {
-          paramsMap[entry.key] = _mapWTParam(entry.value);
-        }
-        paramsJS = js_util.jsify(paramsMap);
-      }
-
-      eventJS = event.type == WTEventType.defaultEvent
-          ? WTEventJS.defaultEvent(event.name, paramsJS)
+  Future<void> trackEvent(WTEvent event) {
+    return _run<void>('track event', null, (sdk) async {
+      final params = _paramsToJS(event.params);
+      final eventJS = event.type == WTEventType.defaultEvent
+          ? WTEventJS.defaultEvent(event.name, params)
           : WTEventJS.revenueEvent(
               event.name,
               event.revenueAmount!,
               event.revenueCurrency!.label,
-              paramsJS,
+              params,
             );
 
-      await js_util.promiseToFuture(WiseTrackJS.instance.trackEvent(eventJS));
-
+      await sdk.trackEvent(eventJS).toDart;
       if (kDebugMode) {
-        print('WisetrackWeb: Event logged: ${event.name}');
+        debugPrint('WisetrackWeb: Event logged: ${event.name}');
       }
-    } catch (e) {
-      if (kDebugMode) {
-        print('WisetrackWeb: Failed to log event: $e');
-      }
-      rethrow;
-    }
+    });
   }
 
   @override
-  Future<void> trackScreen(WTScreen screen) async {
-    try {
-      Object? paramsJS;
-      if (screen.params != null && screen.params!.isNotEmpty) {
-        final paramsMap = <String, dynamic>{};
-        for (final entry in screen.params!.entries) {
-          paramsMap[entry.key] = _mapWTParam(entry.value);
-        }
-        paramsJS = js_util.jsify(paramsMap);
-      }
-
-      final screenData = <String, dynamic>{
+  Future<void> trackScreen(WTScreen screen) {
+    return _run<void>('track screen', null, (sdk) async {
+      final screenData = <String, Object?>{
         'name': screen.name,
         'type': screen.type.label,
         'displayName': screen.displayName,
-        'params': paramsJS,
+        'params': _paramsToMap(screen.params),
         'isAuto': screen.isAuto,
         'trigger': screen.trigger,
       };
 
-      await js_util.promiseToFuture(
-          WiseTrackJS.instance.trackScreen(js_util.jsify(screenData)));
-
+      await sdk.trackScreen(screenData.jsify()!).toDart;
       if (kDebugMode) {
-        print('WisetrackWeb: Screen tracked: ${screen.name}');
+        debugPrint('WisetrackWeb: Screen tracked: ${screen.name}');
       }
-    } catch (e) {
-      debugPrint('WisetrackWeb: Failed to track screen: $e');
-      rethrow;
-    }
+    });
   }
 
   @override
@@ -161,59 +130,37 @@ class WisetrackWebImpl extends WisetrackPlatform {
   }
 
   @override
-  Future<void> setEnabled(bool enabled) async {
-    try {
-      WiseTrackJS.instance.setEnabled(enabled);
-    } catch (e) {
-      debugPrint('WisetrackWeb: Failed to set enabled: $e');
-    }
+  Future<void> setEnabled(bool enabled) {
+    return _run<void>('set enabled', null, (sdk) => sdk.setEnabled(enabled));
   }
 
   @override
-  Future<void> setFCMToken(String fcmToken) async {
-    try {
-      await WisetrackPlugin.ensureSDKLoaded();
-      await js_util.promiseToFuture(WiseTrackJS.instance.setFCMToken(fcmToken));
-    } catch (e) {
-      debugPrint('WisetrackWeb: Failed to set fcm token: $e');
-    }
+  Future<void> setFCMToken(String fcmToken) {
+    return _run<void>(
+        'set fcm token', null, (sdk) => sdk.setFCMToken(fcmToken).toDart);
   }
 
   @override
-  Future<void> setLogLevel(WTLogLevel level) async {
-    try {
-      WiseTrackJS.instance.setLogLevel(level.webLabel);
-    } catch (e) {
-      debugPrint('WisetrackWeb: Failed to set log level: $e');
-    }
+  Future<void> setLogLevel(WTLogLevel level) {
+    return _run<void>(
+        'set log level', null, (sdk) => sdk.setLogLevel(level.webLabel));
   }
 
   @override
-  Future<void> startTracking() async {
-    try {
-      await js_util.promiseToFuture(WiseTrackJS.instance.startTracking());
-    } catch (e) {
-      debugPrint('WisetrackWeb: Failed to start tracking: $e');
-    }
+  Future<void> startTracking() {
+    return _run<void>(
+        'start tracking', null, (sdk) => sdk.startTracking().toDart);
   }
 
   @override
-  Future<void> stopTracking() async {
-    try {
-      await js_util.promiseToFuture(WiseTrackJS.instance.stopTracking());
-    } catch (e) {
-      debugPrint('WisetrackWeb: Failed to stop tracking: $e');
-    }
+  Future<void> stopTracking() {
+    return _run<void>(
+        'stop tracking', null, (sdk) => sdk.stopTracking().toDart);
   }
 
   @override
-  Future<bool> isEnabled() async {
-    try {
-      return WiseTrackJS.instance.isEnabled();
-    } catch (e) {
-      debugPrint('WisetrackWeb: Failed to get enabled status: $e');
-      return false;
-    }
+  Future<bool> isEnabled() {
+    return _run<bool>('get enabled status', false, (sdk) => sdk.isEnabled());
   }
 
   @override
@@ -252,49 +199,40 @@ class WisetrackWebImpl extends WisetrackPlatform {
   }
 
   @override
-  Future<String?> getDeferredDeeplink() async {
-    try {
-      return WiseTrackJS.instance.getDeferredDeeplink();
-    } catch (e) {
-      debugPrint('WisetrackWeb: Failed to get deferred deeplink: $e');
-      return null;
-    }
+  Future<String?> getDeferredDeeplink() {
+    return _run<String?>(
+        'get deferred deeplink', null, (sdk) => sdk.getDeferredDeeplink());
   }
 
   @override
-  Future<String?> getLastDeeplink() async {
-    try {
-      return WiseTrackJS.instance.getLastDeeplink();
-    } catch (e) {
-      debugPrint('WisetrackWeb: Failed to get last deeplink: $e');
-      return null;
-    }
+  Future<String?> getLastDeeplink() {
+    return _run<String?>(
+        'get last deeplink', null, (sdk) => sdk.getLastDeeplink());
   }
 
   @override
-  void onDeeplinkReceived(DeeplinkCallback callback) async {
-    try {
-      await WisetrackPlugin.ensureSDKLoaded();
-      WiseTrackJS.instance.setOnDeeplinkListener(
-        js_util.allowInterop((String uri, bool isDeferred) {
-          callback(uri, isDeferred);
-        }),
+  void onDeeplinkReceived(DeeplinkCallback callback) {
+    _run<void>('register deeplink listener', null, (sdk) {
+      sdk.setOnDeeplinkListener(
+        ((JSString? uri, JSBoolean? isDeferred) {
+          if (uri == null) return;
+          callback(uri.toDart, isDeferred?.toDart ?? false);
+        }).toJS,
       );
-    } catch (e) {
-      debugPrint('WisetrackWeb: Failed to register deeplink listener: $e');
-    }
+    });
   }
 
-  dynamic _mapWTParam(WTParam param) {
+  Map<String, Object?>? _paramsToMap(Map<String, WTParam>? params) {
+    if (params == null || params.isEmpty) return null;
+    return params.map((key, param) => MapEntry(key, _mapWTParam(param)));
+  }
+
+  JSAny? _paramsToJS(Map<String, WTParam>? params) =>
+      _paramsToMap(params)?.jsify();
+
+  Object _mapWTParam(WTParam param) {
     final value = param.value;
-    if (value is String) {
-      return value;
-    } else if (value is num) {
-      return value;
-    } else if (value is bool) {
-      return value;
-    } else {
-      return value.toString();
-    }
+    if (value is String || value is num || value is bool) return value;
+    return value.toString();
   }
 }

@@ -11,14 +11,11 @@ class WiseTrack {
   ///
   /// This method should be called to receive logs from the SDK.
   /// - [listener]: A callback function that will be called with log messages.
-  void listenOnLogs(Function(String message) listener) {
+  void listenOnLogs(void Function(String message) listener) {
     WisetrackPlatform.instance.listenOnLogs(listener);
   }
 
-  /// Enables test mode for debugging purposes.
-  ///
-  /// When enabled, the SDK operates in a test environment, preventing real data tracking.
-  /// Note: Enabling test mode will `delete all previously collected data`.
+  /// Clears all data stored by the SDK and stops tracking.
   Future<void> clearAndStop() {
     return WisetrackPlatform.instance.clearAndStop();
   }
@@ -140,8 +137,7 @@ class WiseTrack {
     return WisetrackPlatform.instance.getReferrer();
   }
 
-  /// Sets the package information for the tracking system.
-  Future<void> setPackgesInfo() {
+  Future<void> setPackagesInfo() {
     return WisetrackPlatform.instance.setPackagesInfo();
   }
 

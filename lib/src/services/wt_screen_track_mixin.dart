@@ -21,6 +21,13 @@ import '../entity/wt_param.dart';
 ///   String get screenName => 'product_detail';
 /// }
 /// ```
+///
+/// Do not combine this mixin with [WTNavigatorObserver] for the same screen,
+/// otherwise every view of that screen is reported twice. Either exclude the
+/// screen from the observer (`excludedScreens`) or use only one of them.
+///
+/// Closing a dialog, bottom sheet or popup menu shown above the screen does
+/// not count as a new view.
 mixin WTScreenTrackMixin<T extends StatefulWidget> on State<T>, RouteAware {
   static RouteObserver<ModalRoute<void>>? _globalRouteObserver;
 
@@ -44,6 +51,10 @@ mixin WTScreenTrackMixin<T extends StatefulWidget> on State<T>, RouteAware {
   ///
   /// Values must be [String], [num], or [bool] wrapped in [WTParam].
   Map<String, WTParam>? get screenParams => null;
+
+  /// Whether the route pushed on top of this screen is a popup (dialog,
+  /// bottom sheet, menu) — the screen stays visible underneath it.
+  bool _coveredByPopup = false;
 
   @override
   void didChangeDependencies() {
@@ -74,8 +85,24 @@ mixin WTScreenTrackMixin<T extends StatefulWidget> on State<T>, RouteAware {
   }
 
   @override
+  void didPushNext() {
+    Route<dynamic>? top;
+    // Reads the top-most route without popping anything (the predicate
+    // accepts the first route it sees).
+    Navigator.of(context).popUntil((route) {
+      top = route;
+      return true;
+    });
+    _coveredByPopup = top is PopupRoute;
+  }
+
+  @override
   void didPopNext() {
     // fires when popping back to this screen
+    if (_coveredByPopup) {
+      _coveredByPopup = false;
+      return;
+    }
     WiseTrack.instance.trackScreen(WTScreen(
       screenName,
       WTScreenType.page,

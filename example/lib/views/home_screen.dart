@@ -295,7 +295,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 OutlineButton(
                   title: '📦 Set Packages Info',
                   onPressed: () {
-                    WiseTrack.instance.setPackgesInfo();
+                    WiseTrack.instance.setPackagesInfo();
                   },
                 ),
               Row(

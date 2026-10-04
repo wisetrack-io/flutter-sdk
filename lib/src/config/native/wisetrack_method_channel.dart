@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:wisetrack/src/config/channel_names.dart';
 import 'package:wisetrack/src/entity/entity.dart';
-import 'package:wisetrack/src/entity/sdk_environment.dart';
 import 'package:wisetrack/src/resources/resources.dart';
 
 import '../../resources/running_platform.dart';
@@ -13,25 +12,28 @@ class MethodChannelWisetrack extends WisetrackPlatform {
   /// The method channel used for communication with the native side.
   static const MethodChannel _channel = MethodChannel('io.wisetrack.flutter');
   DeeplinkCallback? _deeplinkCallback;
-  Function(String message)? _logCallback;
+  void Function(String message)? _logCallback;
 
   @override
   void registerMethodCallbacks() {
     _channel.setMethodCallHandler((call) async {
       switch (call.method) {
         case MethodChannelNames.methodDeeplinkListener:
-          _deeplinkCallback?.call(
-              call.arguments['url'], call.arguments['is_deferred']);
+          final url = call.arguments['url'];
+          if (url is String) {
+            _deeplinkCallback?.call(url, call.arguments['is_deferred'] == true);
+          }
           break;
         case MethodChannelNames.methodLog:
-          _logCallback?.call(call.arguments['message']);
+          final message = call.arguments['message'];
+          if (message is String) _logCallback?.call(message);
           break;
       }
     });
   }
 
   @override
-  void listenOnLogs(Function(String message) listener) {
+  void listenOnLogs(void Function(String message) listener) {
     _logCallback = listener;
   }
 
@@ -39,7 +41,6 @@ class MethodChannelWisetrack extends WisetrackPlatform {
   Future<void> init(WTInitialConfig initConfig) async {
     try {
       await _channel.invokeMethod(MethodChannelNames.methodInit, {
-        'sdk_env': WTResources.defaultSdkEnvironment.label,
         'sdk_version': WTResources.sdkVersion,
         ...initConfig.toMap(),
       });
@@ -178,7 +179,7 @@ class MethodChannelWisetrack extends WisetrackPlatform {
     try {
       if (!RunningPlatform.isAndroid) return null;
 
-      return _channel.invokeMethod(MethodChannelNames.methodGetAdId);
+      return await _channel.invokeMethod(MethodChannelNames.methodGetAdId);
     } on PlatformException catch (e) {
       debugPrint("Failed to get adid: ${e.message}");
       return null;
@@ -190,7 +191,7 @@ class MethodChannelWisetrack extends WisetrackPlatform {
     try {
       if (!RunningPlatform.isIOS) return null;
 
-      return _channel.invokeMethod(MethodChannelNames.methodGetIdFA);
+      return await _channel.invokeMethod(MethodChannelNames.methodGetIdFA);
     } on PlatformException catch (e) {
       debugPrint("Failed to get idfa: ${e.message}");
       return null;
@@ -202,10 +203,9 @@ class MethodChannelWisetrack extends WisetrackPlatform {
     try {
       if (!RunningPlatform.isAndroid) return;
 
-      return _channel.invokeMethod(MethodChannelNames.methodSetPackagesInfo);
+      await _channel.invokeMethod(MethodChannelNames.methodSetPackagesInfo);
     } on PlatformException catch (e) {
       debugPrint("Failed to set packages info: ${e.message}");
-      return;
     }
   }
 
@@ -214,7 +214,7 @@ class MethodChannelWisetrack extends WisetrackPlatform {
     try {
       if (!RunningPlatform.isAndroid) return null;
 
-      return _channel.invokeMethod(MethodChannelNames.methodGetReferrer);
+      return await _channel.invokeMethod(MethodChannelNames.methodGetReferrer);
     } on PlatformException catch (e) {
       debugPrint("Failed to get referrer: ${e.message}");
       return null;

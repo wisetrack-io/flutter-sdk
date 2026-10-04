@@ -43,12 +43,12 @@ The **WiseTrack** Flutter plugin offers a cross-platform solution to accelerate 
 
 ## Requirements
 
-- Flutter 2.0.0 or later
-- Dart 2.12.0 or later
-- iOS 11.0 or later
+- Flutter 3.22.0 or later
+- Dart 3.4.0 or later
+- iOS 13.0 or later
 - Android embedding v2 enabled
 - Android API 21 (Lollipop) or later
-- Android Gradle Plugin >= 7.1.0 for full compatibility with Java 17
+- JDK 17 for Android builds (Android Gradle Plugin 8+, including AGP 9 built-in Kotlin)
 
 ## Installation
 
@@ -59,7 +59,7 @@ To integrate the WiseTrack Flutter Plugin into your Flutter project, follow thes
 
    ```yaml
    dependencies:
-     wisetrack: ^2.4.1 # Replace with the latest version
+     wisetrack: ^2.5.0 # Replace with the latest version
    ```
 
 2. **Install the package**:
@@ -69,7 +69,27 @@ To integrate the WiseTrack Flutter Plugin into your Flutter project, follow thes
    flutter pub get
    ```
 
-3. **Configure iOS**:
+3. **Configure Web** (only if you target web):
+   Nothing is required by default. The plugin loads the WiseTrack JS SDK version it was
+   built for (pinned per plugin release) from `cdn.jsdelivr.net`, and falls back to
+   `unpkg.com` if that fails.
+
+   - **Self-hosting / your own CDN**: add the script to `web/index.html` yourself, before
+     `flutter_bootstrap.js`. When the SDK is already on the page, the plugin uses it and
+     does not load another copy:
+
+     ```html
+     <script src="js/wisetrack-sdk.bundle.min.js" data-wisetrack-sdk></script>
+     <script src="flutter_bootstrap.js" async></script>
+     ```
+
+     Use the same SDK version the plugin release was built for
+     (`WisetrackPlugin.jsSdkVersion`, e.g. `2.3.0`). If you load it with
+     `async`/`defer`, keep the `data-wisetrack-sdk` attribute so the plugin can find it.
+   - **Content Security Policy**: when using the default CDNs, allow them in `script-src`:
+     `https://cdn.jsdelivr.net https://unpkg.com`.
+
+4. **Configure iOS**:
    To support App Tracking Transparency (ATT) on iOS, add the following key to your `ios/Runner/Info.plist`:
 
    ```xml
@@ -77,7 +97,7 @@ To integrate the WiseTrack Flutter Plugin into your Flutter project, follow thes
    <string>We use this data to provide a better user experience and personalized ads.</string>
    ```
 
-4. **Configure Android**:
+5. **Configure Android**:
    Ensure your `android/app/build.gradle` has the following settings:
 
    ```gradle
@@ -96,6 +116,17 @@ To integrate the WiseTrack Flutter Plugin into your Flutter project, follow thes
    ```xml
    <uses-permission android:name="android.permission.INTERNET" />
    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+   ```
+
+   The plugin itself already declares `INTERNET`, `ACCESS_NETWORK_STATE` and
+   `com.google.android.gms.permission.AD_ID`, plus package-visibility `<queries>` for the
+   Facebook and Instagram apps. If your app must not use the advertising ID (for example
+   apps for children under Google Play's Families policy), remove the permission in your
+   app manifest:
+
+   ```xml
+   <uses-permission android:name="com.google.android.gms.permission.AD_ID"
+       tools:node="remove" />
    ```
 
    If your app does not target the Google Play Store (e.g., CafeBazaar, Myket), add these additional permissions:
@@ -462,7 +493,25 @@ MaterialApp(
 | 2 | `RouteSettings.name` as URI path | `/product/123?tab=reviews` | `product/123` | `Product` |
 | 2 | `RouteSettings.name` as full URL | `myapp://home/feed` | `myapp://home/feed` | `Feed` |
 | 2 | `RouteSettings.name` (plain string) | `ProductPage` | `ProductPage` | `Product` |
-| 3 | `Route.runtimeType` generic arg | `MaterialPageRoute<CheckoutPage>` | `CheckoutPage` | `Checkout` |
+| 3 | Class name of a custom `Route` subclass | `class CheckoutRoute extends MaterialPageRoute` | `CheckoutRoute` | `Checkout` |
+
+Routes without any of the above — e.g. `Navigator.push(context, MaterialPageRoute(builder: ...))` —
+are **not tracked**: their type (`MaterialPageRoute<dynamic>`) says nothing about the screen, and
+the generic argument is the route's *result* type, not the page widget. Give them a name:
+
+```dart
+Navigator.push(
+  context,
+  MaterialPageRoute(
+    settings: const RouteSettings(name: '/checkout'),
+    builder: (_) => const CheckoutPage(),
+  ),
+);
+```
+
+Closing a dialog, bottom sheet, dropdown or popup menu does **not** count as a new view of the
+screen underneath. Popups are only tracked with `trackDialogs: true` and when they have a name,
+e.g. `showDialog(routeSettings: const RouteSettings(name: 'rate_app'), ...)`.
 
 **Routing package examples:**
 
@@ -472,8 +521,9 @@ MaterialApp(
 | Navigator 1.0 | `pushNamed('/product/42?color=red')` | `product/42` | `Product` + param `color=red` |
 | go_router | `GoRoute(path: '/profile')` | `profile` | `Profile` |
 | GetX | `Get.toNamed('/settings')` | `settings` | `Settings` |
-| auto_route | `@RoutePage()` on `OrderDetailPage` | `OrderDetailPage` | `Order Detail` |
-| No routing | `Navigator.push(…, MaterialPageRoute(builder: …))` | `CheckoutPage` | `Checkout` |
+| auto_route | `@RoutePage()` on `OrderDetailPage` | `OrderDetailRoute` | `Order Detail` |
+| No routing | `Navigator.push(…, MaterialPageRoute(settings: RouteSettings(name: '/checkout'), builder: …))` | `checkout` | `Checkout` |
+| No routing | `Navigator.push(…, MaterialPageRoute(builder: …))` | _not tracked_ | — |
 
 **Custom screen data provider:**
 
@@ -563,7 +613,9 @@ class _ProductDetailState extends State<ProductDetailScreen>
 }
 ```
 
-The mixin fires `trackScreen` automatically when the screen is pushed and again when the user navigates back to it from a deeper route.
+The mixin fires `trackScreen` automatically when the screen is pushed and again when the user navigates back to it from a deeper page. Closing a dialog, bottom sheet or popup menu shown above the screen is not counted as a new view.
+
+> **Don't combine** `WTScreenTrackMixin` and `WTNavigatorObserver` for the same screen — each would report the view, so it is counted twice. Use one of them, or add the screen to the observer's `excludedScreens`.
 
 ---
 
@@ -657,13 +709,13 @@ final config = WTInitialConfig(
 
   // Android-specific configuration
   androidConfig: WTAndroidConfig(
-    store: WTAndroidStore.googlePlay,
+    store: WTAndroidStore.playstore,
     oaidEnabled: false,
   ),
 
   // iOS-specific configuration
   iOSConfig: WTIOSConfig(
-    store: WTIOSStore.appStore,
+    store: WTIOSStore.appstore,
     attWaitingInterval: 30,
     requestATTAutomatically: true,
   ),
@@ -739,6 +791,24 @@ _controller.loadRequest(...);
 
 _Note_: register `WiseTrackWebBridge` before load any content in webview controller!
 
+**Security:** every page loaded in the WebView can call the bridge (read IDFA/ADID, stop tracking,
+re-initialize with another token). If the WebView can navigate to pages you don't control, restrict
+the bridge to your own hosts:
+
+```dart
+final webBridge = WiseTrackWebBridge(
+  evaluator: FlutterWebViewJSEvaluator(_controller),
+  allowedHosts: {'shop.example.com', '*.example.com'},
+  currentUrl: () async {
+    final url = await _controller.currentUrl();
+    return url == null ? null : Uri.tryParse(url);
+  },
+);
+```
+
+The check uses the top-level page URL, so it cannot tell apart messages coming from iframes
+embedded in an allowed page.
+
 #### Integration with `flutter_inappwebview`
 
 1. Create JSEvaluator:
@@ -801,6 +871,23 @@ An example project demonstrating the WiseTrack Flutter Plugin integration is ava
 
 ## Breaking Changes
 
+### Version 2.5.0
+
+- **Minimum versions**: Flutter 3.22 / Dart 3.4, iOS 13.0. The web implementation now uses
+  `package:web` + `dart:js_interop` (WebAssembly compatible) instead of the discontinued `package:js`.
+- **Web SDK loading**: the JS SDK version is pinned per plugin release and loaded from jsDelivr
+  (unpkg as fallback). A WiseTrack script you already include in `web/index.html` is reused.
+- **Screen tracking**: unnamed routes (`MaterialPageRoute(builder: ...)` without
+  `RouteSettings.name`) are no longer tracked as `MaterialPageRoute<dynamic>`, and closing a
+  dialog/bottom sheet/popup no longer re-tracks the screen underneath.
+- **WebView bridge `initialize`**: missing `start_tracker_automatically` and
+  `request_att_automatically` now default to `true`, the same as `WTInitialConfig`.
+- `WTParam.dynamic` throws `ArgumentError` (was `Exception`) for unsupported values.
+- `RevenueCurrency.ETH` added; the misspelled `RevenueCurrency.EHT` is deprecated.
+- `WiseTrack.setPackgesInfo()` is deprecated in favour of `setPackagesInfo()`.
+- iOS no longer consumes incoming deep links: other plugins and Flutter's deep linking receive them too.
+
+
 ### Version 2.3.0
 
 - **Configuration Structure Change**: Platform-specific parameters moved to dedicated config classes
@@ -809,8 +896,8 @@ An example project demonstrating the WiseTrack Flutter Plugin integration is ava
   // OLD (Version 2.2.x and earlier)
   final config = WTInitialConfig(
     appToken: 'your-app-token',
-    androidStore: WTAndroidStore.googlePlay,
-    iOSStore: WTIOSStore.appStore,
+    androidStore: WTAndroidStore.playstore,
+    iOSStore: WTIOSStore.appstore,
     oaidEnabled: false,
   );
 
@@ -819,11 +906,11 @@ An example project demonstrating the WiseTrack Flutter Plugin integration is ava
     appToken: 'your-app-token',
     clientSecret: 'your-client-secret', // Now required
     androidConfig: WTAndroidConfig(
-      store: WTAndroidStore.googlePlay,
+      store: WTAndroidStore.playstore,
       oaidEnabled: false,
     ),
     iOSConfig: WTIOSConfig(
-      store: WTIOSStore.appStore,
+      store: WTIOSStore.appstore,
       attWaitingInterval: 30,
       requestATTAutomatically: true,
     ),

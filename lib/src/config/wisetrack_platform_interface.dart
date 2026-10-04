@@ -31,7 +31,7 @@ abstract class WisetrackPlatform extends PlatformInterface {
 
   void registerMethodCallbacks();
 
-  void listenOnLogs(Function(String message) listener);
+  void listenOnLogs(void Function(String message) listener);
 
   Future<void> init(WTInitialConfig initConfig);
 

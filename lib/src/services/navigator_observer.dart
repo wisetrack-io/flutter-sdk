@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' show ModalBottomSheetRoute;
 import 'package:flutter/widgets.dart';
 import 'package:wisetrack/wisetrack.dart' show WiseTrack;
@@ -35,9 +36,16 @@ part 'screen_deduplicator.dart';
 /// **Screen name resolution priority (highest → lowest):**
 /// 1. [WTScreenTrackingConfig.screenDataProvider] — full manual override.
 /// 2. [RouteSettings.name] — parsed as a URI; query params become screen params.
-/// 3. Widget class name extracted from [Route.runtimeType] (e.g. `ProductPage`).
+/// 3. The class name of a custom [Route] subclass (e.g. `ProductRoute`).
+///
+/// Routes that match none of the above — e.g.
+/// `Navigator.push(context, MaterialPageRoute(builder: ...))` without
+/// `settings: RouteSettings(name: ...)` — are **not tracked**, because their
+/// type (`MaterialPageRoute<dynamic>`) says nothing about the screen.
+///
+/// Closing a dialog, bottom sheet, dropdown or popup menu does not count as a
+/// new view of the screen underneath.
 class WTNavigatorObserver extends NavigatorObserver {
-  /// The configuration controlling which screens are tracked and how.
   /// The configuration controlling which screens are tracked and how.
   final WTScreenTrackingConfig config;
   late final _deduplicator =
@@ -56,9 +64,10 @@ class WTNavigatorObserver extends NavigatorObserver {
 
   @override
   void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) {
-    if (previousRoute != null) {
-      _trackRoute(previousRoute, trigger: 'pop');
-    }
+    // The screen below a popup (dialog, bottom sheet, dropdown, menu) stayed
+    // visible the whole time, so closing the popup is not a new screen view.
+    if (previousRoute == null || route is PopupRoute) return;
+    _trackRoute(previousRoute, trigger: 'pop');
   }
 
   @override
@@ -115,12 +124,18 @@ class WTNavigatorObserver extends NavigatorObserver {
       return _parseRouteName(route.settings.name!);
     }
 
-    // Priority 3: runtimeType — extract widget class name
-    final typeName = _extractNameFromType(route.runtimeType.toString());
-    if (_isInternalRoute(typeName)) return null;
+    // Priority 3: class name of a custom Route subclass
+    final className = _customRouteClassName(route);
+    if (className == null) {
+      if (kDebugMode) {
+        debugPrint('WTNavigatorObserver: skipped unnamed ${route.runtimeType}; '
+            'give it RouteSettings(name: ...) or use screenDataProvider.');
+      }
+      return null;
+    }
     return _ScreenData(
-      name: typeName,
-      displayName: _camelToDisplayName(typeName),
+      name: className,
+      displayName: _camelToDisplayName(className),
     );
   }
 
@@ -210,14 +225,39 @@ class WTNavigatorObserver extends NavigatorObserver {
     return cleaned.isEmpty ? '/' : cleaned;
   }
 
-  /// `MaterialPageRoute<ProductPage>` → `ProductPage`
-  String _extractNameFromType(String typeName) {
-    final match = RegExp(r'<([^<>]+)>').firstMatch(typeName);
-    if (match != null) {
-      final inner = match.group(1)!;
-      if (inner != 'dynamic' && inner != 'void') return inner;
+  /// Generic routes whose class name says nothing about the screen shown.
+  static const _genericRouteTypes = {
+    'Route',
+    'OverlayRoute',
+    'TransitionRoute',
+    'ModalRoute',
+    'PageRoute',
+    'PopupRoute',
+    'MaterialPageRoute',
+    'CupertinoPageRoute',
+    'PageRouteBuilder',
+    'RawDialogRoute',
+    'DialogRoute',
+    'CupertinoDialogRoute',
+    'CupertinoModalPopupRoute',
+    'ModalBottomSheetRoute',
+  };
+
+  /// `ProductRoute` / `ProductRoute<void>` → `ProductRoute`; `null` for
+  /// framework/private routes (`MaterialPageRoute<dynamic>`, `_DropdownRoute<T>`).
+  ///
+  /// The generic argument is the route's *result* type, not the page widget,
+  /// so it is never used as a name.
+  String? _customRouteClassName(Route<dynamic> route) {
+    // Type names are minified in release web builds.
+    if (kIsWeb && kReleaseMode) return null;
+    final name = route.runtimeType.toString().split('<').first;
+    if (name.isEmpty ||
+        name.startsWith('_') ||
+        _genericRouteTypes.contains(name)) {
+      return null;
     }
-    return typeName.replaceFirst(RegExp(r'^_'), '');
+    return name;
   }
 
   /// `product/123` → `Product`, `product/:id` → `Product`
@@ -249,19 +289,25 @@ class WTNavigatorObserver extends NavigatorObserver {
         .replaceAll(RegExp(r'Screen$'), '')
         .replaceAll(RegExp(r'Page$'), '');
     if (cleaned.isEmpty) cleaned = name;
-    final result = cleaned
-        .replaceAllMapped(RegExp(r'(?<=[a-z])(?=[A-Z])'), (_) => ' ')
-        .trim();
+    // Insert a space at lower→upper boundaries (no regex lookbehind: it is
+    // unsupported by older Safari versions on web).
+    final buffer = StringBuffer();
+    for (var i = 0; i < cleaned.length; i++) {
+      if (i > 0 && _isUpper(cleaned[i]) && _isLower(cleaned[i - 1])) {
+        buffer.write(' ');
+      }
+      buffer.write(cleaned[i]);
+    }
+    final result = buffer.toString().trim();
     if (result.isEmpty) return cleaned;
     return result[0].toUpperCase() + result.substring(1);
   }
 
-  bool _isInternalRoute(String name) =>
-      name.startsWith('_') ||
-      name == 'dynamic' ||
-      name == 'void' ||
-      name.startsWith('ModalBarrier') ||
-      name.startsWith('Overlay');
+  bool _isUpper(String char) =>
+      char.toUpperCase() == char && char.toLowerCase() != char;
+
+  bool _isLower(String char) =>
+      char.toLowerCase() == char && char.toUpperCase() != char;
 
   WTScreenType _resolveScreenType(Route<dynamic> route) {
     if (route is ModalBottomSheetRoute) return WTScreenType.bottomSheet;

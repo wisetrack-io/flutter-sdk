@@ -1,5 +1,4 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-  package="io.wisetrack.wisetrack">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
@@ -10,8 +9,4 @@
     <queries>
         <package android:name="com.instagram.android" />
     </queries>
-    <application>
-        <meta-data android:name="io.sentry.auto-init" android:value="false" />
-     <!--   <meta-data android:name="io.sentry.dsn" android:value="https://6a8f5df5e3f54082a6a6f164dfb7af45@glitchtip.wisetrackdev.ir/3" />-->
-    </application>
 </manifest>

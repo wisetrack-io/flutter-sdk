@@ -43,12 +43,12 @@
 
 ## نیازمندی ها
 
-- فلاتر 2.0.0 یا بالاتر
-- دارت 2.12.0 یا بالاتر
-- iOS 11.0 یا بالاتر
+- فلاتر 3.22.0 یا بالاتر
+- دارت 3.4.0 یا بالاتر
+- iOS 13.0 یا بالاتر
 - پشتیبانی از Android embedding v2
 - اندروید API 21 (لالی‌پاپ) یا بالاتر
-- Android Gradle Plugin >= 7.1.0 برای سازگاری کامل با جاوا 17
+- JDK 17 برای بیلد اندروید (Android Gradle Plugin 8 به بالا، از جمله built-in Kotlin در AGP 9)
 
 ## نصب
 
@@ -59,7 +59,7 @@
 
    ```yaml
    dependencies:
-     wisetrack: ^2.4.1 # با آخرین نسخه جایگزین کنید
+     wisetrack: ^2.5.0 # با آخرین نسخه جایگزین کنید
    ```
 
 2. **نصب بسته**:
@@ -69,12 +69,25 @@
    flutter pub get
    ```
 
-3. **فعال‌سازی پشتیبانی وب** (اگر وب را هدف قرار می‌دهید):
-   پشتیبانی وب به صورت خودکار گنجانده شده است. برای ویژگی‌های خاص وب، اطمینان حاصل کنید که فایل `web/index.html` شما شامل بسته SDK WiseTrack است:
+3. **پیکربندی وب** (اگر وب را هدف قرار می‌دهید):
+   به‌طور پیش‌فرض کاری لازم نیست. پلاگین نسخه‌ای از SDK جاوااسکریپت WiseTrack را که با آن
+   ساخته شده (برای هر نسخه‌ی پلاگین ثابت است) از `cdn.jsdelivr.net` لود می‌کند و اگر لود نشد
+   از `unpkg.com` استفاده می‌کند.
 
-   ```html
-   <script src="sdk.bundle.min.js"></script>
-   ```
+   - **میزبانی روی سرور خودتان یا CDN دلخواه**: اسکریپت را خودتان در `web/index.html` و قبل از
+     `flutter_bootstrap.js` قرار دهید. اگر SDK از قبل در صفحه باشد، پلاگین از همان استفاده می‌کند و
+     نسخه‌ی دیگری لود نمی‌کند:
+
+     ```html
+     <script src="js/wisetrack-sdk.bundle.min.js" data-wisetrack-sdk></script>
+     <script src="flutter_bootstrap.js" async></script>
+     ```
+
+     از همان نسخه‌ای استفاده کنید که پلاگین با آن ساخته شده (`WisetrackPlugin.jsSdkVersion`، مثلاً
+     `2.3.0`). اگر اسکریپت را با `async` یا `defer` لود می‌کنید، attribute
+     `data-wisetrack-sdk` را نگه دارید تا پلاگین آن را پیدا کند.
+   - **Content Security Policy**: در حالت پیش‌فرض این دامنه‌ها را به `script-src` اضافه کنید:
+     `https://cdn.jsdelivr.net https://unpkg.com`.
 
 4. **پیکربندی iOS**:
    برای پشتیبانی از شفافیت ردیابی برنامه (ATT) در iOS، کلید زیر را به فایل `ios/Runner/Info.plist` اضافه کنید:
@@ -103,6 +116,16 @@
    ```xml
    <uses-permission android:name="android.permission.INTERNET" />
    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+   ```
+
+   خود پلاگین مجوزهای `INTERNET`، `ACCESS_NETWORK_STATE` و
+   `com.google.android.gms.permission.AD_ID` و همچنین `<queries>` برای اپ‌های Facebook و Instagram
+   را تعریف کرده است. اگر اپ شما نباید از شناسه‌ی تبلیغاتی استفاده کند (مثلاً اپ‌های کودکان در
+   سیاست Families گوگل‌پلی)، مجوز را در manifest اپ خود حذف کنید:
+
+   ```xml
+   <uses-permission android:name="com.google.android.gms.permission.AD_ID"
+       tools:node="remove" />
    ```
 
    اگر برنامه شما فروشگاه Google Play را هدف قرار نمی‌دهد (مانند کافه‌بازار یا مایکت)، مجوزهای زیر را نیز اضافه کنید:
@@ -490,13 +513,13 @@ final config = WTInitialConfig(
 
   // پیکربندی خاص اندروید
   androidConfig: WTAndroidConfig(
-    store: WTAndroidStore.googlePlay,
+    store: WTAndroidStore.playstore,
     oaidEnabled: false,
   ),
 
   // پیکربندی خاص iOS
   iOSConfig: WTIOSConfig(
-    store: WTIOSStore.appStore,
+    store: WTIOSStore.appstore,
     attWaitingInterval: 30,
     requestATTAutomatically: true,
   ),
@@ -574,6 +597,24 @@ _نکته:_
 
 حتماً قبل از بارگذاری هر محتوایی در WebView، متد register() را برای `WiseTrackWebBridge` فراخوانی کنید.
 
+**امنیت:** هر صفحه‌ای که در WebView لود شود می‌تواند bridge را صدا بزند (خواندن IDFA/ADID، توقف
+ردیابی، init دوباره با توکن دیگر). اگر WebView می‌تواند به صفحاتی خارج از کنترل شما برود، bridge را
+به دامنه‌های خودتان محدود کنید:
+
+```dart
+final webBridge = WiseTrackWebBridge(
+  evaluator: FlutterWebViewJSEvaluator(_controller),
+  allowedHosts: {'shop.example.com', '*.example.com'},
+  currentUrl: () async {
+    final url = await _controller.currentUrl();
+    return url == null ? null : Uri.tryParse(url);
+  },
+);
+```
+
+این بررسی بر اساس آدرس صفحه‌ی اصلی انجام می‌شود و پیام‌هایی را که از iframe داخل یک صفحه‌ی مجاز
+می‌آیند تشخیص نمی‌دهد.
+
 #### پیاده سازی با `flutter_inappwebview`
 
 1. ایجاد JSEvaluator:
@@ -643,8 +684,8 @@ InAppWebView(
   // قدیمی (نسخه 2.2.x و قبل از آن)
   final config = WTInitialConfig(
     appToken: 'your-app-token',
-    androidStore: WTAndroidStore.googlePlay,
-    iOSStore: WTIOSStore.appStore,
+    androidStore: WTAndroidStore.playstore,
+    iOSStore: WTIOSStore.appstore,
     oaidEnabled: false,
   );
 
@@ -653,11 +694,11 @@ InAppWebView(
     appToken: 'your-app-token',
     clientSecret: 'your-client-secret', // اکنون الزامی است
     androidConfig: WTAndroidConfig(
-      store: WTAndroidStore.googlePlay,
+      store: WTAndroidStore.playstore,
       oaidEnabled: false,
     ),
     iOSConfig: WTIOSConfig(
-      store: WTIOSStore.appStore,
+      store: WTIOSStore.appstore,
       attWaitingInterval: 30,
       requestATTAutomatically: true,
     ),
