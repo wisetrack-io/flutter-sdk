@@ -1,6 +1,7 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:wisetrack/wisetrack.dart';
 import 'package:wisetrack_example/sdk_logger.dart';
 import 'package:wisetrack_example/views/logs_view.dart';
@@ -28,7 +29,10 @@ class _HomeScreenState extends State<HomeScreen> {
   WTLogLevel logLevel = WTLogLevel.debug;
   String appToken = '<AppToken here>';
   String clientSecret = '<ClientSecret here>';
-  WTAndroidStore androidStore = WTAndroidStore.other;
+  // Android flavor: `play` (no core-tools) or `other` (see android/app/build.gradle).
+  static const bool isPlayBuild = appFlavor == 'play';
+  WTAndroidStore androidStore =
+      isPlayBuild ? WTAndroidStore.playstore : WTAndroidStore.other;
   WTAndroidStore? androidCustomStore;
   WTIOSStore iosStore = WTIOSStore.other;
   WTIOSStore? iosCustomStore;
@@ -53,9 +57,18 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
-        title: const Text(
-          'WiseTrack App',
-          style: TextStyle(fontWeight: FontWeight.w700),
+        title: Row(
+          children: [
+            const Text(
+              'WiseTrack App',
+              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 18),
+            ),
+            if (appFlavor != null)
+              Text(
+                isPlayBuild ? '  · Play (no core-tools)' : '  · $appFlavor',
+                style: const TextStyle(fontSize: 12),
+              ),
+          ],
         ),
         titleSpacing: 24,
         actions: [

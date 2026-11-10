@@ -308,6 +308,13 @@ extension WisetrackPlugin {
 }
 
 // MARK: - Deep Link Handling
+//
+// WiseTrack only observes incoming links: it records them and always returns
+// `false`, so the URL keeps flowing to other plugins (app_links, google_sign_in,
+// firebase_auth, ...) and to Flutter's own deep linking.
+//
+// Links arrive through the AppDelegate in apps using the app lifecycle, and
+// through the scene delegate in apps migrated to the UIScene lifecycle.
 extension WisetrackPlugin {
 
     private static var lastDeepLink: (url: URL, time: Date)?
@@ -351,6 +358,11 @@ extension WisetrackPlugin {
 }
 
 // MARK: - UIScene lifecycle
+//
+// `FlutterSceneLifeCycleDelegate` / `addSceneDelegate:` only exist in newer
+// Flutter versions, so they are used through the Objective-C runtime to keep
+// the plugin compiling on older Flutter SDKs. The methods below match that
+// protocol's selectors.
 extension WisetrackPlugin {
 
     static func registerSceneDelegateIfAvailable(_ instance: WisetrackPlugin, registrar: FlutterPluginRegistrar) {

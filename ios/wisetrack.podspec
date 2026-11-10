@@ -4,7 +4,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'wisetrack'
-  s.version          = '2.5.0'
+  s.version          = '3.0.0'
   s.summary          = 'WiseTrack Flutter plugin: attribution and analytics for iOS apps.'
   s.description      = <<-DESC
 Flutter plugin wrapping the WiseTrack iOS SDK (WiseTrackLib).

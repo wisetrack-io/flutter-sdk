@@ -195,7 +195,6 @@ class WiseTrackWebBridge {
 
   RevenueCurrency _parseCurrency(Object? raw) {
     final code = raw.toString().toUpperCase();
-    if (code == 'ETH' || code == 'EHT') return RevenueCurrency.ETH;
     return RevenueCurrency.values.firstWhere(
       (c) => c.label == code,
       orElse: () => throw ArgumentError.value(raw, 'currency', 'Unsupported'),

@@ -30,7 +30,7 @@ const RevenueCurrency = Object.freeze({
     SAR: 'SAR',
     OMR: 'OMR',
     BTC: 'BTC',
-    EHT: 'EHT',
+    ETH: 'ETH',
     LTC: 'LTC'
 });
 

@@ -7,6 +7,14 @@ import io.wisetrack.sdk.core.models.WTLogLevel
 import io.wisetrack.sdk.core.resources.WTLoggerOutput
 import java.util.concurrent.CopyOnWriteArraySet
 
+/**
+ * Channels of every Flutter engine the plugin is attached to (main UI engine,
+ * background isolates such as FCM handlers, add-to-app engines).
+ *
+ * Native SDK callbacks are process-wide, so they are registered once and
+ * broadcast to all attached engines; each engine forwards them to Dart only if
+ * it registered a listener there.
+ */
 object FlutterChannels {
     private val channels = CopyOnWriteArraySet<MethodChannel>()
     private val mainHandler = Handler(Looper.getMainLooper())

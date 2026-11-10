@@ -2,6 +2,21 @@
 
 ---
 
+## 🎯 Version 3.x
+
+**3.0.0** — _Google Play Compliant Android Core_
+
+- 🤖 **Android**
+  - Uses WiseTrack Android SDK `core:3.0.0`, which meets Google Play policies on its own
+  - Builds for stores other than Google Play (CafeBazaar, Myket, …) must add
+    `io.wisetrack.sdk:core-tools` to `android/app/build.gradle` (versionless; it follows the plugin's
+    `core` version). Use `<flavor>Implementation` for multi-store apps
+  - Without `core-tools`, `setPackagesInfo()` and `oaidEnabled` have no effect on Android
+  - See "Android Store Builds" in the README
+- 🍎 **iOS / 🌐 Web**: no changes
+
+---
+
 ## 🎯 Version 2.x
 
 **2.5.0** — _Modern Web Interop, Reliability & Platform Hardening_

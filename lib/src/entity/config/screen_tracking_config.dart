@@ -29,6 +29,12 @@ class WTScreenTrackingConfig {
 
   /// Whether dialogs, bottom sheets and other popups (routes extending
   /// [PopupRoute]) are tracked.
+  ///
+  /// When tracked, bottom sheets are reported as [WTScreenType.bottomSheet]
+  /// and other popups as [WTScreenType.dialog]. Popups need a name to be
+  /// tracked, e.g. `showDialog(routeSettings: RouteSettings(name: 'rate_app'), ...)`
+  /// or a [screenDataProvider] result. Closing a popup never re-tracks the
+  /// screen underneath.
   final bool trackDialogs;
 
   /// Screen names to exclude from automatic tracking.

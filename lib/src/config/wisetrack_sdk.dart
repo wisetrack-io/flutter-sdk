@@ -16,6 +16,9 @@ class WiseTrack {
   }
 
   /// Clears all data stored by the SDK and stops tracking.
+  ///
+  /// Note: this `deletes all previously collected data` (queued events,
+  /// identifiers, cached state). Call [init] again to resume tracking.
   Future<void> clearAndStop() {
     return WisetrackPlatform.instance.clearAndStop();
   }
@@ -137,6 +140,11 @@ class WiseTrack {
     return WisetrackPlatform.instance.getReferrer();
   }
 
+  /// Sets the package information for the tracking system.
+  /// This function is intended for Android platform only.
+  ///
+  /// Needs `io.wisetrack.sdk:core-tools` in the Android build (builds for stores other than
+  /// Google Play); without it, this call does nothing.
   Future<void> setPackagesInfo() {
     return WisetrackPlatform.instance.setPackagesInfo();
   }

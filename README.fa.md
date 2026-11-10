@@ -9,6 +9,7 @@
 - [ویژگی ها](#ویژگی-ها)
 - [نیازمندی ها](#نیازمندی-ها)
 - [نصب](#نصب)
+- [بیلد اندروید برای مارکت‌ها (Google Play و بقیه)](#بیلد-اندروید-برای-مارکتها-google-play-و-بقیه)
 - [راه اندازی اولیه](#راه-اندازی-اولیه)
 - [استفاده پایه](#استفاده-پایه)
   - [فعال/غیرفعال کردن ردیابی](#فعالغیرفعال-کردن-ردیابی)
@@ -59,7 +60,7 @@
 
    ```yaml
    dependencies:
-     wisetrack: ^2.5.0 # با آخرین نسخه جایگزین کنید
+     wisetrack: ^3.0.0 # با آخرین نسخه جایگزین کنید
    ```
 
 2. **نصب بسته**:
@@ -128,7 +129,7 @@
        tools:node="remove" />
    ```
 
-   اگر برنامه شما فروشگاه Google Play را هدف قرار نمی‌دهد (مانند کافه‌بازار یا مایکت)، مجوزهای زیر را نیز اضافه کنید:
+   در بیلدهای مارکت‌های غیر از Google Play (مانند کافه‌بازار یا مایکت) می‌توانید مجوزهای زیر را هم اضافه کنید. آن‌ها را فقط در manifest همان بیلدها (مثلاً `android/app/src/bazaar/AndroidManifest.xml`) بگذارید، نه در بیلد Google Play:
 
    ```xml
    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
@@ -144,7 +145,7 @@
      implementation 'com.google.android.gms:play-services-ads-identifier:18.2.0'
      ```
 
-   - **شناسه تبلیغاتی باز (OAID)**: امکان استفاده از OAID به‌عنوان جایگزینی برای Ad ID در دستگاه‌های بدون Google Play Services (مانند دستگاه‌های چینی) از طریق `WTInitialConfig` با `oaidEnabled: true`.
+   - **شناسه تبلیغاتی باز (OAID)**: امکان استفاده از OAID به‌عنوان جایگزینی برای Ad ID در دستگاه‌های بدون Google Play Services (مانند دستگاه‌های چینی) از طریق `WTInitialConfig` با `oaidEnabled: true`. فقط برای بیلدهای خارج از Google Play؛ `core-tools` لازم است (بخش [بیلد اندروید برای مارکت‌ها](#بیلد-اندروید-برای-مارکتها-google-play-و-بقیه)).
 
      ```gradle
      implementation 'io.wisetrack.sdk:oaid:2.0.0' // با آخرین نسخه جایگزین کنید
@@ -194,7 +195,7 @@
        apply plugin: 'com.google.gms.google-services'
        ```
 
-   - **AppSet ID**: شناسایی اضافی دستگاه برای تحلیل‌ها را فراهم می‌کند.
+   - **AppSet ID**: شناسایی اضافی دستگاه برای تحلیل‌ها را فراهم می‌کند. فقط برای بیلدهای خارج از Google Play؛ `core-tools` لازم است.
      ```gradle
      implementation 'com.google.android.gms:play-services-appset:16.1.0'
      ```
@@ -204,6 +205,62 @@
    ```bash
    flutter run
    ```
+
+## بیلد اندروید برای مارکت‌ها (Google Play و بقیه)
+
+پلاگین در اندروید از `io.wisetrack.sdk:core` استفاده می‌کند که به‌تنهایی با سیاست‌های Google Play سازگار است.
+
+بیلدهایی که **خارج از Google Play** منتشر می‌شوند (کافه‌بازار، مایکت و …) به `io.wisetrack.sdk:core-tools` هم نیاز دارند. در این بیلدها لازم است تا اطلاعات موردنیاز دستگاه به WiseTrack ارسال شود و قابلیت‌های مهم پنل کار کنند. **آن را به بیلد Google Play اضافه نکنید.** نسخه‌ی آن را ننویسید: Gradle آن را از نسخه‌ی `core` پلاگین می‌گیرد، پس با ارتقای پلاگین در `pubspec.yaml` هر دو ارتقا پیدا می‌کنند.
+
+**فقط یک مارکت** — فایل `android/app/build.gradle`:
+
+```gradle
+dependencies {
+    // فقط وقتی اپ در Google Play منتشر نمی‌شود
+    implementation 'io.wisetrack.sdk:core-tools'
+}
+```
+
+**چند مارکت با یک کد** (product flavor). `bazaarImplementation` یک وابستگی را فقط به flavor `bazaar` اضافه می‌کند؛ برای هر اسم flavor دیگری هم همین‌طور است:
+
+```gradle
+android {
+    flavorDimensions = ["store"]
+    productFlavors {
+        play   { dimension = "store" }
+        bazaar { dimension = "store" }
+        myket  { dimension = "store" }
+    }
+}
+
+dependencies {
+    bazaarImplementation 'io.wisetrack.sdk:core-tools'
+    myketImplementation 'io.wisetrack.sdk:core-tools'
+}
+```
+
+با `flutter build apk --flavor play` (یا `bazaar` و `myket`) بیلد بگیرید و مارکت هر flavor را در Dart با `appFlavor` مشخص کنید:
+
+```dart
+import 'package:flutter/services.dart' show appFlavor;
+
+final store = switch (appFlavor) {
+  'play' => WTAndroidStore.playstore,
+  'bazaar' => WTAndroidStore.cafebazaar,
+  'myket' => WTAndroidStore.myket,
+  _ => WTAndroidStore.other,
+};
+// WTInitialConfig(..., androidConfig: WTAndroidConfig(store: store))
+```
+
+اگر مارکت برابر `playstore` نباشد و `core-tools` در بیلد نباشد، SDK در لاگ هشدار می‌دهد. افزونه‌هایی که فقط برای بیلدهای خارج از Google Play هستند (`oaid`، `play-services-appset` و مجوزهای `READ_PHONE_STATE` و `ACCESS_WIFI_STATE`) را هم به همان flavorهای `core-tools` اضافه کنید.
+
+**نکات Google Play:**
+
+- پلاگین مجوز `com.google.android.gms.permission.AD_ID` را دارد. در Play Console به سؤال **Advertising ID** پاسخ «بله» بدهید و **Analytics** را انتخاب کنید (و اگر از WiseTrack برای attribution نصب استفاده می‌کنید، **Attribution** را هم).
+- **Data safety:** آنچه SDK در بیلد Google Play می‌فرستد را اعلام کنید: شناسه‌های دستگاه (Advertising ID، شناسه‌ی نصب Firebase اگر از Firebase استفاده می‌کنید، و یک شناسه‌ی نصب مخصوص اپ)، توکن push اگر آن را به SDK بدهید، تعامل با اپ (رویدادها، صفحه‌ها، sessionها)، اطلاعات دستگاه و اپ (مدل، سیستم‌عامل، صفحه‌نمایش، زبان، نسخه‌ی اپ، و داده‌ی سنسورهای حرکتی یک بار هنگام نصب) و اطلاعات referrer نصب. ارسال داده رمزنگاری‌شده (HTTPS) است.
+- **اپ‌های کودکان:** SDK از Advertising ID استفاده می‌کند که سیاست Families برای کودکان اجازه نمی‌دهد. از SDK در اپ‌های مخصوص کودکان استفاده نکنید. در اپ‌هایی با مخاطب ترکیبی، `startTrackerAutomatically: false` بگذارید و `startTracking()` را فقط برای کاربرانی که کودک نیستند صدا بزنید.
+- **رضایت کاربر:** برای شروع ردیابی بعد از رضایت کاربر، `startTrackerAutomatically: false` بگذارید و بعد از موافقت کاربر `WiseTrack.instance.startTracking()` را صدا بزنید.
 
 ## راه اندازی اولیه
 
@@ -675,6 +732,15 @@ InAppWebView(
 یک پروژه نمونه که ادغام پلاگین فلاتر WiseTrack را نشان می‌دهد، در [مخزن گیت‌هاب](https://github.com/wisetrack-io/flutter-sdk/tree/main/example) در دسترس است. مخزن را کلون کرده و دستورالعمل‌های راه‌اندازی را دنبال کنید تا پلاگین را در عمل ببینید.
 
 ## تغییرات مهم
+
+### نسخه 3.0.0
+
+- **اندروید: داده‌های حساس به `io.wisetrack.sdk:core-tools` منتقل شدند.** پلاگین حالا از `io.wisetrack.sdk:core:3.0.0` استفاده می‌کند که با Google Play سازگار است.
+  - بیلدهای Google Play: کاری لازم نیست. اگر `io.wisetrack.sdk:oaid` را اضافه کرده بودید، آن را از بیلد Google Play حذف کنید.
+  - بیلدهای مارکت‌های دیگر: `implementation 'io.wisetrack.sdk:core-tools'` (یا `<flavor>Implementation`) را به `android/app/build.gradle` اضافه کنید. بدون آن، این بیلدها کار می‌کنند، ولی اطلاعات کمتری از دستگاه می‌فرستند و بعضی قابلیت‌های پنل کار نمی‌کنند.
+  - بدون `core-tools`، `setPackagesInfo()` و `oaidEnabled` در اندروید اثری ندارند. API دارت تغییری نکرده است.
+  - بخش [بیلد اندروید برای مارکت‌ها](#بیلد-اندروید-برای-مارکتها-google-play-و-بقیه) را ببینید.
+- iOS و وب: بدون تغییر.
 
 ### نسخه 2.3.0
 

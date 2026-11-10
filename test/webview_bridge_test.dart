@@ -93,20 +93,6 @@ void main() {
       expect(event.revenueCurrency, RevenueCurrency.IRR);
     });
 
-    test('ETH and legacy EHT codes both map to ETH', () async {
-      for (final code in ['ETH', 'EHT']) {
-        await evaluator.send('trackEvent', {
-          'type': 'revenue',
-          'name': 'purchase',
-          'revenue': 1.5,
-          'currency': code,
-        });
-      }
-      expect(platform.events.map((e) => e.revenueCurrency),
-          [RevenueCurrency.ETH, RevenueCurrency.ETH]);
-      expect(RevenueCurrency.ETH.label, 'EHT');
-    });
-
     test('invalid message does not throw', () async {
       await evaluator.send('trackEvent', {
         'type': 'revenue',

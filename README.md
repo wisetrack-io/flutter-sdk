@@ -9,6 +9,7 @@ The **WiseTrack** Flutter plugin offers a cross-platform solution to accelerate 
 - [Features](#features)
 - [Requirements](#requirements)
 - [Installation](#installation)
+- [Android Store Builds (Google Play and Other Stores)](#android-store-builds-google-play-and-other-stores)
 - [Initialization](#initialization)
 - [Basic Usage](#basic-usage)
   - [Enabling/Disabling Tracking](#enablingdisabling-tracking)
@@ -59,7 +60,7 @@ To integrate the WiseTrack Flutter Plugin into your Flutter project, follow thes
 
    ```yaml
    dependencies:
-     wisetrack: ^2.5.0 # Replace with the latest version
+     wisetrack: ^3.0.0 # Replace with the latest version
    ```
 
 2. **Install the package**:
@@ -129,7 +130,9 @@ To integrate the WiseTrack Flutter Plugin into your Flutter project, follow thes
        tools:node="remove" />
    ```
 
-   If your app does not target the Google Play Store (e.g., CafeBazaar, Myket), add these additional permissions:
+   Builds for stores other than Google Play (e.g., CafeBazaar, Myket) may also add these
+   permissions. Declare them only in the manifest of those builds (e.g.
+   `android/app/src/bazaar/AndroidManifest.xml`), never in the Google Play build:
 
    ```xml
    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
@@ -145,7 +148,7 @@ To integrate the WiseTrack Flutter Plugin into your Flutter project, follow thes
      implementation 'com.google.android.gms:play-services-ads-identifier:18.2.0'
      ```
 
-   - **Open Advertising ID (OAID)**: Enables OAID as an alternative to Ad ID for devices without Google Play Services (e.g., Chinese devices) via `WTInitialConfig` with `oaidEnabled: true`.
+   - **Open Advertising ID (OAID)**: Enables OAID as an alternative to Ad ID for devices without Google Play Services (e.g., Chinese devices) via `WTInitialConfig` with `oaidEnabled: true`. Builds outside Google Play only; needs `core-tools` (see [Android Store Builds](#android-store-builds-google-play-and-other-stores)).
 
      ```gradle
      implementation 'io.wisetrack.sdk:oaid:2.0.0' // Replace with the latest version
@@ -195,7 +198,7 @@ To integrate the WiseTrack Flutter Plugin into your Flutter project, follow thes
        apply plugin: 'com.google.gms.google-services'
        ```
 
-   - **AppSet ID**: Provides additional device identification for analytics.
+   - **AppSet ID**: Provides additional device identification for analytics. Builds outside Google Play only; needs `core-tools`.
      ```gradle
      implementation 'com.google.android.gms:play-services-appset:16.1.0'
      ```
@@ -205,6 +208,79 @@ To integrate the WiseTrack Flutter Plugin into your Flutter project, follow thes
    ```bash
    flutter run
    ```
+
+## Android Store Builds (Google Play and Other Stores)
+
+On Android the plugin includes `io.wisetrack.sdk:core`, which meets Google Play policies on its own.
+
+Builds published **outside Google Play** (CafeBazaar, Myket, …) also need
+`io.wisetrack.sdk:core-tools`. It is needed there so that the device information WiseTrack requires
+is sent and the important panel features work. **Do not add it to a Google Play build.** Leave out its
+version: Gradle takes it from the `core` version of the plugin, so updating the plugin in
+`pubspec.yaml` updates both.
+
+**One store only** — `android/app/build.gradle`:
+
+```gradle
+dependencies {
+    // only when the app is NOT published on Google Play
+    implementation 'io.wisetrack.sdk:core-tools'
+}
+```
+
+**Several stores from one codebase** (product flavors). `bazaarImplementation` adds a dependency only
+to the `bazaar` flavor; the same goes for any flavor name:
+
+```gradle
+android {
+    flavorDimensions = ["store"]
+    productFlavors {
+        play   { dimension = "store" }
+        bazaar { dimension = "store" }
+        myket  { dimension = "store" }
+    }
+}
+
+dependencies {
+    bazaarImplementation 'io.wisetrack.sdk:core-tools'
+    myketImplementation 'io.wisetrack.sdk:core-tools'
+}
+```
+
+Build with `flutter build apk --flavor play` (or `bazaar`, `myket`), and set the store of each flavor
+in Dart with `appFlavor`:
+
+```dart
+import 'package:flutter/services.dart' show appFlavor;
+
+final store = switch (appFlavor) {
+  'play' => WTAndroidStore.playstore,
+  'bazaar' => WTAndroidStore.cafebazaar,
+  'myket' => WTAndroidStore.myket,
+  _ => WTAndroidStore.other,
+};
+// WTInitialConfig(..., androidConfig: WTAndroidConfig(store: store))
+```
+
+When `core-tools` is missing from a build whose store is not `playstore`, the SDK logs a warning.
+Add-ons that are only for builds outside Google Play (`oaid`, `play-services-appset`, the
+`READ_PHONE_STATE` / `ACCESS_WIFI_STATE` permissions) go to the same flavors as `core-tools`.
+
+**Google Play notes:**
+
+- The plugin declares `com.google.android.gms.permission.AD_ID`. In Play Console, answer the
+  **Advertising ID** declaration with "yes" and select **Analytics** (and **Attribution** if you use
+  WiseTrack for install attribution).
+- **Data safety:** declare what the SDK sends from the Google Play build: device or other IDs
+  (Advertising ID, Firebase installation ID if you use Firebase, and an app-scoped install ID),
+  the push notification token if you pass one, app interactions (events, screens, sessions), device
+  and app information (model, OS, screen, language, app version, and motion sensor readings once at
+  install) and install referrer data. Data is sent encrypted (HTTPS).
+- **Apps for children:** the SDK uses the Advertising ID, which the Families policy does not allow
+  for children. Do not use the SDK in apps made for children. In mixed-audience apps, set
+  `startTrackerAutomatically: false` and call `startTracking()` only for users who are not children.
+- **User consent:** to start tracking only after consent, set `startTrackerAutomatically: false` and
+  call `WiseTrack.instance.startTracking()` once the user agrees.
 
 ## Initialization
 
@@ -871,6 +947,20 @@ An example project demonstrating the WiseTrack Flutter Plugin integration is ava
 
 ## Breaking Changes
 
+### Version 3.0.0
+
+- **Android: sensitive data moved to `io.wisetrack.sdk:core-tools`.** The plugin now uses the
+  Google Play compliant `io.wisetrack.sdk:core:3.0.0`.
+  - Google Play builds: nothing to do. If you added `io.wisetrack.sdk:oaid`, remove it from the
+    Google Play build.
+  - Builds for other stores: add `implementation 'io.wisetrack.sdk:core-tools'` to
+    `android/app/build.gradle` (or `<flavor>Implementation`). Without it these builds keep working,
+    but send less device information and some panel features will not work.
+  - Without `core-tools`, `setPackagesInfo()` and `oaidEnabled` have no effect on Android. The Dart
+    API is unchanged.
+  - See [Android Store Builds](#android-store-builds-google-play-and-other-stores).
+- iOS and web: no changes.
+
 ### Version 2.5.0
 
 - **Minimum versions**: Flutter 3.22 / Dart 3.4, iOS 13.0. The web implementation now uses
@@ -883,7 +973,6 @@ An example project demonstrating the WiseTrack Flutter Plugin integration is ava
 - **WebView bridge `initialize`**: missing `start_tracker_automatically` and
   `request_att_automatically` now default to `true`, the same as `WTInitialConfig`.
 - `WTParam.dynamic` throws `ArgumentError` (was `Exception`) for unsupported values.
-- `RevenueCurrency.ETH` added; the misspelled `RevenueCurrency.EHT` is deprecated.
 - `WiseTrack.setPackgesInfo()` is deprecated in favour of `setPackagesInfo()`.
 - iOS no longer consumes incoming deep links: other plugins and Flutter's deep linking receive them too.
 

@@ -3,6 +3,10 @@ import WiseTrackLib
 
 /// Channels of every Flutter engine the plugin is attached to (main UI engine,
 /// background isolates, add-to-app engines).
+///
+/// Native SDK callbacks are process-wide, so they are registered once and
+/// broadcast to all attached engines; each engine forwards them to Dart only if
+/// it registered a listener there.
 enum FlutterChannels {
     private static var channels: [FlutterMethodChannel] = []
 

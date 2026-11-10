@@ -57,8 +57,11 @@ android {
         testImplementation("org.jetbrains.kotlin:kotlin-test")
         testImplementation("org.mockito:mockito-core:5.0.0")
 
-        // uncomment for add remotely
-        implementation "io.wisetrack.sdk:core:2.5.0"
+        // Google Play compliant core. Builds for other stores add io.wisetrack.sdk:core-tools in the
+        // app (android/app/build.gradle) without a version. `api`, not `implementation`: core must be
+        // on the app's compile classpath too, or its version constraint for core-tools does not
+        // apply there and a versionless core-tools fails to resolve.
+        api "io.wisetrack.sdk:core:3.0.0"
 
         // required dependency for wisetrack
         implementation 'androidx.lifecycle:lifecycle-process:2.6.1'

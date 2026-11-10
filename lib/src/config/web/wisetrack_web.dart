@@ -9,6 +9,12 @@ import 'package:web/web.dart' as web;
 import 'wisetrack_web_impl.dart';
 
 /// Web-specific implementation of the Wisetrack plugin.
+///
+/// The WiseTrack JS SDK is resolved in this order:
+/// 1. Already on the page (e.g. a `<script>` the app added to `web/index.html`,
+///    self-hosted or from its own CDN) — that copy is used as-is.
+/// 2. Otherwise the version pinned in [jsSdkVersion] is injected from
+///    [sdkUrls], falling back to the next URL if one fails.
 class WisetrackPlugin {
   /// Version of the WiseTrack JS SDK this plugin release is built against.
   static const jsSdkVersion = '2.3.0';
@@ -28,7 +34,8 @@ class WisetrackPlugin {
   static Future<void>? _loading;
 
   static void registerWith(Registrar registrar) {
-    // Start loading as early as possible
+    // Start loading as early as possible; errors surface again (and are logged)
+    // when the SDK is actually used.
     ensureSDKLoaded().catchError(
       (Object e) => debugPrint('WisetrackWeb: $e'),
     );
@@ -77,7 +84,8 @@ class WisetrackPlugin {
         'WiseTrack web SDK could not be loaded: ${errors.join('; ')}');
   }
 
-  /// Waits for a script that is already in the document
+  /// Waits for a script that is already in the document (it may still be loading
+  /// if it was added with `async`/`defer`).
   static Future<void> _waitForScript(web.HTMLScriptElement script) {
     final completer = Completer<void>();
     void finish() {

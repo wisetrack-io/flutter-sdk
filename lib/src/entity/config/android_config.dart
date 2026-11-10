@@ -16,6 +16,9 @@ class WTAndroidConfig {
 
   /// Indicates whether the Open Advertising ID (OAID) is enabled.
   /// The default value is `false`.
+  ///
+  /// Needs `io.wisetrack.sdk:core-tools` and `io.wisetrack.sdk:oaid` in the Android build;
+  /// not for Google Play builds.
   final bool oaidEnabled;
 
   /// Creates an instance of [WTAndroidConfig] from a map.

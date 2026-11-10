@@ -17,6 +17,8 @@ class WisetrackWebImpl extends WisetrackPlatform {
     WisetrackPlatform.instance = WisetrackWebImpl();
   }
 
+  /// Waits for the JS SDK, runs [body] and logs (instead of throwing) any failure,
+  /// matching the error behaviour of the native implementation.
   Future<T> _run<T>(
     String action,
     T fallback,
