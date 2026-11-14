@@ -1,5 +1,6 @@
 enum WisetrackMethodChannel: String {
     case log                        = "wt.log"
+    case agentLine                  = "wt.agent_line"
     case initSDK                    = "wt.init"
     case clearAndStop               = "wt.clear_and_stop"
     case setLogLevel                = "wt.set_log_level"

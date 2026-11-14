@@ -4,6 +4,16 @@
 
 ## 🎯 Version 3.x
 
+**3.1.0** — _Diagnostics and Platform Updates_
+
+- 🤖 Diagnostics support for AI-assisted integration
+- 🔗 Deep link handling improvements on Android
+- 💱 Revenue currency fixes on iOS and web
+- 🌐 Web: sandbox and production data now reported under the right environment
+- 📦 Native SDK updates (Android, iOS, Web)
+- 📝 Documentation updates
+
+
 **3.0.0** — _Google Play Compliant Android Core_
 
 - 🤖 **Android**

@@ -174,6 +174,11 @@ extension WisetrackPlugin {
         let logLevel = (args["log_level"] as? Int).flatMap { WTLogLevel(rawValue: $0) }
         let trackingWaitingTime = (args["tracking_waiting_time"] as? NSNumber)?.doubleValue ?? 0
 
+        // [WT-AGENT] lines go to stdout, which `flutter run` does not show: forward them to Dart.
+        WiseTrack.shared.setAgentDiagnosticsListener { line in
+            FlutterChannels.broadcast(WisetrackMethodChannel.agentLine.rawValue, arguments: ["line": line])
+        }
+
         WiseTrack.shared.initialize(with: WTInitialConfig(
             appToken: appToken,
             clientSecret: clientSecret,
@@ -188,7 +193,8 @@ extension WisetrackPlugin {
             deeplinkEnabled: (args["deeplink_enabled"] as? Bool) ?? true,
             attWaitingInterval: (args["att_waiting_interval"] as? NSNumber)?.doubleValue,
             requestATTAutomatically: (args["request_att_automatically"] as? Bool) ?? true,
-            screenTrackingConfig: WTScreenAutoTrackingConfig(enabled: false)
+            screenTrackingConfig: WTScreenAutoTrackingConfig(enabled: false),
+            agentDiagnostics: (args["agent_diagnostics"] as? Bool) ?? false
         ))
 
         // Set deeplink listener after initialization

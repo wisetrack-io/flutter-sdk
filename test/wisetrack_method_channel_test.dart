@@ -76,8 +76,30 @@ void main() {
           'att_waiting_interval': initConfig.iOSConfig.attWaitingInterval,
           'request_att_automatically':
               initConfig.iOSConfig.requestATTAutomatically,
+          'agent_diagnostics': false,
         }),
       ).called(1);
+    });
+
+    test('init passes agentDiagnostics', () async {
+      final initConfig = WTInitialConfig(
+        appToken: 'test_token',
+        clientSecret: 'test_secret',
+        userEnvironment: WTUserEnvironment.sandbox,
+        agentDiagnostics: true,
+      );
+      when(
+        mockChannel.invokeMethod(MethodChannelNames.methodInit, any),
+      ).thenAnswer((_) async => null);
+
+      await wisetrack.init(initConfig);
+
+      final args = verify(
+        mockChannel.invokeMethod(MethodChannelNames.methodInit, captureAny),
+      ).captured.single as Map;
+      expect(args['agent_diagnostics'], true);
+      expect(
+          WTInitialConfig.fromMap(initConfig.toMap()).agentDiagnostics, true);
     });
 
     test('init handles PlatformException', () async {

@@ -1,7 +1,11 @@
 package io.wisetrack.wisetrack
 
 import android.content.Context
+import android.content.Intent
 import io.flutter.embedding.engine.plugins.FlutterPlugin
+import io.flutter.embedding.engine.plugins.activity.ActivityAware
+import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
+import io.flutter.plugin.common.PluginRegistry
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
@@ -22,9 +26,19 @@ import io.wisetrack.sdk.core.utils.wrapper.ResourceWrapper
 
 
 /** WiseTrackPlugin */
-class WiseTrackPlugin : FlutterPlugin, MethodCallHandler {
+class WiseTrackPlugin : FlutterPlugin, MethodCallHandler, ActivityAware, PluginRegistry.NewIntentListener {
     private lateinit var channel: MethodChannel
     private lateinit var context: Context
+
+    /**
+     * Deep links (FLT-11). The native SDK reads `activity.intent` in its lifecycle callbacks, but
+     * Dart initializes it after the first `onResume`, and `FlutterActivity` is `singleTop`:
+     * a link that launched the app and a link opened while it runs both miss those callbacks.
+     * The plugin hands them over with `WiseTrack.processDeeplink` (each intent is handled once).
+     */
+    private var activityBinding: ActivityPluginBinding? = null
+    private var pendingIntent: Intent? = null
+    private var sdkStarted = false
 
     companion object {
         // The native logger is process-wide; register the broadcasting output once.
@@ -194,9 +208,14 @@ class WiseTrackPlugin : FlutterPlugin, MethodCallHandler {
                 ?: WTLogLevel.WARNING,
             oaidEnabled = call.argument<Boolean>("oaid_enabled") == true,
             screenTrackingConfig = WTScreenAutoTrackingConfig(enabled = false),
-        )
+        ).apply {
+            agentDiagnostics = call.argument<Boolean>("agent_diagnostics") == true
+        }
 
         WiseTrack.initialize(context, initialConfig)
+        sdkStarted = true
+        pendingIntent?.let { WiseTrack.processDeeplink(it) }
+        pendingIntent = null
 
         // Set deeplink listener after initialization
         WiseTrack.setOnDeeplinkListener { intent, isDeferred ->
@@ -333,6 +352,36 @@ class WiseTrackPlugin : FlutterPlugin, MethodCallHandler {
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
         channel.setMethodCallHandler(null)
         FlutterChannels.remove(channel)
+    }
+
+    // -- ActivityAware: deep links that the native lifecycle callbacks miss (FLT-11) --
+
+    override fun onAttachedToActivity(binding: ActivityPluginBinding) {
+        activityBinding = binding
+        binding.addOnNewIntentListener(this)
+        handleIntent(binding.activity.intent)
+    }
+
+    override fun onDetachedFromActivityForConfigChanges() = onDetachedFromActivity()
+
+    override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) =
+        onAttachedToActivity(binding)
+
+    override fun onDetachedFromActivity() {
+        activityBinding?.removeOnNewIntentListener(this)
+        activityBinding = null
+    }
+
+    override fun onNewIntent(intent: Intent): Boolean {
+        // FlutterActivity does not call setIntent; do it so later reads see the new link.
+        activityBinding?.activity?.intent = intent
+        handleIntent(intent)
+        return false // let other plugins (app_links, uni_links) see it too
+    }
+
+    private fun handleIntent(intent: Intent?) {
+        if (intent?.data == null) return
+        if (sdkStarted) WiseTrack.processDeeplink(intent) else pendingIntent = intent
     }
 }
 

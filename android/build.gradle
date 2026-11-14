@@ -1,6 +1,9 @@
 group = "io.wisetrack.wisetrack"
 version = "1.0-SNAPSHOT"
 
+// The Android Gradle Plugin and (when needed) the Kotlin Gradle Plugin come from
+// the host app. Declaring KGP on this plugin's buildscript classpath would make
+// Flutter apply it here under AGP 9 built-in Kotlin, which AGP rejects.
 buildscript {
     repositories {
         google()
@@ -61,7 +64,7 @@ android {
         // app (android/app/build.gradle) without a version. `api`, not `implementation`: core must be
         // on the app's compile classpath too, or its version constraint for core-tools does not
         // apply there and a versionless core-tools fails to resolve.
-        api "io.wisetrack.sdk:core:3.0.0"
+        api "io.wisetrack.sdk:core:3.1.0"
 
         // required dependency for wisetrack
         implementation 'androidx.lifecycle:lifecycle-process:2.6.1'

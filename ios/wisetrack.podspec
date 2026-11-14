@@ -4,7 +4,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'wisetrack'
-  s.version          = '3.0.0'
+  s.version          = '3.1.0'
   s.summary          = 'WiseTrack Flutter plugin: attribution and analytics for iOS apps.'
   s.description      = <<-DESC
 Flutter plugin wrapping the WiseTrack iOS SDK (WiseTrackLib).
@@ -15,7 +15,7 @@ Flutter plugin wrapping the WiseTrack iOS SDK (WiseTrackLib).
   s.source           = { :path => '.' }
   s.source_files = 'Classes/**/*'
   s.dependency 'Flutter'
-  s.dependency 'WiseTrackLib', '~> 2.5.0'
+  s.dependency 'WiseTrackLib', '~> 2.6.0'
   s.platform = :ios, '13.0'
 
   # Flutter.framework does not contain a i386 slice.

@@ -145,6 +145,15 @@ void main() {
     });
   });
 
+  group('Web user environment', () {
+    test('sends the lowercase values of the Web SDK', () {
+      // Core stores the value as sent: "SANDBOX" hid every Flutter web record from the
+      // panel's sandbox and production views.
+      expect(WTUserEnvironment.sandbox.label, 'sandbox');
+      expect(WTUserEnvironment.production.label, 'production');
+    });
+  });
+
   group('Web Configuration Validation', () {
     test('validates webAppVersion requirement', () {
       // Test that assertion error is thrown when webAppVersion is missing

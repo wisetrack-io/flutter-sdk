@@ -17,7 +17,7 @@ import 'wisetrack_web_impl.dart';
 ///    [sdkUrls], falling back to the next URL if one fails.
 class WisetrackPlugin {
   /// Version of the WiseTrack JS SDK this plugin release is built against.
-  static const jsSdkVersion = '2.3.0';
+  static const jsSdkVersion = '2.4.0';
 
   /// CDN sources for the pinned JS SDK, tried in order.
   static const sdkUrls = [

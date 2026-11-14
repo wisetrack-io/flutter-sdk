@@ -28,6 +28,11 @@ class MethodChannelWisetrack extends WisetrackPlatform {
           final message = call.arguments['message'];
           if (message is String) _logCallback?.call(message);
           break;
+        case MethodChannelNames.methodAgentLine:
+          // iOS stdout does not reach `flutter run`; print the line on the Dart side.
+          final line = call.arguments['line'];
+          if (line is String) debugPrint(line, wrapWidth: null);
+          break;
       }
     });
   }

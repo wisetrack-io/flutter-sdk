@@ -2,6 +2,7 @@
 class MethodChannelNames {
   /// Method channel names
   static const String methodLog = "wt.log";
+  static const String methodAgentLine = "wt.agent_line";
   static const String methodInit = "wt.init";
   static const String methodClearAndStop = "wt.clear_and_stop";
   static const String methodSetLogLevel = "wt.set_log_level";

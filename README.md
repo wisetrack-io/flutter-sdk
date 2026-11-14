@@ -60,7 +60,7 @@ To integrate the WiseTrack Flutter Plugin into your Flutter project, follow thes
 
    ```yaml
    dependencies:
-     wisetrack: ^3.0.0 # Replace with the latest version
+     wisetrack: ^3.1.0 # Replace with the latest version
    ```
 
 2. **Install the package**:
@@ -85,7 +85,7 @@ To integrate the WiseTrack Flutter Plugin into your Flutter project, follow thes
      ```
 
      Use the same SDK version the plugin release was built for
-     (`WisetrackPlugin.jsSdkVersion`, e.g. `2.3.0`). If you load it with
+     (`WisetrackPlugin.jsSdkVersion`, e.g. `2.4.0`). If you load it with
      `async`/`defer`, keep the `data-wisetrack-sdk` attribute so the plugin can find it.
    - **Content Security Policy**: when using the default CDNs, allow them in `script-src`:
      `https://cdn.jsdelivr.net https://unpkg.com`.
@@ -101,12 +101,13 @@ To integrate the WiseTrack Flutter Plugin into your Flutter project, follow thes
 5. **Configure Android**:
    Ensure your `android/app/build.gradle` has the following settings:
 
+   Keep the Flutter template values (`compileSdk = flutter.compileSdkVersion`); the plugin compiles
+   with `compileSdk 36` and JVM target 17, and needs `minSdk` 21 or higher:
+
    ```gradle
    android {
-       compileSdkVersion 33
        defaultConfig {
            minSdkVersion 21
-           targetSdkVersion 33
        }
    }
    ```
@@ -170,9 +171,9 @@ To integrate the WiseTrack Flutter Plugin into your Flutter project, follow thes
    - **Referrer Tracking**: Enables referrer tracking for Google Play and CafeBazaar via `WTInitialConfig` with `referrerEnabled: true`.
 
      ```gradle
-     implementation 'io.wisetrack.sdk:referrer:2.0.0' // Replace with the latest version
+     implementation 'io.wisetrack.sdk:referrer:2.1.0' // Replace with the latest version
      implementation 'com.android.installreferrer:installreferrer:2.2' // Google Play referrer
-     implementation 'com.github.cafebazaar:referrersdk:1.0.2' // CafeBazaar referrer
+     implementation 'com.github.cafebazaar:ReferrerSDK:1.1.1' // CafeBazaar referrer (needs maven { url 'https://jitpack.io' })
      ```
 
    - **Firebase Installation ID (FID)**: Enables retrieval of a unique Firebase Installation ID for device identification.
@@ -289,6 +290,7 @@ To start using the WiseTrack Flutter Plugin, initialize it with a configuration 
 ### Example
 
 ```dart
+import 'package:flutter/foundation.dart'; // kIsWeb
 import 'package:flutter/material.dart';
 import 'package:wisetrack/wisetrack.dart';
 
@@ -485,7 +487,10 @@ print('Deferred Deep Link: ${deferredDeeplink ?? "None"}');
 
 #### Listening for Deep Link Events
 
-You can set up a listener to receive deep link events in real-time:
+You can set up a listener to receive deep link events in real-time. Only WiseTrack links (with the
+`wt_click_id` query parameter) and deferred links reach it; route other links with your own handler.
+On Android the plugin also handles links that open the app or arrive while it runs (since 3.1.0; no
+`MainActivity` change is needed):
 
 ```dart
 WiseTrack.instance.onDeeplinkReceived((String url, bool isDeferred) {
@@ -505,7 +510,7 @@ Log custom or revenue events:
 
 ```dart
 // Log a default event
-await WiseTrack.instance.trackEvent(WTEvent(
+await WiseTrack.instance.trackEvent(WTEvent.defaultEvent(
   name: 'Custom Event',
   params: {
     'key-str': WTParam.string('value1'),
@@ -515,9 +520,9 @@ await WiseTrack.instance.trackEvent(WTEvent(
 ));
 
 // Log a revenue event
-await WiseTrack.instance.trackEvent(WTEvent.revenue(
+await WiseTrack.instance.trackEvent(WTEvent.revenueEvent(
   name: 'Purchase',
-  currency: 'USD',
+  currency: RevenueCurrency.USD,
   amount: 9.99,
   params: {
     'item': WTParam.string('Premium Subscription'),
@@ -552,8 +557,8 @@ MaterialApp(
       config: WTScreenTrackingConfig(
         enabled: true,           // default — can toggle at runtime
         trackDialogs: false,     // skip dialogs/popups (default)
-        excludedScreens: {'/splash', '/loading'},
-        excludePatterns: [RegExp(r'^/internal/.*')],
+        excludedScreens: {'splash', 'loading'}, // names without the leading '/'
+        excludePatterns: [RegExp(r'^internal/')],
       ),
     ),
   ],
@@ -723,7 +728,7 @@ The automatic tracker sets the type based on route class: `ModalBottomSheetRoute
 Control the verbosity of SDK logs:
 
 ```dart
-await WiseTrack.instance.setLogLevel(WTLogLevel.debug); // Options: none, error, warning, info, debug
+await WiseTrack.instance.setLogLevel(WTLogLevel.debug); // Options: error, warning, info, debug
 ```
 
 ### Retrieving Advertising IDs
@@ -760,7 +765,7 @@ You can customize the SDK behavior through the `WTInitialConfig` parameters:
 - `deeplinkEnabled`: Indicates whether deep link handling is enabled (default: `true`).
 
 **Android-Specific Parameters (WTAndroidConfig):**
-- `store`: The Android app store (e.g., `.googleplay`, `.cafebazaar`, `.other`, ...).
+- `store`: The Android app store (`WTAndroidStore.playstore`, `.cafebazaar`, `.myket`, `.other` or `.custom('name')`).
 - `oaidEnabled`: Indicates whether the Open Advertising ID (OAID) is enabled.
 
 **iOS-Specific Parameters (WTIOSConfig):**
@@ -945,7 +950,33 @@ Files include:
 
 An example project demonstrating the WiseTrack Flutter Plugin integration is available at [GitHub Repository URL](https://github.com/wisetrack-io/flutter-sdk/tree/main/example). Clone the repository and follow the setup instructions to see the plugin in action.
 
+## Diagnostics for AI Coding Agents
+
+While an AI coding agent (Claude Code, Codex, Cursor, ...) integrates or debugs the SDK, add
+`agentDiagnostics: true` with `userEnvironment: WTUserEnvironment.sandbox`:
+
+```dart
+final config = WTInitialConfig(
+  appToken: 'your-app-token',
+  clientSecret: 'your-client-secret',
+  userEnvironment: WTUserEnvironment.sandbox,
+  agentDiagnostics: true, // remove before release
+);
+```
+
+The native SDK of each platform then prints one `[WT-AGENT] {json}` line per step (init, every
+`/config` and `/auth` answer with the server's `error_code` and `error_details`, queued requests,
+rejected events), whatever the log level: Android to Logcat (tag `WiseTrack-Agent`), iOS to the
+Flutter console, web to the browser console. The WiseTrack MCP server reads these lines. They never
+contain the client secret, tokens, device ids or parameter values. In production only one
+`diagnostics_disabled` line is printed.
+
 ## Breaking Changes
+
+### Version 3.1.0
+
+- iOS uses `WiseTrackLib` 2.6.0 and web the Web SDK 2.4.0: `RevenueCurrency.ETH` now works on every
+  platform. No code change.
 
 ### Version 3.0.0
 
@@ -973,7 +1004,7 @@ An example project demonstrating the WiseTrack Flutter Plugin integration is ava
 - **WebView bridge `initialize`**: missing `start_tracker_automatically` and
   `request_att_automatically` now default to `true`, the same as `WTInitialConfig`.
 - `WTParam.dynamic` throws `ArgumentError` (was `Exception`) for unsupported values.
-- `WiseTrack.setPackgesInfo()` is deprecated in favour of `setPackagesInfo()`.
+- `WiseTrack.setPackgesInfo()` was removed; use `setPackagesInfo()`.
 - iOS no longer consumes incoming deep links: other plugins and Flutter's deep linking receive them too.
 
 

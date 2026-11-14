@@ -58,13 +58,14 @@ class WisetrackWebImpl extends WisetrackPlatform {
         'clientSecret': initConfig.clientSecret,
         'appVersion': initConfig.webAppVersion,
         'appFrameWork': 'flutter',
-        'userEnvironment': initConfig.userEnvironment.label.toUpperCase(),
+        'userEnvironment': initConfig.userEnvironment.label,
         'logLevel': initConfig.logLevel.webLabel,
         'trackingWaitingTime': initConfig.trackingWaitingTime,
         'startTrackerAutomatically': initConfig.startTrackerAutomatically,
         'customDeviceId': initConfig.customDeviceId,
         'defaultTracker': initConfig.defaultTracker,
         'deeplinkEnabled': initConfig.deeplinkEnabled ?? true,
+        'agentDiagnostics': initConfig.agentDiagnostics,
         // Screens are tracked from Dart (WTNavigatorObserver / WTScreenTrackMixin).
         'screenTrackingConfig': {
           'autoTrackScreens': false,

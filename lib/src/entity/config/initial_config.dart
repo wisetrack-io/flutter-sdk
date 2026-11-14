@@ -43,6 +43,7 @@ class WTInitialConfig {
   /// - [logLevel] sets the log level for SDK logging (default: `warning`).
   /// - [deeplinkEnabled] enables or disables Deeplink handling support (default: `true`).
   /// - [webAppVersion] the app version for web.
+  /// - [agentDiagnostics] `[WT-AGENT]` diagnostics for AI coding agents, sandbox only (default: `false`).
   WTInitialConfig({
     required this.appToken,
     required this.clientSecret,
@@ -57,6 +58,7 @@ class WTInitialConfig {
     this.logLevel = WTResources.defaultLogLevel,
     this.webAppVersion,
     this.screenTrackingConfig = const WTScreenTrackingConfig(),
+    this.agentDiagnostics = false,
   }) : assert(!RunningPlatform.isWeb || webAppVersion != null,
             'webAppVersion is required when using web');
 
@@ -115,6 +117,14 @@ class WTInitialConfig {
   /// The screen tracking configuration.
   final WTScreenTrackingConfig screenTrackingConfig;
 
+  /// Diagnostics for AI coding agents during integration. When `true` and [userEnvironment] is
+  /// [WTUserEnvironment.sandbox], the native SDK of each platform prints one `[WT-AGENT] {json}`
+  /// line per step (init, server answers with error codes, queue state, rejected events),
+  /// whatever the log level; on iOS the plugin also prints them to the Flutter console. Secrets,
+  /// tokens, device ids and parameter values are never printed. No effect in production.
+  /// Remove before release.
+  final bool agentDiagnostics;
+
   /// Creates an instance of [WTInitialConfig] from a map.
   ///
   /// This method is useful when deserializing configuration data from a JSON object or storage.
@@ -140,6 +150,7 @@ class WTInitialConfig {
             l.label.toLowerCase() == map['log_level'].toString().toLowerCase(),
         orElse: () => WTResources.defaultLogLevel,
       ),
+      agentDiagnostics: map['agent_diagnostics'] == true,
     );
   }
 
@@ -159,6 +170,7 @@ class WTInitialConfig {
       'default_tracker': defaultTracker,
       'deeplink_enabled': deeplinkEnabled,
       'log_level': logLevel.level,
+      'agent_diagnostics': agentDiagnostics,
     };
   }
 }
